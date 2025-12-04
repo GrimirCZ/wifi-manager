@@ -1,0 +1,1 @@
+group = "cz.grimir.wifimanager.admin"
