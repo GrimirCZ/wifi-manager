@@ -1,6 +1,7 @@
 plugins {
-    id("org.springframework.boot")
+    id("org.springframework.boot") apply false
     id("io.spring.dependency-management")
+    id("cz.grimir.wifimanager.boot-only-if-app-main-class") apply false
     kotlin("jvm")
     kotlin("plugin.spring")
 }
@@ -10,7 +11,7 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "org.springframework.boot")
+    apply(plugin = "cz.grimir.wifimanager.boot-only-if-app-main-class")
     apply(plugin = "io.spring.dependency-management")
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jetbrains.kotlin.plugin.spring")
