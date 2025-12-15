@@ -17,6 +17,7 @@ plugins {
 }
 
 include("shared")
+include("shared:events")
 
 include("admin:core")
 include("admin:application")
@@ -33,3 +34,4 @@ include("captive:events:local")
 include(":app")
 
 rootProject.name = "wifimanager"
+include("shared:events")
