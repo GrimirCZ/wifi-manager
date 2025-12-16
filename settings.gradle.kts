@@ -16,8 +16,9 @@ plugins {
     kotlin("plugin.jpa") version "2.2.20" apply false
 }
 
-include("shared")
+include("shared:core")
 include("shared:events")
+include("shared:ui")
 
 include("admin:core")
 include("admin:application")

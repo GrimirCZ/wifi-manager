@@ -1,0 +1,21 @@
+spring:
+  thymeleaf:
+    cache: false
+  web:
+    resources:
+      cache:
+        period: 0
+      chain:
+        cache: false
+  docker:
+    compose:
+      file: file:${PROJECT_ROOT:.}/app/compose.yml
+  devtools:
+    restart:
+      enabled: true
+      additional-paths:
+        - ${PROJECT_ROOT:.}/admin
+        - ${PROJECT_ROOT:.}/captive
+        - ${PROJECT_ROOT:.}/shared
+    livereload:
+      enabled: true

@@ -2,7 +2,7 @@ package cz.grimir.wifimanager.captive.core.aggregates
 
 import cz.grimir.wifimanager.captive.core.exceptions.KickedAddressAttemptedLoginException
 import cz.grimir.wifimanager.captive.core.value.Device
-import cz.grimir.wifimanager.shared.TicketId
+import cz.grimir.wifimanager.shared.core.TicketId
 
 class AuthorizationToken(
     val id: TicketId,

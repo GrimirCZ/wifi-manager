@@ -1,4 +1,4 @@
-package cz.grimir.wifimanager.shared
+package cz.grimir.wifimanager.shared.core
 
 import java.util.UUID
 

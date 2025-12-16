@@ -4,7 +4,7 @@ import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
 import cz.grimir.wifimanager.admin.application.ports.SaveTicketPort
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.admin.persistence.entity.AdminTicketEntity
-import cz.grimir.wifimanager.shared.TicketId
+import cz.grimir.wifimanager.shared.core.TicketId
 import org.springframework.stereotype.Repository
 
 @Repository

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{captive/fragments/head :: head('Captive components')}"></head>
+  <body class="bg-surface-muted">
+    <main class="container-page space-y-6">
+      <div class="card space-y-3">
+        <h1 class="text-xl font-semibold">Component coverage</h1>
+        <p class="text-text-muted">Quick smoke test for shared UI components.</p>
+      </div>
+
+      <div class="card space-y-4">
+        <h2 class="text-lg font-semibold">Buttons</h2>
+        <div class="flex flex-wrap gap-3">
+          <button class="btn btn-primary" type="button">Connect</button>
+          <button class="btn btn-secondary" type="button">Later</button>
+        </div>
+      </div>
+
+      <div class="card space-y-4">
+        <h2 class="text-lg font-semibold">Form</h2>
+        <form class="space-y-4">
+          <div>
+            <label class="label" for="code">Access code</label>
+            <input class="input" id="code" name="code" placeholder="Enter code" />
+          </div>
+          <div class="alert alert-warning">
+            This is only a styling preview page.
+          </div>
+          <button class="btn btn-primary w-full" type="button">Submit</button>
+        </form>
+      </div>
+    </main>
+  </body>
+</html>
+

@@ -1,4 +1,4 @@
-group = "cz.grimir.wifimanager.shared"
+group = "cz.grimir.wifimanager.shared.core"
 
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))

@@ -1,9 +1,10 @@
 spring:
   flyway:
     enabled: false
-  docker:
-    compose:
-      file: app/compose.yml
+
   jpa:
     hibernate:
       ddl-auto: validate
+  docker:
+    compose:
+      file: file:${PROJECT_ROOT:.}/app/compose.yml

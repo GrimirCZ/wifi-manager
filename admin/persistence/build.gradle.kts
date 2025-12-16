@@ -8,7 +8,7 @@ dependencies {
     implementation(project(":admin:core"))
     implementation(project(":admin:application"))
 
-    implementation(project(":shared"))
+    implementation(project(":shared:core"))
 
     runtimeOnly("org.postgresql:postgresql")
 

@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.admin.core.aggregates
 
-import cz.grimir.wifimanager.shared.TicketId
-import cz.grimir.wifimanager.shared.UserId
+import cz.grimir.wifimanager.shared.core.TicketId
+import cz.grimir.wifimanager.shared.core.UserId
 import java.time.Instant
 
 class Ticket(

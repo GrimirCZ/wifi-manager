@@ -4,7 +4,7 @@ import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPor
 import cz.grimir.wifimanager.captive.application.ports.ModifyAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
 import cz.grimir.wifimanager.captive.persistence.mapper.AuthorizationTokenMapper
-import cz.grimir.wifimanager.shared.TicketId
+import cz.grimir.wifimanager.shared.core.TicketId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 

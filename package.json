@@ -1,0 +1,20 @@
+{
+  "name": "wifimanager-assets",
+  "private": true,
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.1",
+    "postcss": "^8.5.6",
+    "postcss-import": "^16.1.1",
+    "tailwindcss": "^3.4.19"
+  },
+  "scripts": {
+    "build:admin:css": "tailwindcss --config admin/web/tailwind.config.js --input admin/web/src/main/frontend/admin.css --output admin/web/src/main/resources/static/assets/admin/admin.css --minify --postcss",
+    "build:captive:css": "tailwindcss --config captive/web/tailwind.config.js --input captive/web/src/main/frontend/captive.css --output captive/web/src/main/resources/static/assets/captive/captive.css --minify --postcss",
+    "build:css": "npm run build:admin:css && npm run build:captive:css",
+    "watch:admin:css": "tailwindcss --config admin/web/tailwind.config.js --input admin/web/src/main/frontend/admin.css --output admin/web/src/main/resources/static/assets/admin/admin.css --watch --postcss",
+    "watch:captive:css": "tailwindcss --config captive/web/tailwind.config.js --input captive/web/src/main/frontend/captive.css --output captive/web/src/main/resources/static/assets/captive/captive.css --watch --postcss",
+    "watch:css": "concurrently \"npm:watch:admin:css\" \"npm:watch:captive:css\""
+  }
+}
+

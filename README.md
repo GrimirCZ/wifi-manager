@@ -28,3 +28,21 @@ For dev/demo: Keycloak
 
 https://www.keycloak.org/getting-started/getting-started-docker#_create_a_user
 https://www.keycloak.org/server/containers#_importing_a_realm_on_startup
+
+## Required SW
+
+- java 21
+- gradle
+- bun
+
+Build CSS:
+
+```
+./gradlew buildCss
+```
+
+Continuously build CSS:
+
+```
+./gradlew watchCss
+```

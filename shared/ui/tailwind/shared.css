@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-50: 239 246 255;
+    --brand-100: 219 234 254;
+    --brand-500: 59 130 246;
+    --brand-600: 37 99 235;
+    --brand-700: 29 78 216;
+
+    --surface: 255 255 255;
+    --surface-muted: 248 250 252;
+    --text: 15 23 42;
+    --text-muted: 71 85 105;
+    --border: 226 232 240;
+
+    --danger: 220 38 38;
+    --success: 22 163 74;
+    --warning: 234 179 8;
+  }
+
+  html {
+    @apply text-text bg-surface;
+  }
+
+  body {
+    @apply min-h-screen antialiased;
+  }
+
+  a {
+    @apply text-brand-700 hover:text-brand-600 underline underline-offset-4;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-5xl px-4 py-6;
+  }
+
+  .card {
+    @apply rounded-2xl border border-border bg-surface p-6 shadow-sm;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition;
+    @apply border border-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply bg-brand-600 text-white hover:bg-brand-700;
+  }
+
+  .btn-secondary {
+    @apply bg-surface-muted text-text border-border hover:bg-surface;
+  }
+
+  .btn-danger {
+    @apply bg-danger text-white hover:opacity-90;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm;
+    @apply placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-500;
+  }
+
+  .select {
+    @apply input pr-9;
+  }
+
+  .textarea {
+    @apply input min-h-24;
+  }
+
+  .label {
+    @apply mb-1 block text-sm font-medium text-text;
+  }
+
+  .help {
+    @apply mt-1 text-xs text-text-muted;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full bg-surface-muted px-2 py-0.5 text-xs font-medium text-text;
+  }
+
+  .alert {
+    @apply rounded-2xl border border-border bg-surface-muted p-4 text-sm;
+  }
+
+  .alert-success {
+    @apply border-success/30 bg-success/10 text-success;
+  }
+
+  .alert-warning {
+    @apply border-warning/30 bg-warning/10 text-text;
+  }
+
+  .alert-danger {
+    @apply border-danger/30 bg-danger/10 text-danger;
+  }
+
+  .table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .table th {
+    @apply border-b border-border bg-surface-muted px-3 py-2 text-left font-medium text-text;
+  }
+
+  .table td {
+    @apply border-b border-border px-3 py-2 text-text;
+  }
+
+  .table tr:hover td {
+    @apply bg-surface-muted;
+  }
+}
+

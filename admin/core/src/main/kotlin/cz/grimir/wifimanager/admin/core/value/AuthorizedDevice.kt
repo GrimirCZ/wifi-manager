@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.admin.core.value
 
-import cz.grimir.wifimanager.shared.TicketId
+import cz.grimir.wifimanager.shared.core.TicketId
 
 data class AuthorizedDevice(
     /**

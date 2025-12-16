@@ -37,6 +37,9 @@
             <option value="$PROJECT_DIR$/captive/persistence" />
             <option value="$PROJECT_DIR$/captive/web" />
             <option value="$PROJECT_DIR$/shared" />
+            <option value="$PROJECT_DIR$/shared/core" />
+            <option value="$PROJECT_DIR$/shared/events" />
+            <option value="$PROJECT_DIR$/shared/ui" />
           </set>
         </option>
       </GradleProjectSettings>

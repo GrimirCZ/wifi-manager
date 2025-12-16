@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Captive portal</title>
-  </head>
-  <body>
-    <h1>Captive portal</h1>
-    <p>This page is served from the captive module under <code>/captive</code>.</p>
+  <head th:replace="~{captive/fragments/head :: head('Captive portal')}"></head>
+  <body class="bg-surface-muted">
+    <main class="container-page">
+      <div class="card space-y-3">
+        <h1 class="text-xl font-semibold">Captive portal</h1>
+        <p class="text-text-muted">
+          This page is served from the captive module under <code class="badge">/captive</code>.
+        </p>
+        <div class="alert alert-warning">
+          This UI now uses shared Tailwind components (no UIkit).
+        </div>
+      </div>
+    </main>
   </body>
 </html>
-

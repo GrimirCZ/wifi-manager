@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<head th:fragment="head(title)" xmlns:th="http://www.thymeleaf.org">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${title}">Admin</title>
+  <link rel="stylesheet" th:href="@{/assets/admin/admin.css}" />
+  <script th:src="@{/assets/shared/htmx.min.js}" defer></script>
+</head>
+

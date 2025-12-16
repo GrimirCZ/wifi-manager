@@ -7,5 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping
 class CaptivePortalController {
     @GetMapping("/captive", "/captive/")
     fun index(): String = "captive/index"
-}
 
+    @GetMapping("/captive/components")
+    fun components(): String = "captive/components"
+}

@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":shared:ui"))
+
     implementation(project(":admin:application"))
     implementation(project(":admin:persistence"))
     implementation(project(":admin:web"))
@@ -17,9 +19,11 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
+    implementation("org.springframework.boot:spring-boot-starter-web")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")

@@ -4,7 +4,7 @@ import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
 import cz.grimir.wifimanager.captive.core.value.Device
 import cz.grimir.wifimanager.captive.persistence.entity.CaptiveAuthorizationTokenEntity
 import cz.grimir.wifimanager.captive.persistence.entity.CaptiveDeviceEntity
-import cz.grimir.wifimanager.shared.TicketId
+import cz.grimir.wifimanager.shared.core.TicketId
 import org.springframework.stereotype.Component
 
 @Component

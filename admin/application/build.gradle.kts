@@ -2,7 +2,7 @@ group = "cz.grimir.wifimanager.admin.application"
 
 
 dependencies {
-    implementation(project(":shared"))
+    implementation(project(":shared:core"))
     implementation(project(":shared:events"))
     implementation(project(":admin:core"))
 

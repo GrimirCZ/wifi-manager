@@ -7,5 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping
 class AdminHomeController {
     @GetMapping("/admin", "/admin/")
     fun index(): String = "admin/index"
-}
 
+    @GetMapping("/admin/components")
+    fun components(): String = "admin/components"
+}

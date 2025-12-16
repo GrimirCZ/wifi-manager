@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.admin.application.commands
 
-import cz.grimir.wifimanager.shared.UserId
+import cz.grimir.wifimanager.shared.core.UserId
 import java.time.Duration
 
 data class CreateTicketCommand(

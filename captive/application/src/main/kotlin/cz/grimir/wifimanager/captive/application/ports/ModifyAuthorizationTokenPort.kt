@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.application.ports
 
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
-import cz.grimir.wifimanager.shared.TicketId
+import cz.grimir.wifimanager.shared.core.TicketId
 
 interface ModifyAuthorizationTokenPort {
     fun save(token: AuthorizationToken)

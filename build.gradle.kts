@@ -1,7 +1,10 @@
+import org.springframework.boot.gradle.tasks.run.BootRun
+
 plugins {
     id("org.springframework.boot") apply false
     id("io.spring.dependency-management")
     id("cz.grimir.wifimanager.boot-only-if-app-main-class") apply false
+    id("cz.grimir.wifimanager.tailwind-assets")
     kotlin("jvm")
     kotlin("plugin.spring")
 }
@@ -24,7 +27,15 @@ subprojects {
         jvmToolchain(21)
     }
 
+    tasks.withType<BootRun> {
+        environment("PROJECT_ROOT", rootProject.projectDir.absolutePath)
+    }
+
     tasks.withType<Test> {
         useJUnitPlatform()
+    }
+
+    tasks.matching { it.name == "processResources" }.configureEach {
+        dependsOn(rootProject.tasks.named("buildCss"))
     }
 }
