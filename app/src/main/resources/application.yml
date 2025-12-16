@@ -1,0 +1,9 @@
+spring:
+  flyway:
+    enabled: false
+  docker:
+    compose:
+      file: app/compose.yml
+  jpa:
+    hibernate:
+      ddl-auto: validate

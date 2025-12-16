@@ -1,0 +1,31 @@
+package cz.grimir.wifimanager.captive.persistence
+
+import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.ports.ModifyAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
+import cz.grimir.wifimanager.captive.persistence.mapper.AuthorizationTokenMapper
+import cz.grimir.wifimanager.shared.TicketId
+import org.springframework.data.repository.findByIdOrNull
+import org.springframework.stereotype.Repository
+
+@Repository
+class JpaAuthorizationTokenRepositoryAdapter(
+    private val jpaRepository: CaptiveAuthorizationTokenJpaRepository,
+    private val mapper: AuthorizationTokenMapper,
+) : FindAuthorizationTokenPort, ModifyAuthorizationTokenPort {
+    override fun findByTicketId(ticketId: TicketId): AuthorizationToken? {
+        return jpaRepository.findByIdOrNull(ticketId.id)?.let(mapper::tokenToDomain)
+    }
+
+    override fun findByAccessCode(accessCode: String): AuthorizationToken? {
+        return jpaRepository.findByAccessCode(accessCode)?.let(mapper::tokenToDomain)
+    }
+
+    override fun save(token: AuthorizationToken) {
+        jpaRepository.save(mapper.tokenToEntity(token))
+    }
+
+    override fun deleteByTicketId(ticketId: TicketId) {
+        jpaRepository.deleteById(ticketId.id)
+    }
+}

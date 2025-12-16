@@ -1,0 +1,10 @@
+name: wifimanager-monolith
+services:
+  postgres:
+    image: postgres:18.1-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=wifimanager
+      - POSTGRES_USER=wifimanager
+      - POSTGRES_PASSWORD=wifimanager
