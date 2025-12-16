@@ -26,4 +26,3 @@ class SpringCaptiveEventPublisher(
         applicationEventPublisher.publishEvent(event)
     }
 }
-

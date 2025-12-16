@@ -8,4 +8,3 @@ import java.util.UUID
 interface AdminTicketJpaRepository : JpaRepository<AdminTicketEntity, UUID> {
     fun findByAccessCode(accessCode: String): AdminTicketEntity?
 }
-

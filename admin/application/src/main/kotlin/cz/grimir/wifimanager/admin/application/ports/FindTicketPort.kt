@@ -5,6 +5,6 @@ import cz.grimir.wifimanager.shared.core.TicketId
 
 interface FindTicketPort {
     fun findById(id: TicketId): Ticket?
+
     fun findByAccessCode(accessCode: String): Ticket?
 }
-

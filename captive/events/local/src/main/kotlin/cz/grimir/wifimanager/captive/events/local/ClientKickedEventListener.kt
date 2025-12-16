@@ -15,4 +15,3 @@ class ClientKickedEventListener(
         policy.on(event)
     }
 }
-

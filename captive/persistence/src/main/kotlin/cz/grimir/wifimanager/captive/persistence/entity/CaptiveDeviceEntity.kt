@@ -16,7 +16,6 @@ class CaptiveDeviceEntity(
     @Id
     @Column(name = "mac")
     val mac: String,
-
     /**
      * Device hostname, if provided.
      */

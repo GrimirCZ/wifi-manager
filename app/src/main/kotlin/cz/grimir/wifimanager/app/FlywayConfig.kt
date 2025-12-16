@@ -11,7 +11,8 @@ class FlywayConfig {
     @Bean
     fun multiSchemaFlywayRunner(dataSource: DataSource): ApplicationRunner =
         ApplicationRunner {
-            Flyway.configure()
+            Flyway
+                .configure()
                 .dataSource(dataSource)
                 .createSchemas(true)
                 .schemas("admin")
@@ -20,7 +21,8 @@ class FlywayConfig {
                 .load()
                 .migrate()
 
-            Flyway.configure()
+            Flyway
+                .configure()
                 .dataSource(dataSource)
                 .createSchemas(true)
                 .schemas("captive")

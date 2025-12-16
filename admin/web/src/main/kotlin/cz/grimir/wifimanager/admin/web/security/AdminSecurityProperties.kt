@@ -7,4 +7,3 @@ data class AdminSecurityProperties(
     val username: String = "admin",
     val password: String = "admin",
 )
-

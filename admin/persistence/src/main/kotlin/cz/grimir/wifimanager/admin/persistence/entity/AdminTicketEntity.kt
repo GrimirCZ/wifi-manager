@@ -12,19 +12,14 @@ import java.util.UUID
 class AdminTicketEntity(
     @Id
     val id: UUID,
-
     @Column(name = "access_code")
     val accessCode: String,
-
     @Column(name = "created_at")
     val createdAt: Instant,
-
     @Column(name = "valid_until")
     var validUntil: Instant,
-
     @Column(name = "was_canceled")
     var wasCanceled: Boolean,
-
     @Column(name = "author_id")
     val authorId: UUID,
 )

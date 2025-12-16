@@ -15,4 +15,3 @@ class AdminDeviceAuthorizedEventListener(
         policy.on(event)
     }
 }
-

@@ -10,19 +10,21 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 @Configuration
 @Order(1)
 class DevAssetConfig : WebMvcConfig() {
-
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
         val root = System.getenv("PROJECT_ROOT") ?: "."
 
-        registry.addResourceHandler("/assets/admin/**")
+        registry
+            .addResourceHandler("/assets/admin/**")
             .addResourceLocations("file:$root/admin/web/src/main/resources/static/assets/admin/")
             .setCachePeriod(0)
 
-        registry.addResourceHandler("/assets/captive/**")
+        registry
+            .addResourceHandler("/assets/captive/**")
             .addResourceLocations("file:$root/captive/web/src/main/resources/static/assets/captive/")
             .setCachePeriod(0)
 
-        registry.addResourceHandler("/assets/shared/**")
+        registry
+            .addResourceHandler("/assets/shared/**")
             .addResourceLocations("file:$root/shared/ui/src/main/resources/static/assets/shared/")
             .setCachePeriod(0)
     }

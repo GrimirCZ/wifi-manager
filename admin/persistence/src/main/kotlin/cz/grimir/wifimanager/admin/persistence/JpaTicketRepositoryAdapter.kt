@@ -10,7 +10,8 @@ import org.springframework.stereotype.Repository
 @Repository
 class JpaTicketRepositoryAdapter(
     private val jpaRepository: AdminTicketJpaRepository,
-) : FindTicketPort, SaveTicketPort {
+) : FindTicketPort,
+    SaveTicketPort {
     override fun findById(id: TicketId): Ticket? {
         // TODO: implement (map entity -> domain)
         val entity = jpaRepository.findById(id.id).orElse(null) ?: return null
@@ -38,4 +39,3 @@ private fun Ticket.toEntity(): AdminTicketEntity {
     // TODO: implement
     return TODO("implement")
 }
-

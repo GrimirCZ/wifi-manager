@@ -12,14 +12,13 @@ import org.springframework.stereotype.Repository
 class JpaAuthorizationTokenRepositoryAdapter(
     private val jpaRepository: CaptiveAuthorizationTokenJpaRepository,
     private val mapper: AuthorizationTokenMapper,
-) : FindAuthorizationTokenPort, ModifyAuthorizationTokenPort {
-    override fun findByTicketId(ticketId: TicketId): AuthorizationToken? {
-        return jpaRepository.findByIdOrNull(ticketId.id)?.let(mapper::tokenToDomain)
-    }
+) : FindAuthorizationTokenPort,
+    ModifyAuthorizationTokenPort {
+    override fun findByTicketId(ticketId: TicketId): AuthorizationToken? =
+        jpaRepository.findByIdOrNull(ticketId.id)?.let(mapper::tokenToDomain)
 
-    override fun findByAccessCode(accessCode: String): AuthorizationToken? {
-        return jpaRepository.findByAccessCode(accessCode)?.let(mapper::tokenToDomain)
-    }
+    override fun findByAccessCode(accessCode: String): AuthorizationToken? =
+        jpaRepository.findByAccessCode(accessCode)?.let(mapper::tokenToDomain)
 
     override fun save(token: AuthorizationToken) {
         jpaRepository.save(mapper.tokenToEntity(token))

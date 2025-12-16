@@ -12,8 +12,7 @@ class WhenTicketEndedRemoveAuthorizationTokenPolicy(
     fun on(event: TicketEndedEvent) {
         // TODO: implement
         removeAuthorizationTokenUsecase.remove(
-            RemoveAuthorizationTokenCommand(ticketId = event.ticketId)
+            RemoveAuthorizationTokenCommand(ticketId = event.ticketId),
         )
     }
 }
-

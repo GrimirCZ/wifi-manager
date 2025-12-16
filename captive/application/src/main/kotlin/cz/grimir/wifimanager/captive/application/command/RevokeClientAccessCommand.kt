@@ -6,4 +6,3 @@ data class RevokeClientAccessCommand(
     val ticketId: TicketId,
     val deviceMacAddress: String,
 )
-

@@ -5,6 +5,6 @@ import cz.grimir.wifimanager.shared.core.TicketId
 
 interface FindAuthorizationTokenPort {
     fun findByTicketId(ticketId: TicketId): AuthorizationToken?
+
     fun findByAccessCode(accessCode: String): AuthorizationToken?
 }
-

@@ -16,8 +16,7 @@ class OnDeviceAuthorizedUpdateTicketPolicy(
                 ticketId = event.ticketId,
                 deviceMacAddress = event.device.macAddress,
                 deviceName = event.device.name,
-            )
+            ),
         )
     }
 }
-

@@ -6,12 +6,10 @@ import java.time.Instant
 
 data class TicketCreatedEvent(
     val id: TicketId,
-
     /**
      * Access code required to use this ticket.
      */
     val accessCode: String,
-
     /**
      * UTC time of ticket creation.
      */
@@ -20,8 +18,11 @@ data class TicketCreatedEvent(
      * UTC time of ticket expiration.
      */
     var validUntil: Instant,
-
-    val author: Author
+    val author: Author,
 ) {
-    data class Author(val userId: UserId, val email: String, val displayName: String)
+    data class Author(
+        val userId: UserId,
+        val email: String,
+        val displayName: String,
+    )
 }

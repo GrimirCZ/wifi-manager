@@ -16,8 +16,8 @@ class CreateCodeBasedAuthorizationUsecase(
                 id = command.ticketId,
                 accessCode = command.accessCode,
                 authorizedDevices = mutableListOf(),
-                kickedMacAddresses = mutableSetOf()
-            )
+                kickedMacAddresses = mutableSetOf(),
+            ),
         )
     }
 }

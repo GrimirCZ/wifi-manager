@@ -6,7 +6,8 @@ import cz.grimir.wifimanager.shared.events.DeviceAuthorizedEvent
 
 interface CaptiveEventPublisher {
     fun publish(event: DeviceAuthorizedEvent)
+
     fun publish(event: ClientAccessRevokedEvent)
+
     fun publish(event: AuthorizationTokenRemovedEvent)
 }
-

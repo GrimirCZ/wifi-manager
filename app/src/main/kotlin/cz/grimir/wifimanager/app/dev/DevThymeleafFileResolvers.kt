@@ -9,14 +9,13 @@ import org.thymeleaf.templatemode.TemplateMode
 @Profile("dev")
 @Configuration
 class DevThymeleafFileResolvers {
-
     @Bean
     fun adminFileResolver(): SpringResourceTemplateResolver =
         resolver(
             name = "adminFile",
             prefixRelToRoot = "admin/web/src/main/resources/templates/",
             patterns = setOf("admin/**"),
-            order = 0
+            order = 0,
         )
 
     @Bean
@@ -25,14 +24,14 @@ class DevThymeleafFileResolvers {
             name = "captiveFile",
             prefixRelToRoot = "captive/web/src/main/resources/templates/",
             patterns = setOf("captive/**"),
-            order = 0
+            order = 0,
         )
 
     private fun resolver(
         name: String,
         prefixRelToRoot: String,
         patterns: Set<String>,
-        order: Int
+        order: Int,
     ): SpringResourceTemplateResolver {
         val root = System.getenv("PROJECT_ROOT") ?: "."
 

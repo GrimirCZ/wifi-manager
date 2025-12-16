@@ -8,4 +8,3 @@ data class ClientKickedEvent(
     val deviceMacAddress: String,
     val kickedAt: Instant,
 )
-

@@ -15,8 +15,7 @@ class WhenClientKickedRevokeClientAccessPolicy(
             RevokeClientAccessCommand(
                 ticketId = event.ticketId,
                 deviceMacAddress = event.deviceMacAddress,
-            )
+            ),
         )
     }
 }
-

@@ -26,4 +26,3 @@ class SpringAdminEventPublisher(
         applicationEventPublisher.publishEvent(event)
     }
 }
-

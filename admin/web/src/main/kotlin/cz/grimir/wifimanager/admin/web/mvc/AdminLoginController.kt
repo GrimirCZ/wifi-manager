@@ -8,4 +8,3 @@ class AdminLoginController {
     @GetMapping("/admin/login")
     fun login(): String = "admin/login"
 }
-

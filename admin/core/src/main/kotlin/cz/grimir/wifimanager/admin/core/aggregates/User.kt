@@ -5,7 +5,6 @@ import java.time.Instant
 
 class User(
     val id: UserId,
-
     /**
      * OpenID Connect subject varue, if provided.
      */
@@ -14,7 +13,6 @@ class User(
      * OpenID Connect authentication issuer, if provided.
      */
     val oidcIssuer: String?,
-
     /**
      * Primary email.
      */
@@ -28,7 +26,6 @@ class User(
      */
     var pictureUrl: String?,
     var isActive: Boolean,
-
     /**
      * UTC time of users first login.
      */

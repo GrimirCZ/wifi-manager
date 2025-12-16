@@ -9,5 +9,4 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @ComponentScan
 @EnableJpaRepositories(basePackages = ["cz.grimir.wifimanager.captive.persistence"])
 @EntityScan(basePackages = ["cz.grimir.wifimanager.captive.persistence"])
-class CaptivePersistenceConfig {
-}
+class CaptivePersistenceConfig

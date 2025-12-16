@@ -21,21 +21,20 @@ class AdminSecurityConfig(
             .securityMatcher("/admin/**")
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/admin/login").permitAll()
-                    .anyRequest().hasRole("ADMIN")
-            }
-            .formLogin { login ->
+                    .requestMatchers("/admin/login")
+                    .permitAll()
+                    .anyRequest()
+                    .hasRole("ADMIN")
+            }.formLogin { login ->
                 login
                     .loginPage("/admin/login")
                     .defaultSuccessUrl("/admin", true)
                     .permitAll()
-            }
-            .logout { logout ->
+            }.logout { logout ->
                 logout
                     .logoutUrl("/admin/logout")
                     .logoutSuccessUrl("/admin/login?logout")
-            }
-            .httpBasic(withDefaults())
+            }.httpBasic(withDefaults())
 
         return http.build()
     }
@@ -51,4 +50,3 @@ class AdminSecurityConfig(
         return InMemoryUserDetailsManager(admin)
     }
 }
-

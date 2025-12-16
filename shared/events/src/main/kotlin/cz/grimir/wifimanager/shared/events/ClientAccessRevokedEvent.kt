@@ -8,4 +8,3 @@ data class ClientAccessRevokedEvent(
     val deviceMacAddress: String,
     val revokedAt: Instant,
 )
-

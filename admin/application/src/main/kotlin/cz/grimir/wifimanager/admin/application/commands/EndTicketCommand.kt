@@ -7,4 +7,3 @@ data class EndTicketCommand(
     val ticketId: TicketId,
     val userId: UserId,
 )
-

@@ -7,4 +7,3 @@ data class AddAuthorizedDeviceCommand(
     val deviceMacAddress: String,
     val deviceName: String?,
 )
-

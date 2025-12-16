@@ -18,4 +18,3 @@ class CaptiveSecurityConfig {
         return http.build()
     }
 }
-

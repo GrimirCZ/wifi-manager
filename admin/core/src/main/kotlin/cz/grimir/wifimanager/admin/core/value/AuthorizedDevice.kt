@@ -13,12 +13,10 @@ data class AuthorizedDevice(
      * Device hostname, if provided.
      */
     val name: String?,
-
     /**
      * ID of ticket that was used to authorize this device.
      */
     val ticketId: TicketId,
-
     /**
      * Whether the device was kicked from the ticket by a user.
      */

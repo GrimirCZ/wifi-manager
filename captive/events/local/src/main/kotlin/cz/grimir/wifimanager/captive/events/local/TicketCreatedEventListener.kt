@@ -15,4 +15,3 @@ class TicketCreatedEventListener(
         policy.on(event)
     }
 }
-

@@ -10,4 +10,3 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaRepositories(basePackages = ["cz.grimir.wifimanager.admin.persistence"])
 @EntityScan(basePackages = ["cz.grimir.wifimanager.admin.persistence"])
 class AdminPersistenceConfig
-

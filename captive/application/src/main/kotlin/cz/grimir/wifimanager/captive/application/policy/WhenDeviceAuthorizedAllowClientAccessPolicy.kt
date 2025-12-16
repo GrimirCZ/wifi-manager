@@ -13,4 +13,3 @@ class WhenDeviceAuthorizedAllowClientAccessPolicy(
         routerAgentPort.allowClientAccess(event.device.macAddress)
     }
 }
-

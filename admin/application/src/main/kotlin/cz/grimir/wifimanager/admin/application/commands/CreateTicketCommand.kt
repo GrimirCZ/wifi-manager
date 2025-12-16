@@ -6,5 +6,5 @@ import java.time.Duration
 data class CreateTicketCommand(
     val accessCode: String,
     val duration: Duration,
-    val userId: UserId
+    val userId: UserId,
 )

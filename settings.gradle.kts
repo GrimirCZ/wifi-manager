@@ -14,6 +14,8 @@ plugins {
     kotlin("jvm") version "2.2.20" apply false
     kotlin("plugin.spring") version "2.2.20" apply false
     kotlin("plugin.jpa") version "2.2.20" apply false
+
+    id("com.diffplug.spotless") version "8.1.0" apply false
 }
 
 include("shared:core")

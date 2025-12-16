@@ -5,6 +5,6 @@ import cz.grimir.wifimanager.shared.core.TicketId
 
 interface ModifyAuthorizationTokenPort {
     fun save(token: AuthorizationToken)
+
     fun deleteByTicketId(ticketId: TicketId)
 }
-

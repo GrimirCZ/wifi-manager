@@ -16,8 +16,8 @@ class WhenTicketCreatedCreateCodeBasedAuthorizationPolicy(
                 accessCode = event.accessCode,
                 createdAt = event.createdAt,
                 validUntil = event.validUntil,
-                userId = event.author.userId
-            )
+                userId = event.author.userId,
+            ),
         )
     }
 }

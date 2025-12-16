@@ -13,4 +13,3 @@ data class DeviceAuthorizedEvent(
         val name: String?,
     )
 }
-

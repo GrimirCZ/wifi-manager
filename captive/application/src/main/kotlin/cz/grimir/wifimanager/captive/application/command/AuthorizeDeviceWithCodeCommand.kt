@@ -6,4 +6,3 @@ data class AuthorizeDeviceWithCodeCommand(
     val accessCode: String,
     val device: Device,
 )
-

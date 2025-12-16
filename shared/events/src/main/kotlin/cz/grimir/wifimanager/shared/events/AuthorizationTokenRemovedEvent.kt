@@ -7,4 +7,3 @@ data class AuthorizationTokenRemovedEvent(
     val ticketId: TicketId,
     val removedAt: Instant,
 )
-
