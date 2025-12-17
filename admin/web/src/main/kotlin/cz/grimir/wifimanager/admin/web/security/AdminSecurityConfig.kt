@@ -8,13 +8,13 @@ import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInit
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.web.SecurityFilterChain
 
-@Configuration
 /**
  * Admin-area Spring Security configuration.
  *
  * - Uses OIDC login (provider configured by the shell app).
  * - Propagates logout to the OIDC provider (end-session endpoint) so SSO sessions are cleared.
  */
+@Configuration
 class AdminSecurityConfig(
     private val oidcUserService: AdminOidcUserService,
 ) {
@@ -24,9 +24,10 @@ class AdminSecurityConfig(
         http: HttpSecurity,
         clientRegistrationRepository: ClientRegistrationRepository,
     ): SecurityFilterChain {
-        val logoutSuccessHandler = OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository).also {
-            it.setPostLogoutRedirectUri("{baseUrl}/admin/login?logout")
-        }
+        val logoutSuccessHandler =
+            OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository).also {
+                it.setPostLogoutRedirectUri("{baseUrl}/admin/login?logout")
+            }
 
         http
             .securityMatcher("/admin/**", "/oauth2/**", "/login/oauth2/**")
@@ -47,11 +48,10 @@ class AdminSecurityConfig(
                     .authorizationEndpoint { endpoint ->
                         endpoint.authorizationRequestResolver(
                             AdminAuthorizationRequestResolver(
-                                clientRegistrationRepository
-                            )
+                                clientRegistrationRepository,
+                            ),
                         )
-                    }
-                    .userInfoEndpoint { userInfo -> userInfo.oidcUserService(oidcUserService) }
+                    }.userInfoEndpoint { userInfo -> userInfo.oidcUserService(oidcUserService) }
             }.logout { logout ->
                 logout
                     .logoutUrl("/admin/logout")

@@ -17,13 +17,13 @@ class AdminAccessTokenDecoder {
 
         val jwkSetUri = userRequest.clientRegistration.providerDetails.jwkSetUri ?: return null
 
-        val decoder = decodersByJwkSetUri.computeIfAbsent(jwkSetUri) {
-            NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build()
-        }
+        val decoder =
+            decodersByJwkSetUri.computeIfAbsent(jwkSetUri) {
+                NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build()
+            }
 
         return decoder.decode(tokenValue)
     }
 
-    private fun looksLikeJwt(tokenValue: String): Boolean =
-        tokenValue.count { it == '.' } == 2
+    private fun looksLikeJwt(tokenValue: String): Boolean = tokenValue.count { it == '.' } == 2
 }

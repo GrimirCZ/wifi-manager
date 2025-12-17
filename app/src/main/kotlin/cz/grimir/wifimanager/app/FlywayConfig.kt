@@ -11,7 +11,8 @@ import javax.sql.DataSource
 class FlywayConfig {
     @Bean
     fun adminFlyway(dataSource: DataSource): Flyway =
-        Flyway.configure()
+        Flyway
+            .configure()
             .dataSource(dataSource)
             .createSchemas(true)
             .schemas("admin")
@@ -21,7 +22,8 @@ class FlywayConfig {
 
     @Bean
     fun captiveFlyway(dataSource: DataSource): Flyway =
-        Flyway.configure()
+        Flyway
+            .configure()
             .dataSource(dataSource)
             .createSchemas(true)
             .schemas("captive")
@@ -30,10 +32,8 @@ class FlywayConfig {
             .load()
 
     @Bean
-    fun adminFlywayInitializer(adminFlyway: Flyway) =
-        FlywayMigrationInitializer(adminFlyway)
+    fun adminFlywayInitializer(adminFlyway: Flyway) = FlywayMigrationInitializer(adminFlyway)
 
     @Bean
-    fun captiveFlywayInitializer(captiveFlyway: Flyway) =
-        FlywayMigrationInitializer(captiveFlyway)
+    fun captiveFlywayInitializer(captiveFlyway: Flyway) = FlywayMigrationInitializer(captiveFlyway)
 }

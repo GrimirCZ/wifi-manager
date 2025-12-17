@@ -19,28 +19,30 @@ class CreateTicketUsecase(
     private val saveTicketPort: SaveTicketPort,
     private val findTicketPort: FindTicketPort,
     private val eventPublisher: AdminEventPublisher,
-    private val accessCodeGenerator: AccessCodeGenerator
+    private val accessCodeGenerator: AccessCodeGenerator,
 ) {
     @Transactional
     @Throws(UserAlreadyHasActiveTickets::class)
     fun create(command: CreateTicketCommand): Ticket {
         val existingUserTickets = findTicketPort.findByAuthorId(command.user.userId.id)
+        val now = Instant.now()
+        val activeUserTickets = existingUserTickets.filter { it.isActive(now) }
 
-        if (!command.user.can(UserRole::canHaveMultipleTickets) && existingUserTickets.isNotEmpty()) {
-            throw UserAlreadyHasActiveTickets(command.user.userId, existingUserTickets.map { it.id })
+        if (!command.user.can(UserRole::canHaveMultipleTickets) && activeUserTickets.isNotEmpty()) {
+            throw UserAlreadyHasActiveTickets(command.user.userId, activeUserTickets.map { it.id })
         }
 
-        val now = Instant.now()
         val validUntil = now.plusSeconds(command.duration.seconds)
 
-        val ticket = Ticket(
-            id = TicketId.new(),
-            accessCode = accessCodeGenerator.generate(8),
-            createdAt = now,
-            validUntil = validUntil,
-            wasCanceled = false,
-            authorId = command.user.userId,
-        )
+        val ticket =
+            Ticket(
+                id = TicketId.new(),
+                accessCode = accessCodeGenerator.generate(8),
+                createdAt = now,
+                validUntil = validUntil,
+                wasCanceled = false,
+                authorId = command.user.userId,
+            )
 
         saveTicketPort.save(ticket)
 
@@ -50,12 +52,13 @@ class CreateTicketUsecase(
                 accessCode = ticket.accessCode,
                 createdAt = ticket.createdAt,
                 validUntil = ticket.validUntil,
-                author = TicketCreatedEvent.Author(
-                    userId = command.user.userId,
-                    email = command.user.email,
-                    displayName = command.user.username,
-                )
-            )
+                author =
+                    TicketCreatedEvent.Author(
+                        userId = command.user.userId,
+                        email = command.user.email,
+                        displayName = command.user.username,
+                    ),
+            ),
         )
 
         return ticket

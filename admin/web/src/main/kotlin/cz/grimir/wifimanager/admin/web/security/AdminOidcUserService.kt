@@ -6,8 +6,8 @@ import cz.grimir.wifimanager.admin.application.usecases.commands.UpsertUserFromL
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService
-import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser
+import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -44,8 +44,9 @@ class AdminOidcUserService(
                 ?: email
 
         val pictureUrl = oidcUser.getClaimAsString("picture")
-        val providerUsername = oidcUser.getClaimAsString("preferred_username")
-            ?: displayName
+        val providerUsername =
+            oidcUser.getClaimAsString("preferred_username")
+                ?: displayName
 
         val firstName = oidcUser.getClaimAsString("given_name")
         val lastName = oidcUser.getClaimAsString("family_name")
@@ -63,11 +64,12 @@ class AdminOidcUserService(
                 pictureUrl = pictureUrl,
                 username = providerUsername,
                 loginAt = Instant.now(),
-                roles = authorities
-                    .mapNotNull { it.authority?.removePrefix("ROLE_") }
-                    .filter { UserRole.entries.any { role -> role.name == it } }
-                    .map(UserRole::valueOf)
-                    .toSet()
+                roles =
+                    authorities
+                        .mapNotNull { it.authority?.removePrefix("ROLE_") }
+                        .filter { UserRole.entries.any { role -> role.name == it } }
+                        .map(UserRole::valueOf)
+                        .toSet(),
             ),
         )
 

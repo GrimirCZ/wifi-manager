@@ -26,4 +26,6 @@ class Ticket(
      * ID of the tickets' creator.
      */
     var authorId: UserId,
-)
+) {
+    fun isActive(at: Instant = Instant.now()): Boolean = !wasCanceled && validUntil.isAfter(at)
+}

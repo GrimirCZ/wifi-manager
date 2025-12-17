@@ -117,5 +117,34 @@
   .table tr:hover td {
     @apply bg-surface-muted;
   }
-}
 
+  .tooltip {
+    @apply relative;
+  }
+
+  .tooltip[data-tooltip] {
+    @apply underline decoration-dashed underline-offset-4 decoration-1;
+  }
+
+  .tooltip[data-tooltip]::after {
+    content: attr(data-tooltip);
+    @apply pointer-events-none absolute left-1/2 bottom-full mb-1.5 -translate-x-1/2 translate-y-0.5 opacity-0;
+    @apply z-50 max-w-sm whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm leading-tight shadow-lg;
+    @apply bg-[rgb(var(--text))] text-[rgb(var(--surface))];
+    @apply transition-transform duration-150 ease-out;
+  }
+
+  .tooltip[data-tooltip]::before {
+    content: "";
+    @apply pointer-events-none absolute left-1/2 bottom-full mb-0.5 -translate-x-1/2 translate-y-0.5 opacity-0;
+    @apply z-40 border-[0.4rem] border-transparent border-t-[rgb(var(--text))];
+    @apply transition-transform duration-150 ease-out;
+  }
+
+  .tooltip[data-tooltip]:hover::after,
+  .tooltip[data-tooltip]:focus-visible::after,
+  .tooltip[data-tooltip]:hover::before,
+  .tooltip[data-tooltip]:focus-visible::before {
+    @apply translate-y-0 opacity-100;
+  }
+}

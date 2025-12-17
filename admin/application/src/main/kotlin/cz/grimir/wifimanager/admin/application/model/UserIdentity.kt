@@ -24,7 +24,5 @@ data class UserIdentity(
     var lastLoginAt: Instant,
     var roles: Set<UserRole>,
 ) {
-    fun can(getter: (UserRole) -> Boolean): Boolean {
-        return roles.any(getter)
-    }
+    fun can(getter: (UserRole) -> Boolean): Boolean = roles.any(getter)
 }

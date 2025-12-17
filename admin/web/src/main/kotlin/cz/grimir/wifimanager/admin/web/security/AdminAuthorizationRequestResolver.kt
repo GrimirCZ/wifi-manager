@@ -18,8 +18,7 @@ class AdminAuthorizationRequestResolver(
     private val delegate =
         DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization")
 
-    override fun resolve(request: HttpServletRequest): OAuth2AuthorizationRequest? =
-        delegate.resolve(request)?.withPromptLogin()
+    override fun resolve(request: HttpServletRequest): OAuth2AuthorizationRequest? = delegate.resolve(request)?.withPromptLogin()
 
     override fun resolve(
         request: HttpServletRequest,

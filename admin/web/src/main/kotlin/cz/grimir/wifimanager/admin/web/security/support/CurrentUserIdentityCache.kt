@@ -8,7 +8,10 @@ import org.springframework.stereotype.Component
 class CurrentUserIdentityCache {
     private val requestAttr = CurrentUserIdentityCache::class.java.name + ".APP_USER_IDENTITY"
 
-    fun getOrLoad(request: HttpServletRequest, loader: () -> UserIdentity): UserIdentity {
+    fun getOrLoad(
+        request: HttpServletRequest,
+        loader: () -> UserIdentity,
+    ): UserIdentity {
         val existing = request.getAttribute(requestAttr) as? UserIdentity
         if (existing != null) return existing
 

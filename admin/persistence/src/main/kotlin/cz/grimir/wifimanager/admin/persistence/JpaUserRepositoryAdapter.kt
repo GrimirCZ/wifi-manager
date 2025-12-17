@@ -24,16 +24,14 @@ class JpaUserRepositoryAdapter(
     SaveUserIdentityPort {
     override fun findById(id: UserId): User? = userRepository.findByIdOrNull(id.id)?.let(userMapper::userToApplication)
 
-    override fun save(user: User): User =
-        userRepository.save(userMapper.userToEntity(user)).let(userMapper::userToApplication)
+    override fun save(user: User): User = userRepository.save(userMapper.userToEntity(user)).let(userMapper::userToApplication)
 
     override fun findByIssuerAndSubject(
         issuer: String,
         subject: String,
-    ): UserIdentity? =
-        identityRepository.findByIssuerAndSubject(issuer, subject)?.let(identityMapper::identityToApplication)
+    ): UserIdentity? = identityRepository.findByIssuerAndSubject(issuer, subject)?.let(identityMapper::identityToApplication)
 
-    override fun findByEmail(email: String): UserIdentity?  =
+    override fun findByEmail(email: String): UserIdentity? =
         identityRepository.findByEmail(email)?.let(identityMapper::identityToApplication)
 
     override fun save(identity: UserIdentity): UserIdentity =

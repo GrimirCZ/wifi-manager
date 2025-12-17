@@ -9,8 +9,9 @@ import org.springframework.stereotype.Service
 class FindUserIdentityByOidcIdentityUsecase(
     private val findUserPort: FindUserIdentityPort,
 ) {
-    fun find(query: FindUserByOidcIdentityQuery): UserIdentity? = findUserPort.findByIssuerAndSubject(
-        query.issuer,
-        query.subject
-    )
+    fun find(query: FindUserByOidcIdentityQuery): UserIdentity? =
+        findUserPort.findByIssuerAndSubject(
+            query.issuer,
+            query.subject,
+        )
 }

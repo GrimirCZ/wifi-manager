@@ -5,13 +5,12 @@ import java.security.SecureRandom
 
 @Component
 class AccessCodeGenerator(
-    val random: SecureRandom = SecureRandom()
+    val random: SecureRandom = SecureRandom(),
 ) {
     private val chars = "BCDFGHJKMPQRTVWXY2346789"
 
-    fun generate(length: Int = 8): String {
-        return (1..length)
+    fun generate(length: Int = 8): String =
+        (1..length)
             .map { chars[random.nextInt(chars.length)] }
             .joinToString("")
-    }
 }

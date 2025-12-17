@@ -56,8 +56,9 @@ class UpsertUserFromLoginUsecase(
             return savedUser.id
         }
 
-        val user = findUserPort.findById(identity.userId)
-            ?: error("User identity ${identity.id} points to missing user ${identity.userId.id}")
+        val user =
+            findUserPort.findById(identity.userId)
+                ?: error("User identity ${identity.id} points to missing user ${identity.userId.id}")
 
         user.lastLoginAt = command.loginAt
         user.updatedAt = command.loginAt
