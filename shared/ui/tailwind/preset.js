@@ -2,6 +2,9 @@
 module.exports = {
   theme: {
     extend: {
+      fontSize: {
+        base: ["1.0625rem", { lineHeight: "1.6rem" }],
+      },
       colors: {
         brand: {
           50: "rgb(var(--brand-50) / <alpha-value>)",
@@ -39,4 +42,3 @@ module.exports = {
   },
   plugins: [],
 };
-
