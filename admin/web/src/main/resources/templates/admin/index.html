@@ -1,19 +1,16 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head th:replace="~{admin/fragments/head :: head('Admin')}"></head>
-  <body class="bg-surface-muted">
-    <main class="container-page">
-      <div class="card space-y-4">
+<head th:replace="~{admin/fragments/head :: head('Admin')}"></head>
+<body class="bg-surface-muted">
+<div th:replace="~{admin/fragments/header :: header('WiFi Manager')}"></div>
+<main class="container-page">
+    <div class="card space-y-4">
         <div>
-          <h1 class="text-xl font-semibold">Admin</h1>
-          <p class="text-text-muted">You're authenticated.</p>
+            <h1 class="text-xl font-semibold">Admin</h1>
+            <p class="text-text-muted">You're authenticated.</p>
+            <img th:src="@{/assets/shared/icons/filled/alarm.svg}" alt="alarm icon" class="w-6 h-6"/>
         </div>
-
-        <form th:action="@{/admin/logout}" method="post">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-          <button class="btn btn-primary" type="submit">Logout</button>
-        </form>
-      </div>
-    </main>
-  </body>
+    </div>
+</main>
+</body>
 </html>

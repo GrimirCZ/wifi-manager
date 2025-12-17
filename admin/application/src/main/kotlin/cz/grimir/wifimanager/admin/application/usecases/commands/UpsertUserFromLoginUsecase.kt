@@ -13,6 +13,11 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
+/**
+ * Creates a new local user+identity mapping on first successful login, and updates the local record on subsequent logins.
+ *
+ * This usecase is intentionally application-layer only; the admin core domain uses only `UserId`.
+ */
 @Service
 class UpsertUserFromLoginUsecase(
     private val findUserIdentityPort: FindUserIdentityPort,

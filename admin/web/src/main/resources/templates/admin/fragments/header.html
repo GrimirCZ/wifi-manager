@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<div
+  th:fragment="header(appName)"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  class="border-b border-border bg-surface"
+>
+  <div class="container-page flex items-center justify-between py-4">
+    <a class="text-base font-semibold" th:href="@{/admin}" th:text="${appName}">WiFi Manager</a>
+
+    <div sec:authorize="isAuthenticated()" class="relative group">
+      <button
+        type="button"
+        class="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-brand-300"
+        aria-haspopup="menu"
+        aria-label="User menu"
+      >
+        <img
+          th:if="${#authentication.principal.claims['picture'] != null and !#strings.isEmpty(#authentication.principal.claims['picture'])}"
+          th:src="${#authentication.principal.claims['picture']}"
+          alt="Profile picture"
+          class="h-9 w-9 rounded-full border border-border object-cover"
+          referrerpolicy="no-referrer"
+        />
+
+        <span
+          class="text-sm font-medium"
+          th:text="${#authentication.principal.claims['name'] ?: (#authentication.principal.claims['preferred_username'] ?: #authentication.name)}"
+          >User</span
+        >
+
+        <svg
+          class="h-4 w-4 text-text-muted"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.25a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08Z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </button>
+
+      <div
+        role="menu"
+        class="absolute right-0 z-20 mt-0 hidden w-56 overflow-hidden rounded-xl border border-border bg-surface pt-2 shadow-lg group-hover:block group-focus-within:block"
+      >
+        <div class="px-4 py-3">
+          <div class="text-sm font-semibold">Account</div>
+          <div
+            class="text-xs text-text-muted"
+            th:text="${#authentication.principal.claims['email'] ?: ''}"
+          ></div>
+        </div>
+
+        <div class="border-t border-border"></div>
+
+        <a class="block px-4 py-2 text-sm hover:bg-surface-muted" href="#" role="menuitem">Settings</a>
+        <a class="block px-4 py-2 text-sm hover:bg-surface-muted" href="#" role="menuitem">Help</a>
+
+        <div class="border-t border-border"></div>
+
+        <form th:action="@{/admin/logout}" method="post" class="p-2">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <button class="btn btn-secondary w-full" type="submit" role="menuitem">Logout</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

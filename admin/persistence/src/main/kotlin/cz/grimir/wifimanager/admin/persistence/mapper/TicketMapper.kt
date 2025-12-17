@@ -6,6 +6,9 @@ import cz.grimir.wifimanager.shared.core.TicketId
 import cz.grimir.wifimanager.shared.core.UserId
 import org.springframework.stereotype.Component
 
+/**
+ * Maps persisted admin tickets to/from the admin domain ticket aggregate.
+ */
 @Component
 class TicketMapper {
     fun ticketToDomain(entity: AdminTicketEntity): Ticket =
@@ -28,4 +31,3 @@ class TicketMapper {
             authorId = domain.authorId.id,
         )
 }
-

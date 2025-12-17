@@ -5,6 +5,11 @@ import cz.grimir.wifimanager.admin.persistence.entity.AdminUserIdentityEntity
 import cz.grimir.wifimanager.shared.core.UserId
 import org.springframework.stereotype.Component
 
+/**
+ * Maps persisted user identities (issuer+subject) to the application model.
+ *
+ * The unique constraint on (issuer, subject) is enforced at the DB level.
+ */
 @Component
 class UserIdentityMapper {
     fun identityToApplication(entity: AdminUserIdentityEntity): UserIdentity =
@@ -31,4 +36,3 @@ class UserIdentityMapper {
             lastLoginAt = model.lastLoginAt,
         )
 }
-

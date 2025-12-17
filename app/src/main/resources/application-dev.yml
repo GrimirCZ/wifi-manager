@@ -19,3 +19,18 @@ spring:
         - ${PROJECT_ROOT:.}/shared
     livereload:
       enabled: true
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8081/realms/wifimanager
+        registration:
+          admin:
+            provider: keycloak
+            client-id: admin-web
+            client-secret: admin-web-secret
+            scope:
+              - openid
+              - profile
+              - email

@@ -5,6 +5,11 @@ import cz.grimir.wifimanager.admin.persistence.entity.AdminUserEntity
 import cz.grimir.wifimanager.shared.core.UserId
 import org.springframework.stereotype.Component
 
+/**
+ * Maps between the admin persistence model and the admin application user model.
+ *
+ * The application layer treats users as data records (not a domain aggregate).
+ */
 @Component
 class UserMapper {
     fun userToApplication(entity: AdminUserEntity): User =
@@ -31,4 +36,3 @@ class UserMapper {
             lastLoginAt = model.lastLoginAt,
         )
 }
-

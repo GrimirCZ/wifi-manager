@@ -46,3 +46,6 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Icons ###
+shared/ui/src/main/resources/static/assets/shared/icons/

@@ -1,0 +1,80 @@
+{
+  "realm": "wifimanager",
+  "enabled": true,
+  "displayName": "WiFi Manager",
+  "roles": {
+    "realm": [
+      { "name": "ADMIN" },
+      { "name": "USER" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "admin-web",
+      "name": "Admin Web",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "admin-web-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:8080/admin/login*"
+      },
+      "protocolMappers": [
+        {
+          "name": "picture",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "picture",
+            "claim.name": "picture",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "multivalued": "false"
+          }
+        }
+      ],
+      "redirectUris": [
+        "http://localhost:8080/login/oauth2/code/admin"
+      ],
+      "webOrigins": [
+        "http://localhost:8080"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@wifimanager.local",
+      "firstName": "Admin",
+      "lastName": "User",
+      "emailVerified": true,
+      "attributes": {
+        "picture": ["http://localhost:8080/assets/shared/admin.png"]
+      },
+      "credentials": [
+        { "type": "password", "value": "admin", "temporary": false }
+      ],
+      "realmRoles": ["ADMIN", "USER"]
+    },
+    {
+      "username": "user",
+      "enabled": true,
+      "email": "user@wifimanager.local",
+      "firstName": "Regular",
+      "lastName": "User",
+      "emailVerified": true,
+      "attributes": {
+        "picture": ["http://localhost:8080/assets/shared/user.png"]
+      },
+      "credentials": [
+        { "type": "password", "value": "user", "temporary": false }
+      ],
+      "realmRoles": ["USER"]
+    }
+  ]
+}

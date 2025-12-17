@@ -2,6 +2,7 @@ package cz.grimir.wifimanager
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.Exec
 import org.gradle.kotlin.dsl.register
 
@@ -13,9 +14,32 @@ class TailwindAssetsPlugin : Plugin<Project> {
         val captiveOutDir = layout.projectDirectory.dir("captive/web/src/main/resources/static/assets/captive")
         captiveOutDir.asFile.mkdirs()
 
+        val tablerOutDir = layout.projectDirectory.dir("shared/ui/src/main/resources/static/assets/shared/icons")
+
+        val syncTablerIcons =
+            tasks.register<Sync>("syncTablerIcons") {
+                group = "assets"
+                description = "Sync Tabler SVG icons from node_modules into shared/ui static assets."
+
+                val tablerIconsDir = layout.projectDirectory.dir("node_modules/@tabler/icons/icons")
+                from(tablerIconsDir) {
+                    include("**/*.svg")
+                }
+                into(tablerOutDir)
+
+                inputs.dir(tablerIconsDir)
+                outputs.dir(tablerOutDir)
+
+                onlyIf {
+                    tablerIconsDir.asFile.exists()
+                }
+            }
+
         tasks.register<Exec>("buildCss") {
             group = "assets"
             description = "Build Tailwind CSS for admin and captive modules."
+
+            dependsOn(syncTablerIcons)
 
             workingDir = layout.projectDirectory.asFile
             commandLine(bunCommand(), "run", "build:css")
@@ -54,6 +78,7 @@ class TailwindAssetsPlugin : Plugin<Project> {
             doFirst {
                 adminOutDir.asFile.mkdirs()
                 captiveOutDir.asFile.mkdirs()
+                tablerOutDir.asFile.mkdirs()
             }
         }
     }

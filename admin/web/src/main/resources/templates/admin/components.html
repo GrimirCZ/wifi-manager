@@ -2,6 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head th:replace="~{admin/fragments/head :: head('Admin components')}"></head>
   <body class="bg-surface-muted">
+    <div th:replace="~{admin/fragments/header :: header('WiFi Manager')}"></div>
     <main class="container-page space-y-6">
       <div class="card space-y-4">
         <h1 class="text-xl font-semibold">Component coverage</h1>
@@ -81,4 +82,3 @@
     </main>
   </body>
 </html>
-
