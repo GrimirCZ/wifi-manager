@@ -6,7 +6,8 @@
         class="border-b border-border bg-surface"
 >
     <div class="container-page flex items-center justify-between py-4">
-        <a class="text-xl font-semibold no-underline text-black items-center flex gap-x-1" th:href="@{/admin}">
+        <a class="text-xl font-semibold no-underline text-black items-center flex gap-x-1 hover:!text-black"
+           th:href="@{/admin}">
             <img th:src="@{/assets/shared/icons/outline/wifi.svg}" alt="Logo" class="inline w-8 h-8">
             <span th:text="${appName}">WiFi Manager</span>
         </a>

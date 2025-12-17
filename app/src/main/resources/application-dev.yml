@@ -41,3 +41,5 @@ wifimanager:
       oidc-registration-id: admin
       authorities-provider-by-registration:
         admin: keycloak-realm-roles
+  wifi:
+    ssid: my-wifi

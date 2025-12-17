@@ -33,4 +33,10 @@ class DateFormatter(
 
         return absolute(ts)
     }
+
+    fun toTimestamp(ts: Instant): Long {
+        val zoneId = ZoneId.systemDefault()
+        val date = LocalDateTime.ofInstant(ts, zoneId)
+        return date.toEpochSecond(zoneId.rules.getOffset(date))
+    }
 }
