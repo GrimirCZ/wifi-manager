@@ -10,4 +10,11 @@ data class AdminSecurityProperties(
      * The actual provider configuration is expected to be supplied by the shell app later.
      */
     val oidcRegistrationId: String = "admin",
+    /**
+     * Optional mapping from an OAuth2 client registration id to an authorities provider key.
+     *
+     * Example:
+     * - `authorities-provider-by-registration.admin=keycloak-realm-roles`
+     */
+    val authoritiesProviderByRegistration: Map<String, String> = emptyMap(),
 )

@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.admin.application.commands
 
+import cz.grimir.wifimanager.admin.application.model.UserRole
 import java.time.Instant
 
 /**
@@ -11,9 +12,11 @@ data class UpsertUserFromLoginCommand(
     val issuer: String,
     val subject: String,
     val email: String,
+    val firstName: String?,
+    val lastName: String?,
     val displayName: String,
     val pictureUrl: String?,
-    val emailAtProvider: String? = null,
-    val providerUsername: String? = null,
+    val username: String,
+    val roles: Set<UserRole>,
     val loginAt: Instant = Instant.now(),
 )

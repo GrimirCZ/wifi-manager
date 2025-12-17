@@ -29,7 +29,7 @@ class UpsertUserFromLoginUsecase(
     fun upsert(command: UpsertUserFromLoginCommand): UserId {
         val identity = findUserIdentityPort.findByIssuerAndSubject(command.issuer, command.subject)
         if (identity == null) {
-            if (findUserPort.findByEmail(command.email) != null) {
+            if (findUserIdentityPort.findByEmail(command.email) != null) {
                 throw UserWithThisEmailAlreadyExistsForAnotherProvider(command.email)
             }
 
@@ -42,10 +42,14 @@ class UpsertUserFromLoginUsecase(
                     userId = savedUser.id,
                     issuer = command.issuer,
                     subject = command.subject,
-                    emailAtProvider = command.emailAtProvider ?: command.email,
-                    providerUsername = command.providerUsername,
-                    createdAt = command.loginAt,
+                    email = command.email,
+                    username = command.username,
+                    firstName = command.firstName,
+                    lastName = command.lastName,
+                    pictureUrl = command.pictureUrl,
+                    roles = command.roles,
                     lastLoginAt = command.loginAt,
+                    createdAt = command.loginAt,
                 ),
             )
 
@@ -55,14 +59,15 @@ class UpsertUserFromLoginUsecase(
         val user = findUserPort.findById(identity.userId)
             ?: error("User identity ${identity.id} points to missing user ${identity.userId.id}")
 
-        user.email = command.email
-        user.displayName = command.displayName
-        user.pictureUrl = command.pictureUrl
         user.lastLoginAt = command.loginAt
         user.updatedAt = command.loginAt
 
-        identity.emailAtProvider = command.emailAtProvider ?: command.email
-        identity.providerUsername = command.providerUsername ?: identity.providerUsername
+        identity.email = command.email
+        identity.username = command.username
+        identity.firstName = command.firstName
+        identity.lastName = command.lastName
+        identity.pictureUrl = command.pictureUrl
+        identity.roles = command.roles
         identity.lastLoginAt = command.loginAt
 
         val savedUser = saveUserPort.save(user)
@@ -74,10 +79,6 @@ class UpsertUserFromLoginUsecase(
     private fun createUser(command: UpsertUserFromLoginCommand): User =
         User(
             id = UserId(UUID.randomUUID()),
-            email = command.email,
-            displayName = command.displayName,
-            pictureUrl = command.pictureUrl,
-            isActive = true,
             createdAt = command.loginAt,
             updatedAt = command.loginAt,
             lastLoginAt = command.loginAt,

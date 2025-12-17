@@ -1,6 +1,7 @@
 package cz.grimir.wifimanager.admin.persistence.mapper
 
 import cz.grimir.wifimanager.admin.application.model.UserIdentity
+import cz.grimir.wifimanager.admin.application.model.UserRole
 import cz.grimir.wifimanager.admin.persistence.entity.AdminUserIdentityEntity
 import cz.grimir.wifimanager.shared.core.UserId
 import org.springframework.stereotype.Component
@@ -18,8 +19,12 @@ class UserIdentityMapper {
             userId = UserId(entity.userId),
             issuer = entity.issuer,
             subject = entity.subject,
-            emailAtProvider = entity.emailAtProvider,
-            providerUsername = entity.providerUsername,
+            email = entity.email,
+            username = entity.username,
+            firstName = entity.firstName,
+            lastName = entity.lastName,
+            pictureUrl = entity.pictureUrl,
+            roles = entity.roles.map(UserRole::valueOf).toSet(),
             createdAt = entity.createdAt,
             lastLoginAt = entity.lastLoginAt,
         )
@@ -30,8 +35,12 @@ class UserIdentityMapper {
             userId = model.userId.id,
             issuer = model.issuer,
             subject = model.subject,
-            emailAtProvider = model.emailAtProvider,
-            providerUsername = model.providerUsername,
+            email = model.email,
+            username = model.username,
+            firstName = model.firstName,
+            lastName = model.lastName,
+            pictureUrl = model.pictureUrl,
+            roles = model.roles.map(UserRole::name).toTypedArray(),
             createdAt = model.createdAt,
             lastLoginAt = model.lastLoginAt,
         )

@@ -34,3 +34,10 @@ spring:
               - openid
               - profile
               - email
+              - roles
+wifimanager:
+  admin:
+    security:
+      oidc-registration-id: admin
+      authorities-provider-by-registration:
+        admin: keycloak-realm-roles

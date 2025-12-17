@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.http.CacheControl
+import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter
@@ -12,7 +13,9 @@ import java.util.concurrent.TimeUnit
 
 @Profile("!dev")
 @Configuration
-class WebMvcConfig : WebMvcConfigurer {
+class WebMvcConfig(
+    val argumentResolvers: List<HandlerMethodArgumentResolver>,
+) : WebMvcConfigurer {
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
         registry
             .addResourceHandler("/**")
@@ -28,4 +31,8 @@ class WebMvcConfig : WebMvcConfigurer {
 
     @Bean
     fun resourceUrlEncodingFilter(): ResourceUrlEncodingFilter = ResourceUrlEncodingFilter()
+
+    override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
+        argumentResolvers.forEach(resolvers::add)
+    }
 }

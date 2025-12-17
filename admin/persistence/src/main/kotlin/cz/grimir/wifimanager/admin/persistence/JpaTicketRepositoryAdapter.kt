@@ -7,6 +7,7 @@ import cz.grimir.wifimanager.admin.persistence.mapper.TicketMapper
 import cz.grimir.wifimanager.shared.core.TicketId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
+import java.util.UUID
 
 @Repository
 class JpaTicketRepositoryAdapter(
@@ -18,6 +19,9 @@ class JpaTicketRepositoryAdapter(
 
     override fun findByAccessCode(accessCode: String): Ticket? =
         jpaRepository.findByAccessCode(accessCode)?.let(mapper::ticketToDomain)
+
+    override fun findByAuthorId(authorId: UUID): List<Ticket> =
+        jpaRepository.findByAuthorId(authorId).map(mapper::ticketToDomain)
 
     override fun save(ticket: Ticket) {
         jpaRepository.save(mapper.ticketToEntity(ticket))

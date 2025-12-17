@@ -4,8 +4,8 @@
   "displayName": "WiFi Manager",
   "roles": {
     "realm": [
-      { "name": "ADMIN" },
-      { "name": "USER" }
+      { "name": "WIFI_ADMIN" },
+      { "name": "WIFI_STAFF" }
     ]
   },
   "clients": [
@@ -59,7 +59,7 @@
       "credentials": [
         { "type": "password", "value": "admin", "temporary": false }
       ],
-      "realmRoles": ["ADMIN", "USER"]
+      "realmRoles": ["WIFI_ADMIN", "WIFI_STAFF"]
     },
     {
       "username": "user",
@@ -74,7 +74,7 @@
       "credentials": [
         { "type": "password", "value": "user", "temporary": false }
       ],
-      "realmRoles": ["USER"]
+      "realmRoles": ["WIFI_STAFF"]
     }
   ]
 }

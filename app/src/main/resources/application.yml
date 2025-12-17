@@ -9,3 +9,4 @@ spring:
   docker:
     compose:
       file: file:${PROJECT_ROOT:.}/app/compose.yml
+

@@ -63,8 +63,8 @@ class UpsertUserFromLoginUsecaseTest {
                 userId = existingUserId,
                 issuer = "https://issuer.example",
                 subject = "sub-1",
-                emailAtProvider = "old@example.com",
-                providerUsername = "old-username",
+                email = "old@example.com",
+                username = "old-username",
                 createdAt = Instant.parse("2025-01-01T00:00:00Z"),
                 lastLoginAt = Instant.parse("2025-01-01T00:00:00Z"),
             )
@@ -92,8 +92,8 @@ class UpsertUserFromLoginUsecaseTest {
 
         val savedIdentity = repo.identitiesByIssuerSubject["https://issuer.example|sub-1"]!!
         assertEquals(loginAt, savedIdentity.lastLoginAt)
-        assertEquals("new@example.com", savedIdentity.emailAtProvider)
-        assertEquals("old-username", savedIdentity.providerUsername)
+        assertEquals("new@example.com", savedIdentity.email)
+        assertEquals("old-username", savedIdentity.username)
     }
 
     @Test
@@ -137,9 +137,6 @@ private class InMemoryUserRepo :
     val identitiesByIssuerSubject = linkedMapOf<String, UserIdentity>()
 
     override fun findById(id: UserId): User? = usersById[id.id]
-
-    override fun findByEmail(email: String): User? =
-        usersById.values.firstOrNull { it.email.equals(email, ignoreCase = true) }
 
     override fun save(user: User): User {
         usersById[user.id.id] = user

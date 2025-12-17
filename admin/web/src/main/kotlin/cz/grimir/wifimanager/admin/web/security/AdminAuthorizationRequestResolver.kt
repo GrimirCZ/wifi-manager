@@ -15,7 +15,8 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 class AdminAuthorizationRequestResolver(
     clientRegistrationRepository: ClientRegistrationRepository,
 ) : OAuth2AuthorizationRequestResolver {
-    private val delegate = DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization")
+    private val delegate =
+        DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization")
 
     override fun resolve(request: HttpServletRequest): OAuth2AuthorizationRequest? =
         delegate.resolve(request)?.withPromptLogin()

@@ -5,5 +5,4 @@ import cz.grimir.wifimanager.shared.core.UserId
 
 interface FindUserPort {
     fun findById(id: UserId): User?
-    fun findByEmail(email: String): User?
 }

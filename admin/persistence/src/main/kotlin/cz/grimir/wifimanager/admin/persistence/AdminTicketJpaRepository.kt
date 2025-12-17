@@ -7,4 +7,6 @@ import java.util.UUID
 
 interface AdminTicketJpaRepository : JpaRepository<AdminTicketEntity, UUID> {
     fun findByAccessCode(accessCode: String): AdminTicketEntity?
+
+    fun findByAuthorId(authorId: UUID): List<AdminTicketEntity>
 }
