@@ -1,4 +1,4 @@
-package cz.grimir.wifimanager.admin.application.usecases
+package cz.grimir.wifimanager.admin.application.usecases.commands
 
 import cz.grimir.wifimanager.admin.application.commands.AddAuthorizedDeviceCommand
 import cz.grimir.wifimanager.admin.application.ports.FindTicketPort

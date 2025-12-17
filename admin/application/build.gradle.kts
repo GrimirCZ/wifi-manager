@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":admin:core"))
 
     implementation("org.springframework:spring-context")
+    implementation("org.springframework:spring-tx")
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")

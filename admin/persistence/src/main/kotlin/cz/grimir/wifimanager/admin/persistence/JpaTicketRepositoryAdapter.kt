@@ -3,39 +3,23 @@ package cz.grimir.wifimanager.admin.persistence
 import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
 import cz.grimir.wifimanager.admin.application.ports.SaveTicketPort
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
-import cz.grimir.wifimanager.admin.persistence.entity.AdminTicketEntity
+import cz.grimir.wifimanager.admin.persistence.mapper.TicketMapper
 import cz.grimir.wifimanager.shared.core.TicketId
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 
 @Repository
 class JpaTicketRepositoryAdapter(
     private val jpaRepository: AdminTicketJpaRepository,
+    private val mapper: TicketMapper,
 ) : FindTicketPort,
     SaveTicketPort {
-    override fun findById(id: TicketId): Ticket? {
-        // TODO: implement (map entity -> domain)
-        val entity = jpaRepository.findById(id.id).orElse(null) ?: return null
-        return entity.toDomain()
-    }
+    override fun findById(id: TicketId): Ticket? = jpaRepository.findByIdOrNull(id.id)?.let(mapper::ticketToDomain)
 
-    override fun findByAccessCode(accessCode: String): Ticket? {
-        // TODO: implement (map entity -> domain)
-        val entity = jpaRepository.findByAccessCode(accessCode) ?: return null
-        return entity.toDomain()
-    }
+    override fun findByAccessCode(accessCode: String): Ticket? =
+        jpaRepository.findByAccessCode(accessCode)?.let(mapper::ticketToDomain)
 
     override fun save(ticket: Ticket) {
-        // TODO: implement (map domain -> entity)
-        jpaRepository.save(ticket.toEntity())
+        jpaRepository.save(mapper.ticketToEntity(ticket))
     }
-}
-
-private fun AdminTicketEntity.toDomain(): Ticket {
-    // TODO: implement
-    return TODO("implement")
-}
-
-private fun Ticket.toEntity(): AdminTicketEntity {
-    // TODO: implement
-    return TODO("implement")
 }

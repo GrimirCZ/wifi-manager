@@ -1,18 +1,16 @@
-package cz.grimir.wifimanager.admin.application.usecases
+package cz.grimir.wifimanager.admin.application.usecases.commands
 
-import cz.grimir.wifimanager.admin.application.commands.ExpireTicketCommand
+import cz.grimir.wifimanager.admin.application.commands.CreateTicketCommand
 import cz.grimir.wifimanager.admin.application.ports.AdminEventPublisher
-import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
 import cz.grimir.wifimanager.admin.application.ports.SaveTicketPort
 import org.springframework.stereotype.Service
 
 @Service
-class ExpireTicketUsecase(
-    private val findTicketPort: FindTicketPort,
+class CreateTicketUsecase(
     private val saveTicketPort: SaveTicketPort,
     private val eventPublisher: AdminEventPublisher,
 ) {
-    fun expire(command: ExpireTicketCommand) {
+    fun create(command: CreateTicketCommand) {
         // TODO: implement
     }
 }
