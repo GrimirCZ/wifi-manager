@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":admin:application"))
     implementation(project(":admin:persistence"))
     implementation(project(":admin:web"))
+    implementation(project(":admin:scheduler"))
     implementation(project(":admin:events:local"))
 
     implementation(project(":captive:application"))

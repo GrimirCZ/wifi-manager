@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.application.ports
 
 interface RouterAgentPort {
-    fun allowClientAccess(macAddress: String)
+    fun allowClientAccess(macAddresses: List<String>)
 
-    fun revokeClientAccess(macAddress: String)
+    fun revokeClientAccess(macAddresses: List<String>)
 }

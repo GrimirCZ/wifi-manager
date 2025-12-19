@@ -26,6 +26,7 @@
             <option value="$PROJECT_DIR$/admin/events" />
             <option value="$PROJECT_DIR$/admin/events/local" />
             <option value="$PROJECT_DIR$/admin/persistence" />
+            <option value="$PROJECT_DIR$/admin/scheduler" />
             <option value="$PROJECT_DIR$/admin/web" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/buildSrc" />
@@ -40,6 +41,7 @@
             <option value="$PROJECT_DIR$/shared/core" />
             <option value="$PROJECT_DIR$/shared/events" />
             <option value="$PROJECT_DIR$/shared/ui" />
+            <option value="$PROJECT_DIR$/shared/util" />
           </set>
         </option>
       </GradleProjectSettings>

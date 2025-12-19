@@ -21,11 +21,13 @@ plugins {
 include("shared:core")
 include("shared:events")
 include("shared:ui")
+include("shared:util")
 
 include("admin:core")
 include("admin:application")
 include("admin:web")
 include("admin:persistence")
+include("admin:scheduler")
 include("admin:events:local")
 
 include("captive:core")

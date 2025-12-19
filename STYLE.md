@@ -31,6 +31,7 @@
 
 - Prefer server-driven updates: return a fragment and swap it into a stable container element.
 - Detect HTMX requests via `io.github.wimdeblauwe.htmx.spring.boot.mvc.HtmxRequest` (avoid manual header parsing).
+- Use `hx-*` attributes (not `data-hx-*`) in Thymeleaf templates; prefer `th:hx-get`/`th:hx-post` (or `th:attr` for dynamic attrs).
 
 ## Tailwind/CSS
 
@@ -43,4 +44,3 @@
 - Use Spotless + ktlint:
   - `./gradlew spotlessApply` before opening a PR.
   - `./gradlew spotlessCheck` to verify.
-

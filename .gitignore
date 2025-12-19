@@ -12,6 +12,7 @@ node_modules
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.idea/copilot*
 *.iws
 *.iml
 *.ipr

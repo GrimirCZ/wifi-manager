@@ -12,10 +12,10 @@ dependencies {
 
     runtimeOnly("org.postgresql:postgresql")
 
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation(libs.bundles.springDataJpa)
 //    implementation("io.hypersistence:hypersistence-utils-hibernate-71:3.14.0")
 
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(platform(libs.junitBom))
+    testImplementation(libs.bundles.testBase)
+    testRuntimeOnly(libs.bundles.testRuntime)
 }

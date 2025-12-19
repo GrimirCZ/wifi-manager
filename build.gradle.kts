@@ -1,7 +1,7 @@
 import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
-    id("org.springframework.boot") apply false
+    alias(libs.plugins.spring.boot) apply false
     id("io.spring.dependency-management")
     id("cz.grimir.wifimanager.boot-only-if-app-main-class") apply false
     id("cz.grimir.wifimanager.tailwind-assets")
@@ -23,6 +23,7 @@ subprojects {
 
     dependencies {
         implementation(kotlin("reflect"))
+        implementation("org.slf4j:slf4j-api")
     }
 
     kotlin {

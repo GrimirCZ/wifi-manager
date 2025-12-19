@@ -22,13 +22,13 @@
                 </summary>
 
                 <form
-                        th:action="@{/admin/tickets}"
+                        th:action="@{/admin/ticket}"
                         th:object="${createTicket}"
                         method="post"
                         class="space-y-6"
-                        th:data-hx-post="@{/admin/tickets}"
-                        data-hx-swap="outerHTML"
-                        data-hx-target="#ticket-panel"
+                        th:hx-post="@{/admin/ticket}"
+                        hx-swap="outerHTML"
+                        hx-target="#ticket-panel"
                 >
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
@@ -65,11 +65,19 @@
 
         <div th:each="ticket : ${activeTickets}" class="card space-y-6"
              th:attr="data-ends-at=${@DateFormatter.toTimestamp(ticket.validUntil)}"
-             data-script="on load set delay to ((@data-ends-at * 1000) - Date.now()) then if delay is less than 2147483647
-                            wait delay then reload() the location of the window
-                        else
-                            log `Delay ${delay} is too long to be interactive!`
-                        end"
+             th:hx-get="@{/admin/ticket/{ticketId}/_ended-banner(ticketId=${ticket.id},accessCode=${ticket.accessCode},createdAt=${@DateFormatter.toTimestamp(ticket.createdAt)},validUntil=${@DateFormatter.toTimestamp(ticket.validUntil)})}"
+             hx-trigger="ticketExpired"
+             hx-swap="outerHTML"
+             hx-target="this"
+             data-script="on load
+                              set delay to ((@data-ends-at * 1000) - Date.now())
+                             then if delay is less than 0
+                                 send ticketExpired to me
+                             else if delay is less than 2147483647
+                                 wait delay then send ticketExpired to me
+                             else
+                                 log `Delay ${delay} is too long to be interactive!`
+                             end"
         >
             <div class="flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-10">
                 <div class="space-y-4">
@@ -84,7 +92,8 @@
                         <div>
                             <span class="text-text-muted"
                                   th:text="#{admin.ticket.active.code.label}">Verification code:</span>
-                            <span class="font-semibold" th:text="${ticket.accessCode}">123456</span>
+                            <span class="font-semibold text-xl"
+                                  th:text="${@AccessCodeFormatter.format(ticket.accessCode)}">123456</span>
                         </div>
 
                         <div>
@@ -109,14 +118,22 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-secondary" type="button" disabled th:text="#{admin.ticket.active.end}">
+                    <button class="btn btn-secondary" type="button"
+                            th:hx-delete="@{/admin/ticket/{ticketId}(ticketId=${ticket.id})}"
+                            hx-target="closest .card"
+                            hx-swap="outerHTML"
+                            th:text="#{admin.ticket.active.end}">
                         End early
                     </button>
                 </div>
 
-                <div class="shrink-0 self-center rounded-xl border border-border bg-surface p-4 md:self-auto md:p-6 w-40 h-40 md:w-56 md:h-56 flex items-center justify-center"
-                     data-key="lol"
-                     data-script="on load make a QRCode from me, @data-key">
+                <div class="shrink-0 self-center rounded-xl border border-border bg-surface p-4 md:self-auto md:p-6 flex flex-col gap-y-4 items-center justify-center">
+                    <div th:data-payload="${@QrCodeBuilder.createWifiQrCode(wifiSsid)}"
+                         class="w-30 h-30 md:w-40 md:h-40"
+                         data-script="on load make a QRCode from me, @data-payload"></div>
+                    <svg th:data-payload="${ticket.accessCode}"
+                         class="w-full h-16"
+                         data-script="on load call JsBarcode(me, @data-payload, { format: 'CODE128', displayValue: false, margin: 0})"></svg>
                 </div>
             </div>
         </div>
@@ -133,13 +150,13 @@
         </div>
 
         <form
-                th:action="@{/admin/tickets}"
+                th:action="@{/admin/ticket}"
                 th:object="${createTicket}"
                 method="post"
                 class="space-y-6"
-                th:data-hx-post="@{/admin/tickets}"
-                data-hx-target="#ticket-panel"
-                data-hx-swap="outerHTML"
+                th:hx-post="@{/admin/ticket}"
+                hx-target="#ticket-panel"
+                hx-swap="outerHTML"
         >
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 

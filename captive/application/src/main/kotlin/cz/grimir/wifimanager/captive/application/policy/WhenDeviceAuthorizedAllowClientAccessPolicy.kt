@@ -9,7 +9,6 @@ class WhenDeviceAuthorizedAllowClientAccessPolicy(
     private val routerAgentPort: RouterAgentPort,
 ) {
     fun on(event: DeviceAuthorizedEvent) {
-        // TODO: implement
-        routerAgentPort.allowClientAccess(event.device.macAddress)
+        routerAgentPort.allowClientAccess(listOf(event.device.macAddress))
     }
 }

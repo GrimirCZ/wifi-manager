@@ -1,7 +1,7 @@
 group = "cz.grimir.wifimanager.shared.core"
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(platform(libs.junitBom))
+    testImplementation(libs.bundles.testBase)
+    testRuntimeOnly(libs.bundles.testRuntime)
 }

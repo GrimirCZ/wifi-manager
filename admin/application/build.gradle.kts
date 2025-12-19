@@ -1,15 +1,22 @@
 group = "cz.grimir.wifimanager.admin.application"
 
+val mockitoAgent by configurations.creating
 
 dependencies {
     implementation(project(":shared:core"))
     implementation(project(":shared:events"))
     implementation(project(":admin:core"))
 
-    implementation("org.springframework:spring-context")
-    implementation("org.springframework:spring-tx")
+    implementation("org.slf4j:slf4j-api")
+    implementation(libs.bundles.springContextTx)
 
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation(libs.kotlinLogging)
+
+    mockitoAgent(libs.mockitoAgent)
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation(libs.bundles.testMockito)
+    testImplementation(platform(libs.junitBom))
+    testImplementation(libs.bundles.testBase)
+    testRuntimeOnly(libs.bundles.testRuntime)
 }

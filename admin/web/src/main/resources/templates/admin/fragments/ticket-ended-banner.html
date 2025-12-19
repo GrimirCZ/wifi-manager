@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<div
+        th:fragment="ticketEndedBanner"
+        xmlns:th="http://www.thymeleaf.org"
+        class="alert alert-warning ticket-ended-banner flex items-start justify-between gap-4"
+>
+    <div class="space-y-2">
+        <div th:if="${ticketExpired}" class="font-semibold" th:text="#{admin.ticket.expired.title}">Ticket expired</div>
+        <div th:if="${ticketCanceled}" class="font-semibold" th:text="#{admin.ticket.canceled.title}">Ticket expired
+        </div>
+
+        <div class="text-sm">
+            <span class="text-text-muted" th:text="#{admin.ticket.active.code.label}">Access code:</span>
+            <span class="font-mono font-semibold"
+                  th:text="${@AccessCodeFormatter.format(expiredAccessCode)}">123456</span>
+        </div>
+
+        <div class="text-sm" th:if="${expiredCreatedAt != null}">
+            <span class="text-text-muted" th:text="#{admin.ticket.active.validFrom}">Valid from:</span>
+            <span th:text="${@DateFormatter.absolute(expiredCreatedAt)}">-</span>
+        </div>
+
+        <div class="text-sm" th:if="${expiredValidUntil != null}">
+            <span class="text-text-muted" th:text="#{admin.ticket.active.validUntil}">Valid until:</span>
+            <span th:text="${@DateFormatter.absolute(expiredValidUntil)}">-</span>
+        </div>
+    </div>
+
+    <button
+            type="button"
+            class="btn btn-secondary"
+            aria-label="Close"
+            th:data-script="${isAdmin
+            ? 'on click remove closest <.ticket-ended-banner/>'
+            : null}"
+            th:hx-get="${!isAdmin} ? @{/admin} : null"
+            th:hx-target="${!isAdmin ? 'closest .ticket-ended-banner' : null}"
+            th:hx-swap="${!isAdmin ? 'outerHTML' : null}">
+        ✕
+    </button>
+</div>

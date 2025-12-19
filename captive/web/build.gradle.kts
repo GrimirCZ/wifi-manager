@@ -3,12 +3,9 @@ group = "cz.grimir.wifimanager.captive.web"
 dependencies {
     implementation(project(":captive:application"))
 
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
+    implementation(libs.bundles.springWebUi)
 
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(platform(libs.junitBom))
+    testImplementation(libs.bundles.testBase)
+    testRuntimeOnly(libs.bundles.testRuntime)
 }

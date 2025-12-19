@@ -5,11 +5,11 @@ import org.springframework.stereotype.Service
 
 @Service
 class LocalRouterAgentAdapter : RouterAgentPort {
-    override fun allowClientAccess(macAddress: String) {
+    override fun allowClientAccess(macAddresses: List<String>) {
         // TODO: implement
     }
 
-    override fun revokeClientAccess(macAddress: String) {
+    override fun revokeClientAccess(macAddresses: List<String>) {
         // TODO: implement
     }
 }

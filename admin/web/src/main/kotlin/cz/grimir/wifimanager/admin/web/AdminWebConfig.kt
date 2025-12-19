@@ -10,5 +10,8 @@ import org.springframework.context.annotation.Import
 @Configuration
 @ComponentScan
 @Import(SharedUiConfig::class)
-@EnableConfigurationProperties(AdminSecurityProperties::class, AdminWifiProperties::class)
+@EnableConfigurationProperties(
+    AdminSecurityProperties::class,
+    AdminWifiProperties::class,
+)
 class AdminWebConfig

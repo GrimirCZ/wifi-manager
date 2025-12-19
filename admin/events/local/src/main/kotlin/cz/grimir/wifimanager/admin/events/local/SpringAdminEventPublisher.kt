@@ -22,7 +22,6 @@ class SpringAdminEventPublisher(
     }
 
     override fun publish(event: TicketEndedEvent) {
-        // TODO: implement (transport concerns, tracing, etc.)
         applicationEventPublisher.publishEvent(event)
     }
 }

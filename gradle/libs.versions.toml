@@ -4,19 +4,52 @@
 
 [versions]
 kotlin = "2.2.20"
-kotlinxDatetime = "0.6.2"
-kotlinxSerializationJSON = "1.8.1"
-kotlinxCoroutines = "1.10.2"
+kotlinLogging = "7.0.13"
+mockito = "5.20.0"
+mockitoKotlin = "6.1.0"
+htmxSpringBoot = "5.0.0"
+springBoot = "4.0.0"
+shedlock = "7.3.0"
+hibernateHypersistenceUtils = "3.14.0"
 
 [libraries]
+junitBom = { module = "org.junit:junit-bom", version = "5.10.0" }
+junitJupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher" }
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
-kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJSON" }
-kotlinxCoroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinLogging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlinLogging" }
+mockitoAgent = { module = "org.mockito:mockito-agent", version.ref = "mockito" }
+mockitoCore = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockitoJunitJupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
+mockitoKotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
+springBootStarterDataJpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+springBootStarterOauth2Client = { module = "org.springframework.boot:spring-boot-starter-oauth2-client" }
+springBootStarterSecurity = { module = "org.springframework.boot:spring-boot-starter-security" }
+springBootStarterThymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
+springBootStarterWeb = { module = "org.springframework.boot:spring-boot-starter-web" }
+springContext = { module = "org.springframework:spring-context" }
+springSecurityOauth2Jose = { module = "org.springframework.security:spring-security-oauth2-jose" }
+springTx = { module = "org.springframework:spring-tx" }
+thymeleafExtrasSpringSecurity = { module = "org.thymeleaf.extras:thymeleaf-extras-springsecurity6" }
+htmxSpringBoot = { module = "io.github.wimdeblauwe:htmx-spring-boot", version.ref = "htmxSpringBoot" }
+htmxSpringBootThymeleaf = { module = "io.github.wimdeblauwe:htmx-spring-boot-thymeleaf", version.ref = "htmxSpringBoot" }
+shedlock-spring = { module = "net.javacrumbs.shedlock:shedlock-spring", version.ref = "shedlock" }
+shedlock-provider-jdbc-template = { module = "net.javacrumbs.shedlock:shedlock-provider-jdbc-template", version.ref = "shedlock" }
+hypersistence-utils-hibernate = { module = "io.hypersistence:hypersistence-utils-hibernate-71", version.ref = "hibernateHypersistenceUtils" }
 
-# Libraries can be bundled together for easier import
 [bundles]
-kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutines"]
+springContextTx = ["springContext", "springTx"]
+springDataJpa = ["springBootStarterDataJpa", "hypersistence-utils-hibernate"]
+springWebUi = [
+    "springBootStarterWeb",
+    "springBootStarterThymeleaf",
+    "springBootStarterSecurity",
+    "thymeleafExtrasSpringSecurity",
+]
+testBase = ["junitJupiter"]
+testRuntime = ["junitPlatformLauncher"]
+testMockito = ["mockitoCore", "mockitoJunitJupiter", "mockitoKotlin"]
+htmx = ["htmxSpringBoot", "htmxSpringBootThymeleaf"]
 
 [plugins]
-kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }

@@ -1,6 +1,7 @@
 package cz.grimir.wifimanager.app
 
 import cz.grimir.wifimanager.admin.application.AdminApplicationConfig
+import cz.grimir.wifimanager.admin.scheduler.AdminSchedulerConfig
 import cz.grimir.wifimanager.admin.events.local.AdminLocalEventsConfig
 import cz.grimir.wifimanager.admin.persistence.AdminPersistenceConfig
 import cz.grimir.wifimanager.admin.web.AdminWebConfig
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
     AdminApplicationConfig::class,
     AdminPersistenceConfig::class,
     AdminWebConfig::class,
+    AdminSchedulerConfig::class,
     AdminLocalEventsConfig::class,
     CaptiveApplicationConfig::class,
     CaptivePersistenceConfig::class,

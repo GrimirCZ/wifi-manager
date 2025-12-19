@@ -6,16 +6,12 @@ dependencies {
     implementation(project(":admin:core"))
     implementation(project(":admin:application"))
 
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-    implementation("org.springframework.security:spring-security-oauth2-jose")
-    implementation("io.github.wimdeblauwe:htmx-spring-boot:5.0.0")
-    implementation("io.github.wimdeblauwe:htmx-spring-boot-thymeleaf:5.0.0")
-    implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
+    implementation(libs.bundles.springWebUi)
+    implementation(libs.springBootStarterOauth2Client)
+    implementation(libs.springSecurityOauth2Jose)
+    implementation(libs.bundles.htmx)
 
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(platform(libs.junitBom))
+    testImplementation(libs.bundles.testBase)
+    testRuntimeOnly(libs.bundles.testRuntime)
 }
