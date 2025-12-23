@@ -6,12 +6,11 @@ import cz.grimir.wifimanager.shared.events.DeviceAuthorizedEvent
 import org.springframework.stereotype.Service
 
 @Service
-class OnDeviceAuthorizedUpdateTicketPolicy(
-    private val addAuthorizedDeviceUsecase: AddAuthorizedDeviceUsecase,
+class OnDeviceAuthorizedCreateAuthorizedDevicePolicy(
+    private val usecase: AddAuthorizedDeviceUsecase,
 ) {
     fun on(event: DeviceAuthorizedEvent) {
-        // TODO: implement
-        addAuthorizedDeviceUsecase.add(
+        usecase.add(
             AddAuthorizedDeviceCommand(
                 ticketId = event.ticketId,
                 deviceMacAddress = event.device.macAddress,

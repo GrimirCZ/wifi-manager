@@ -9,7 +9,7 @@ import java.time.Instant
 import java.util.UUID
 
 @Entity
-@Table(name = "admin_user", schema = "admin")
+@Table(name = "user", schema = "admin")
 class AdminUserEntity(
     @Id
     val id: UUID,

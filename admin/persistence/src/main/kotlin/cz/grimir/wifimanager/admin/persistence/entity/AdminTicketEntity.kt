@@ -3,12 +3,13 @@ package cz.grimir.wifimanager.admin.persistence.entity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
+import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.time.Instant
 import java.util.UUID
 
 @Entity
-@Table(name = "admin_ticket", schema = "admin")
+@Table(name = "ticket", schema = "admin")
 class AdminTicketEntity(
     @Id
     val id: UUID,
@@ -22,4 +23,7 @@ class AdminTicketEntity(
     var wasCanceled: Boolean,
     @Column(name = "author_id")
     val authorId: UUID,
-)
+) {
+    @OneToMany(mappedBy = "ticket")
+    var authorizedDevices = mutableSetOf<AdminAuthorizedDeviceEntity>()
+}
