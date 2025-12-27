@@ -2,9 +2,10 @@ package cz.grimir.wifimanager
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.Exec
+import org.gradle.api.tasks.Sync
 import org.gradle.kotlin.dsl.register
+import java.io.File
 
 class TailwindAssetsPlugin : Plugin<Project> {
     override fun apply(project: Project): Unit = with(project) {
@@ -84,7 +85,25 @@ class TailwindAssetsPlugin : Plugin<Project> {
     }
 
     private fun bunCommand(): String {
-        val os = System.getProperty("os.name")
-        return if (os.startsWith("Windows")) "bun.exe" else "bun"
+        val cmd = if (System.getProperty("os.name").startsWith("Windows")) "bun.exe" else "bun"
+
+        val file = File(cmd)
+        if (file.exists() && file.canExecute()) return file.absolutePath
+
+        val pathEnv = System.getenv("PATH") ?: ""
+        val pathSeparator = if (System.getProperty("os.name").startsWith("Windows")) ";" else ":"
+
+        val executable = pathEnv.split(pathSeparator)
+            .map { File(it, cmd) }
+            .find { it.exists() && it.canExecute() }
+
+        if (executable != null) {
+            return executable.absolutePath
+        }
+
+        val homeBun = File(System.getProperty("user.home"), ".bun/bin/$cmd")
+        if (homeBun.exists()) return homeBun.absolutePath
+
+        return cmd
     }
 }
