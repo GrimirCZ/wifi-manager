@@ -10,3 +10,6 @@ spring:
     compose:
       file: file:${PROJECT_ROOT:.}/app/compose.yml
 
+app:
+  locale:
+    default: en
