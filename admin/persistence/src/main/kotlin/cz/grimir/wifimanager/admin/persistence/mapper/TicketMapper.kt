@@ -19,6 +19,7 @@ class TicketMapper {
             validUntil = entity.validUntil,
             wasCanceled = entity.wasCanceled,
             authorId = UserId(entity.authorId),
+            kickedMacAddresses = entity.kickedMacAddresses.toMutableSet(),
         )
 
     fun ticketToEntity(domain: Ticket): AdminTicketEntity =
@@ -29,5 +30,6 @@ class TicketMapper {
             validUntil = domain.validUntil,
             wasCanceled = domain.wasCanceled,
             authorId = domain.authorId.id,
+            kickedMacAddresses = domain.kickedMacAddresses.toTypedArray(),
         )
 }

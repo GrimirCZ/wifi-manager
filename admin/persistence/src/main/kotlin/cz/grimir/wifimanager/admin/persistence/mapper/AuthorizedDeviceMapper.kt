@@ -10,21 +10,19 @@ import org.springframework.stereotype.Component
  */
 @Component
 class AuthorizedDeviceMapper {
-    fun authorizedDeviceToDomain(entity: AdminAuthorizedDeviceEntity): AuthorizedDevice {
-        return AuthorizedDevice(
+    fun authorizedDeviceToDomain(entity: AdminAuthorizedDeviceEntity): AuthorizedDevice =
+        AuthorizedDevice(
             mac = entity.mac,
             name = entity.name,
             ticketId = TicketId(entity.ticketId),
             wasKicked = entity.wasKicked,
         )
-    }
 
-    fun authorizedDeviceToEntity(domain: AuthorizedDevice): AdminAuthorizedDeviceEntity {
-        return AdminAuthorizedDeviceEntity(
+    fun authorizedDeviceToEntity(domain: AuthorizedDevice): AdminAuthorizedDeviceEntity =
+        AdminAuthorizedDeviceEntity(
             mac = domain.mac,
             name = domain.name,
             ticketId = domain.ticketId.id,
             wasKicked = domain.wasKicked,
         )
-    }
 }

@@ -1,13 +1,13 @@
-package cz.grimir.wifimanager.captive.events.local
+package cz.grimir.wifimanager.admin.events.local
 
-import cz.grimir.wifimanager.captive.application.policy.WhenClientKickedRevokeClientAccessPolicy
+import cz.grimir.wifimanager.admin.application.policy.OnClientKickedUpdateAuthorizedDevicePolicy
 import cz.grimir.wifimanager.shared.events.ClientKickedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 
 @Component
-class ClientKickedEventListener(
-    private val policy: WhenClientKickedRevokeClientAccessPolicy,
+class AdminClientKickedEventListener(
+    private val policy: OnClientKickedUpdateAuthorizedDevicePolicy,
 ) {
     @EventListener
     fun on(event: ClientKickedEvent) {

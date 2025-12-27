@@ -28,6 +28,10 @@ class Ticket(
      * ID of the tickets' creator.
      */
     var authorId: UserId,
+    /**
+     * MAC addresses that were kicked from this ticket.
+     */
+    var kickedMacAddresses: MutableSet<String> = mutableSetOf(),
 ) {
     /**
      * Checks whether the ticket is currently active (not expired and not canceled).
@@ -52,7 +56,6 @@ class Ticket(
         wasCanceled = true
     }
 
-    override fun toString(): String {
-        return "Ticket(id=$id, accessCode='$accessCode', createdAt=$createdAt, validUntil=$validUntil, wasCanceled=$wasCanceled, authorId=$authorId)"
-    }
+    override fun toString(): String =
+        "Ticket(id=$id, accessCode='$accessCode', createdAt=$createdAt, validUntil=$validUntil, wasCanceled=$wasCanceled, authorId=$authorId, kickedMacAddresses=$kickedMacAddresses)"
 }

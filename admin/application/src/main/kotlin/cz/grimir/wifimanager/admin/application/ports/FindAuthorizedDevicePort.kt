@@ -4,7 +4,10 @@ import cz.grimir.wifimanager.admin.core.value.AuthorizedDevice
 import cz.grimir.wifimanager.shared.core.TicketId
 
 interface FindAuthorizedDevicePort {
-    fun findByMacAndTicketId(mac: String, ticketId: TicketId): AuthorizedDevice?
+    fun findByMacAndTicketId(
+        mac: String,
+        ticketId: TicketId,
+    ): AuthorizedDevice?
 
     fun findByTicketId(ticketId: TicketId): List<AuthorizedDevice>
 }

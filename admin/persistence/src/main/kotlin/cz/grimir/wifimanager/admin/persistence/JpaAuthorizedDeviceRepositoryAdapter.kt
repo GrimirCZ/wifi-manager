@@ -11,14 +11,15 @@ import org.springframework.stereotype.Repository
 class JpaAuthorizedDeviceRepositoryAdapter(
     val jpaRepository: AdminAuthorizedDeviceJpaRepository,
     val mapper: AuthorizedDeviceMapper,
-) : FindAuthorizedDevicePort, SaveAuthorizedDevicePort {
-    override fun findByMacAndTicketId(mac: String, ticketId: TicketId): AuthorizedDevice? {
-        return jpaRepository.findByMacAndTicketId(mac, ticketId)?.let(mapper::authorizedDeviceToDomain)
-    }
+) : FindAuthorizedDevicePort,
+    SaveAuthorizedDevicePort {
+    override fun findByMacAndTicketId(
+        mac: String,
+        ticketId: TicketId,
+    ): AuthorizedDevice? = jpaRepository.findByMacAndTicketId(mac, ticketId)?.let(mapper::authorizedDeviceToDomain)
 
-    override fun findByTicketId(ticketId: TicketId): List<AuthorizedDevice> {
-        return jpaRepository.findAllByTicketId(ticketId.id).map(mapper::authorizedDeviceToDomain)
-    }
+    override fun findByTicketId(ticketId: TicketId): List<AuthorizedDevice> =
+        jpaRepository.findAllByTicketId(ticketId.id).map(mapper::authorizedDeviceToDomain)
 
     override fun save(authorizedDevice: AuthorizedDevice) {
         jpaRepository.save(mapper.authorizedDeviceToEntity(authorizedDevice))

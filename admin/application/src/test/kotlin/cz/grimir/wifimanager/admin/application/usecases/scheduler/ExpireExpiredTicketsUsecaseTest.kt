@@ -19,7 +19,7 @@ import org.mockito.Mockito.verify
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.argumentCaptor
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 class ExpireExpiredTicketsUsecaseTest {
@@ -29,11 +29,12 @@ class ExpireExpiredTicketsUsecaseTest {
 
     private val eventPublisher: AdminEventPublisher = mock()
 
-    private val usecase = ExpireExpiredTicketsUsecase(
-        findTicketPort,
-        saveTicketPort,
-        eventPublisher,
-    )
+    private val usecase =
+        ExpireExpiredTicketsUsecase(
+            findTicketPort,
+            saveTicketPort,
+            eventPublisher,
+        )
 
     @Test
     fun `expires tickets and publishes events`() {

@@ -19,18 +19,19 @@ class CancelTicketUsecase(
 ) {
     @Throws(CannotCancelInactiveTicket::class)
     fun cancel(command: CancelTicketCommand) {
-        val ticket = findTicketPort.findById(command.ticketId)
-            ?: error("Ticket with id ${command.ticketId} not found")
+        val ticket =
+            findTicketPort.findById(command.ticketId)
+                ?: error("Ticket with id ${command.ticketId} not found")
 
         if (
-            ticket.authorId != command.user.userId
-            && !command.user.can(UserRole::canCancelOtherUsersTickets)
+            ticket.authorId != command.user.userId &&
+            !command.user.can(UserRole::canCancelOtherUsersTickets)
         ) {
             error("User ${command.user.userId} is not authorized to cancel ticket ${command.ticketId}")
         }
 
         ticket.cancel(
-            command.user.userId
+            command.user.userId,
         )
 
         saveTicketPort.save(ticket)
@@ -40,7 +41,7 @@ class CancelTicketUsecase(
                 ticketId = ticket.id,
                 endedAt = Instant.now(),
                 reason = Reason.MANUAL,
-            )
+            ),
         )
     }
 }

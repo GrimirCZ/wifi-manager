@@ -4,12 +4,12 @@ import org.springframework.stereotype.Component
 
 @Component("QrCodeBuilder")
 class QrCodeBuilder {
-    fun createWifiQrCode(
-        ssid: String,
-    ): String {
-        val escapedSsid = ssid.replace("\\", "\\\\")
-            .replace(";", "\\;")
-            .replace(",", "\\,")
+    fun createWifiQrCode(ssid: String): String {
+        val escapedSsid =
+            ssid
+                .replace("\\", "\\\\")
+                .replace(";", "\\;")
+                .replace(",", "\\,")
         return "WIFI:T:nopass;S:$escapedSsid;;"
     }
 }

@@ -5,6 +5,8 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.time.Instant
 import java.util.UUID
 
@@ -23,6 +25,9 @@ class AdminTicketEntity(
     var wasCanceled: Boolean,
     @Column(name = "author_id")
     val authorId: UUID,
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(name = "kicked_mac_addresses", columnDefinition = "text[]")
+    var kickedMacAddresses: Array<String>,
 ) {
     @OneToMany(mappedBy = "ticket")
     var authorizedDevices = mutableSetOf<AdminAuthorizedDeviceEntity>()

@@ -10,7 +10,6 @@ class WhenClientKickedRevokeClientAccessPolicy(
     private val revokeClientAccessUsecase: RevokeClientAccessUsecase,
 ) {
     fun on(event: ClientKickedEvent) {
-        // TODO: implement
         revokeClientAccessUsecase.revoke(
             RevokeClientAccessCommand(
                 ticketId = event.ticketId,

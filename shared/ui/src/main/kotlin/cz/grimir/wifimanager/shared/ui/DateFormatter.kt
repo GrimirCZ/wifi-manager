@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.shared.ui
 
-import cz.grimir.wifimanager.shared.ui.util.TimeProvider
+import cz.grimir.wifimanager.shared.core.TimeProvider
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDateTime

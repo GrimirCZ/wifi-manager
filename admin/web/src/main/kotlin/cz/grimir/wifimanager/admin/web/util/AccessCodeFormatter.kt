@@ -4,7 +4,5 @@ import org.springframework.stereotype.Component
 
 @Component("AccessCodeFormatter")
 class AccessCodeFormatter {
-    fun format(code: String): String {
-        return code.chunked(3).joinToString("-")
-    }
+    fun format(code: String): String = code.chunked(3).joinToString("-")
 }

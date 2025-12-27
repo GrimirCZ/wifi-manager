@@ -8,7 +8,7 @@ import jakarta.persistence.IdClass
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import java.util.*
+import java.util.UUID
 
 @Entity
 @Table(name = "authorized_device", schema = "admin")
@@ -16,13 +16,10 @@ import java.util.*
 class AdminAuthorizedDeviceEntity(
     @Id
     val mac: String,
-
     val name: String?,
-
     @Id
     @Column(name = "ticket_id")
     val ticketId: UUID,
-
     @Column(name = "was_kicked")
     val wasKicked: Boolean,
 ) {
