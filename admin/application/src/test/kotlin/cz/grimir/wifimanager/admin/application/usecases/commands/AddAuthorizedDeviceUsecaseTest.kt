@@ -53,7 +53,7 @@ class AddAuthorizedDeviceUsecaseTest {
     }
 
     @Test
-    fun `does not mark device as kicked when ticket does not contains mac`() {
+    fun `creates device with access not revoked`() {
         val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000002"))
         val ticket =
             Ticket(
@@ -79,12 +79,12 @@ class AddAuthorizedDeviceUsecaseTest {
 
         val deviceCaptor = argumentCaptor<AuthorizedDevice>()
         verify(saveAuthorizedDevicePort).save(deviceCaptor.capture())
-        assertFalse(deviceCaptor.firstValue.wasKicked)
+        assertFalse(deviceCaptor.firstValue.wasAccessRevoked)
         assertEquals("phone", deviceCaptor.firstValue.name)
     }
 
     @Test
-    fun `marks device as kicked when ticket contains mac`() {
+    fun `does not mark device as access revoked when ticket contains mac`() {
         val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000002"))
         val ticket =
             Ticket(
@@ -110,12 +110,12 @@ class AddAuthorizedDeviceUsecaseTest {
 
         val deviceCaptor = argumentCaptor<AuthorizedDevice>()
         verify(saveAuthorizedDevicePort).save(deviceCaptor.capture())
-        assertTrue(deviceCaptor.firstValue.wasKicked)
+        assertFalse(deviceCaptor.firstValue.wasAccessRevoked)
         assertEquals("phone", deviceCaptor.firstValue.name)
     }
 
     @Test
-    fun `updates existing device and preserves kicked state`() {
+    fun `updates existing device and preserves access revoked state`() {
         val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000004"))
         val ticket =
             Ticket(
@@ -132,7 +132,7 @@ class AddAuthorizedDeviceUsecaseTest {
                 ticketId = ticketId,
                 mac = "11:22:33:44:55:66",
                 name = "old",
-                wasKicked = false,
+                wasAccessRevoked = true,
             )
 
         given(findTicketPort.findById(ticketId)).willReturn(ticket)
@@ -149,6 +149,6 @@ class AddAuthorizedDeviceUsecaseTest {
         val deviceCaptor = argumentCaptor<AuthorizedDevice>()
         verify(saveAuthorizedDevicePort).save(deviceCaptor.capture())
         assertEquals("new", deviceCaptor.firstValue.name)
-        assertTrue(deviceCaptor.firstValue.wasKicked)
+        assertTrue(deviceCaptor.firstValue.wasAccessRevoked)
     }
 }

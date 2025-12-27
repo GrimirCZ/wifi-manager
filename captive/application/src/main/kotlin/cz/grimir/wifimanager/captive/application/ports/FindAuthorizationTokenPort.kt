@@ -7,4 +7,6 @@ interface FindAuthorizationTokenPort {
     fun findByTicketId(ticketId: TicketId): AuthorizationToken?
 
     fun findByAccessCode(accessCode: String): AuthorizationToken?
+
+    fun findByAuthorizedDeviceMac(macAddress: String): AuthorizationToken?
 }

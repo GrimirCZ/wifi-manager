@@ -18,7 +18,7 @@ data class AuthorizedDevice(
      */
     val ticketId: TicketId,
     /**
-     * Whether the device was kicked from the ticket by a user.
+     * Whether the device's access was revoked by a user.
      */
-    val wasKicked: Boolean,
+    val wasAccessRevoked: Boolean,
 )

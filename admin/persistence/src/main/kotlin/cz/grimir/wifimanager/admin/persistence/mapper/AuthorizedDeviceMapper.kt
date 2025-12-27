@@ -15,7 +15,7 @@ class AuthorizedDeviceMapper {
             mac = entity.mac,
             name = entity.name,
             ticketId = TicketId(entity.ticketId),
-            wasKicked = entity.wasKicked,
+            wasAccessRevoked = entity.wasAccessRevoked,
         )
 
     fun authorizedDeviceToEntity(domain: AuthorizedDevice): AdminAuthorizedDeviceEntity =
@@ -23,6 +23,6 @@ class AuthorizedDeviceMapper {
             mac = domain.mac,
             name = domain.name,
             ticketId = domain.ticketId.id,
-            wasKicked = domain.wasKicked,
+            wasAccessRevoked = domain.wasAccessRevoked,
         )
 }

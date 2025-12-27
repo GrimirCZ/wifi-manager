@@ -1,4 +1,6 @@
 spring:
+  messages:
+    basename: admin-messages,captive-messages
   flyway:
     enabled: false
 

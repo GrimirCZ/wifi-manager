@@ -6,5 +6,5 @@ data class CreateAuthorizedDevice(
     val mac: String,
     val name: String,
     val ticketId: TicketId,
-    val wasKicked: Boolean,
+    val wasAccessRevoked: Boolean,
 )

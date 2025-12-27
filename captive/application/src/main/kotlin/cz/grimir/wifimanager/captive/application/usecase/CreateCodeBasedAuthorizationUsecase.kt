@@ -10,11 +10,11 @@ class CreateCodeBasedAuthorizationUsecase(
     private val modifyAuthorizationTokenPort: ModifyAuthorizationTokenPort,
 ) {
     fun create(command: CreateCodeBasedAuthorizationCommand) {
-        // TODO: implement
         modifyAuthorizationTokenPort.save(
             AuthorizationToken(
                 id = command.ticketId,
                 accessCode = command.accessCode,
+                validUntil = command.validUntil,
                 authorizedDevices = mutableListOf(),
                 kickedMacAddresses = mutableSetOf(),
             ),

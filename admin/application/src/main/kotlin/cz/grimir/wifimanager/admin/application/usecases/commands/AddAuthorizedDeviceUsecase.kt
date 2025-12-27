@@ -17,13 +17,6 @@ class AddAuthorizedDeviceUsecase(
     private val saveAuthorizedDevicePort: SaveAuthorizedDevicePort,
 ) {
     fun add(command: AddAuthorizedDeviceCommand) {
-        val ticket = findTicketPort.findById(command.ticketId)
-        if (ticket == null) {
-            logger.warn { "Ticket with id ${command.ticketId} not found. Cannot add authorized device $command." }
-            return
-        }
-
-        val wasKicked = ticket.kickedMacAddresses.contains(command.deviceMacAddress)
         val existingDevice =
             findAuthorizedDevicePort.findByMacAndTicketId(command.deviceMacAddress, command.ticketId)
 
@@ -32,7 +25,6 @@ class AddAuthorizedDeviceUsecase(
             saveAuthorizedDevicePort.save(
                 existingDevice.copy(
                     name = command.deviceName ?: existingDevice.name,
-                    wasKicked = wasKicked,
                 ),
             )
         } else {
@@ -41,7 +33,7 @@ class AddAuthorizedDeviceUsecase(
                     ticketId = command.ticketId,
                     mac = command.deviceMacAddress,
                     name = command.deviceName,
-                    wasKicked = wasKicked,
+                    wasAccessRevoked = false,
                 ),
             )
         }

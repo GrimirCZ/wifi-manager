@@ -13,6 +13,7 @@ class AuthorizationTokenMapper {
         AuthorizationToken(
             id = TicketId(entity.id),
             accessCode = entity.accessCode,
+            validUntil = entity.validUntil,
             authorizedDevices = entity.authorizedDevices.map(::deviceToDomain).toMutableList(),
             kickedMacAddresses = entity.kickedMacAddresses.toMutableSet(),
         )
@@ -21,6 +22,7 @@ class AuthorizationTokenMapper {
         CaptiveAuthorizationTokenEntity(
             id = domain.id.id,
             accessCode = domain.accessCode,
+            validUntil = domain.validUntil,
             authorizedDevices = domain.authorizedDevices.map(::deviceToEntity).toMutableList(),
             kickedMacAddresses = domain.kickedMacAddresses.toTypedArray(),
         )

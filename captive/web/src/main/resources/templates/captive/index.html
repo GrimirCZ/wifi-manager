@@ -1,17 +1,222 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head th:replace="~{captive/fragments/head :: head('Captive portal')}"></head>
-  <body class="bg-surface-muted">
-    <main class="container-page">
-      <div class="card space-y-3">
-        <h1 class="text-xl font-semibold">Captive portal</h1>
-        <p class="text-text-muted">
-          This page is served from the captive module under <code class="badge">/captive</code>.
-        </p>
-        <div class="alert alert-warning">
-          This UI now uses shared Tailwind components (no UIkit).
+  <head th:replace="~{captive/fragments/head :: head(#{captive.page.title})}"></head>
+  <body
+    class="bg-surface-muted"
+    _="
+      on load
+        set :scannerActive to false
+        set #scanner-toggle.textContent to #scanner-toggle.dataset.startText
+        call Quagga.onDetected(window.wmQuaggaDetected)
+      end
+
+      on click from #scanner-toggle
+        if :scannerActive
+          call window.wmQuaggaStopSafe()
+          send scannerReset to me
+        else
+          remove .hidden from #scanner-panel
+          call Quagga.init({
+            inputStream: {
+              type: 'LiveStream',
+              target: document.getElementById('scanner'),
+              constraints: {
+                facingMode: 'environment'
+              }
+            },
+            decoder: {
+              readers: ['code_128_reader', 'ean_reader', 'ean_8_reader']
+            },
+            locate: true
+          }, window.wmQuaggaInit)
+        end
+      end
+
+      on quaggaInit
+        if event.detail.error
+          send scannerReset to me
+          remove .hidden from #scanner-alert
+        else
+          add .hidden to #scanner-alert
+          call Quagga.start()
+          set :scannerActive to true
+          set #scanner-toggle.textContent to #scanner-toggle.dataset.stopText
+          go to the top of #scanner-panel smoothly
+        end
+      end
+
+      on quaggaDetected
+        set #access-code.value to event.detail.code
+        call window.wmQuaggaStopSafe()
+        send scannerReset to me
+        call #access-code.focus()
+      end
+
+      on quaggaStopFailed
+        send scannerReset to me
+        remove .hidden from #scanner-alert
+      end
+
+      on scannerReset
+        set :scannerActive to false
+        add .hidden to #scanner-panel
+        set #scanner-toggle.textContent to #scanner-toggle.dataset.startText
+      end
+    "
+  >
+    <div th:replace="~{captive/fragments/header :: header(#{captive.page.title})}"></div>
+    <main class="container-page py-8">
+      <div id="captive-content" class="mx-auto max-w-2xl space-y-6" th:fragment="captiveContent">
+        <div class="card space-y-2">
+          <h1 class="text-2xl font-semibold"
+              th:text="${deviceLoggedIn == true} ? #{captive.page.connectedHeading} : #{captive.page.heading}">
+            Connect with access code
+          </h1>
+          <p class="text-text-muted"
+             th:text="${deviceLoggedIn == true} ? #{captive.page.connectedSubtitle} : #{captive.page.subtitle}">
+            Enter the access code or scan the barcode on your ticket.
+          </p>
         </div>
+
+        <div class="card space-y-3" th:if="${deviceLoggedIn == true}">
+          <div class="text-sm font-medium" th:text="#{captive.ticket.title}">Ticket in use</div>
+          <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
+            <span th:text="#{captive.ticket.validUntil}">Valid until</span>
+            <span class="text-right font-bold" th:text="${@DateFormatter.timeRelativeNow(usedTicketValidUntil)}">TBD</span>
+          </div>
+          <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
+            <span th:text="#{captive.ticket.device}">Device</span>
+            <span class="text-right" th:text="${usedTicketDevice}">TBD</span>
+          </div>
+          <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
+            <span th:text="#{captive.client.mac}">MAC address</span>
+            <span class="text-right" th:text="${clientMacAddress}">00:00:00:00:00:00</span>
+          </div>
+          <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
+            <span th:text="#{captive.client.ip}">IP address</span>
+            <span class="text-right" th:text="${clientIpAddress}">0.0.0.0</span>
+          </div>
+        </div>
+
+        <form class="card space-y-5"
+              th:action="@{/captive}"
+              th:object="${form}"
+              method="post"
+              th:attr="hx-post=@{/captive},hx-target='#captive-content',hx-swap='outerHTML'"
+              th:if="${deviceLoggedIn != true}">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+          <div class="alert alert-success" th:if="${codeSubmitted}" role="status"
+               th:text="#{captive.success.message}">
+            Access granted. You are now connected.
+          </div>
+
+          <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}" role="alert">
+            <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">Invalid access code.</div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium" for="access-code" th:text="#{captive.access.label}">
+              Access code
+            </label>
+            <input
+              id="access-code"
+              type="text"
+              autocomplete="one-time-code"
+              inputmode="numeric"
+              class="input w-full"
+              th:field="*{accessCode}"
+              th:placeholder="#{captive.access.placeholder}"
+              required
+            />
+            <div class="text-xs text-red-600" th:if="${#fields.hasErrors('accessCode')}"
+                 th:text="${#fields.errors('accessCode')[0]}">
+              Access code is required.
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <div class="text-sm font-medium" th:text="#{captive.scan.title}">Scan barcode</div>
+                <div class="text-xs text-text-muted" th:text="#{captive.scan.subtitle}">
+                  Use your camera to scan the code.
+                </div>
+              </div>
+              <button
+                id="scanner-toggle"
+                class="btn btn-secondary"
+                type="button"
+                th:text="#{captive.scan.start}"
+                th:attr="data-start-text=#{captive.scan.start},data-stop-text=#{captive.scan.stop}"
+              >
+                Start scanner
+              </button>
+            </div>
+
+            <div
+              id="scanner-alert"
+              class="alert alert-warning hidden"
+              role="alert"
+              th:text="#{captive.scan.unavailable}"
+            >
+              Scanner is not available.
+            </div>
+
+            <div id="scanner-panel" class="hidden overflow-hidden rounded-xl border border-border bg-surface-muted">
+              <div id="scanner" class="relative flex justify-center w-full bg-black"
+                   role="region" aria-label="Barcode scanner"></div>
+              <div class="border-t border-border px-4 py-2 text-xs text-text-muted"
+                   th:text="#{captive.scan.hint}">
+                Point the camera at the barcode. The scanner will fill the code automatically.
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="checkbox-label">
+              <input class="checkbox" type="checkbox" th:field="*{acceptTerms}" required/>
+              <span th:text="#{captive.terms.label}">I agree to the terms and conditions.</span>
+            </label>
+            <div class="text-xs text-red-600" th:if="${#fields.hasErrors('acceptTerms')}"
+                 th:text="${#fields.errors('acceptTerms')[0]}">
+              You must accept the terms.
+            </div>
+          </div>
+
+          <button class="btn btn-primary w-full" type="submit" th:text="#{captive.action.continue}">
+            Continue
+          </button>
+        </form>
       </div>
     </main>
+
+    <script th:src="@{/assets/shared/quagga.min.js}"></script>
+    <script>
+      window.wmQuaggaStopSafe = () => {
+        if (!window.Quagga || typeof Quagga.stop !== "function") return;
+        try {
+          Quagga.stop();
+        } catch (err) {
+          document.body.dispatchEvent(
+            new CustomEvent("quaggaStopFailed", { detail: { error: err } }),
+          );
+        }
+      };
+
+      window.wmQuaggaInit = (err) => {
+        document.body.dispatchEvent(
+          new CustomEvent("quaggaInit", { detail: { error: err } }),
+        );
+      };
+
+      window.wmQuaggaDetected = (data) => {
+        const code = data && data.codeResult && data.codeResult.code;
+        if (!code) return;
+        document.body.dispatchEvent(
+          new CustomEvent("quaggaDetected", { detail: { code } }),
+        );
+      };
+    </script>
   </body>
 </html>

@@ -17,7 +17,7 @@ create table if not exists admin.authorized_device
 (
     mac        text    not null,
     name       text    null,
-    was_kicked boolean not null default false,
+    was_access_revoked boolean not null default false,
     ticket_id  uuid    not null references admin.ticket (id) on delete cascade,
     primary key (ticket_id, mac)
 );

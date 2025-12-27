@@ -2,36 +2,35 @@
 <div
         th:fragment="header(appName)"
         xmlns:th="http://www.thymeleaf.org"
-        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
         class="border-b border-border bg-surface"
 >
     <div class="container-page flex items-center justify-between py-4 h-16">
         <a class="text-xl font-semibold no-underline text-black items-center flex gap-x-1 hover:!text-black"
-           th:href="@{/admin}">
+           th:href="@{/captive}"
+           aria-label="Go to home page">
             <img th:src="@{/assets/shared/icons/outline/wifi.svg}" alt="Logo" class="inline w-8 h-8">
             <span th:text="${appName}">WiFi Manager</span>
         </a>
 
-        <div sec:authorize="isAuthenticated()" class="relative group">
+        <div class="relative group">
             <button
                     type="button"
                     class="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-brand-500"
                     aria-haspopup="menu"
-                    aria-label="User menu"
+                    aria-label="Language menu"
             >
                 <img
-                        th:if="${#authentication.principal.claims['picture'] != null and !#strings.isEmpty(#authentication.principal.claims['picture'])}"
-                        th:src="${#authentication.principal.claims['picture']}"
-                        alt="Profile picture"
-                        class="h-9 w-9 rounded-full border border-border object-cover"
-                        referrerpolicy="no-referrer"
+                        th:if="${#locale.language == 'cs'}"
+                        th:src="@{/assets/shared/flags/cz.svg}"
+                        alt=""
+                        class="h-5 w-5 rounded-sm"
                 />
-
-                <span
-                        class="text-sm font-medium"
-                        th:text="${#authentication.principal.claims['name'] ?: (#authentication.principal.claims['preferred_username'] ?: #authentication.name)}"
-                >User</span
-                >
+                <img
+                        th:if="${#locale.language != 'cs'}"
+                        th:src="@{/assets/shared/flags/gb.svg}"
+                        alt=""
+                        class="h-5 w-5 rounded-sm"
+                />
 
                 <svg
                         class="h-4 w-4 text-text-muted"
@@ -51,25 +50,8 @@
                     role="menu"
                     class="absolute right-0 z-20 mt-0 hidden w-56 overflow-hidden rounded-xl border border-border bg-surface pt-2 shadow-lg group-hover:block group-focus-within:block"
             >
-                <div class="px-4 py-3">
-                    <div class="text-sm font-semibold" th:text="#{admin.account.title}">Account</div>
-                    <div
-                            class="text-xs text-text-muted"
-                            th:text="${#authentication.principal.claims['email'] ?: ''}"
-                    ></div>
-                </div>
-
-                <div class="border-t border-border"></div>
-
-                <a class="block px-4 py-2 text-sm hover:bg-surface-muted" href="#" role="menuitem"
-                   th:text="#{admin.account.settings}">Settings</a>
-                <a class="block px-4 py-2 text-sm hover:bg-surface-muted" href="#" role="menuitem"
-                   th:text="#{admin.account.help}">Help</a>
-
-                <div class="border-t border-border"></div>
-
                 <div class="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-text-muted"
-                     th:text="#{admin.language.label}">
+                     th:text="#{captive.language.label}">
                     Language
                 </div>
                 <a class="flex items-center gap-2 px-4 py-2 text-sm hover:bg-surface-muted"
@@ -81,7 +63,7 @@
                             alt=""
                             class="h-4 w-4 rounded-sm"
                     />
-                    <span th:text="#{admin.language.en}">English</span>
+                    <span th:text="#{captive.language.en}">English</span>
                 </a>
                 <a class="flex items-center gap-2 px-4 py-2 text-sm hover:bg-surface-muted"
                    th:classappend="${#locale.language == 'cs'} ? ' font-semibold text-brand-600' : ''"
@@ -92,16 +74,8 @@
                             alt=""
                             class="h-4 w-4 rounded-sm"
                     />
-                    <span th:text="#{admin.language.cs}">Czech</span>
+                    <span th:text="#{captive.language.cs}">Czech</span>
                 </a>
-
-                <div class="border-t border-border"></div>
-
-                <form th:action="@{/admin/logout}" method="post" class="p-2">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button class="btn btn-secondary w-full" type="submit" role="menuitem"
-                            th:text="#{admin.account.logout}">Logout</button>
-                </form>
             </div>
         </div>
     </div>

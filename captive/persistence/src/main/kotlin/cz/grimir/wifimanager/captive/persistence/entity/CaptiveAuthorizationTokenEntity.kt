@@ -24,6 +24,11 @@ class CaptiveAuthorizationTokenEntity(
     @Column(name = "access_code")
     val accessCode: String,
     /**
+     * UTC time of ticket expiration.
+     */
+    @Column(name = "valid_until")
+    val validUntil: java.time.Instant,
+    /**
      * List of devices authorized using this ticket.
      */
     @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])

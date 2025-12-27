@@ -6,9 +6,9 @@ import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
 import cz.grimir.wifimanager.admin.application.ports.SaveTicketPort
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.shared.core.TicketId
+import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.events.ClientKickedEvent
-import cz.grimir.wifimanager.shared.core.TimeProvider
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue

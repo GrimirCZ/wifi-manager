@@ -20,8 +20,8 @@ class AdminAuthorizedDeviceEntity(
     @Id
     @Column(name = "ticket_id")
     val ticketId: UUID,
-    @Column(name = "was_kicked")
-    val wasKicked: Boolean,
+    @Column(name = "was_access_revoked")
+    val wasAccessRevoked: Boolean,
 ) {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_id", insertable = false, updatable = false)

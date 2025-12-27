@@ -4,8 +4,8 @@ import cz.grimir.wifimanager.admin.application.commands.KickDeviceCommand
 import cz.grimir.wifimanager.admin.application.ports.AdminEventPublisher
 import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
 import cz.grimir.wifimanager.admin.application.ports.SaveTicketPort
-import cz.grimir.wifimanager.shared.events.ClientKickedEvent
 import cz.grimir.wifimanager.shared.core.TimeProvider
+import cz.grimir.wifimanager.shared.events.ClientKickedEvent
 import org.springframework.stereotype.Service
 
 @Service

@@ -4,7 +4,7 @@ import cz.grimir.wifimanager.admin.application.ports.FindAuthorizedDevicePort
 import cz.grimir.wifimanager.admin.application.ports.SaveAuthorizedDevicePort
 import cz.grimir.wifimanager.admin.core.value.AuthorizedDevice
 import cz.grimir.wifimanager.shared.core.TicketId
-import cz.grimir.wifimanager.shared.events.ClientKickedEvent
+import cz.grimir.wifimanager.shared.events.ClientAccessRevokedEvent
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -18,12 +18,12 @@ import java.time.Instant
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
-class OnClientKickedUpdateAuthorizedDevicePolicyTest {
+class OnClientAccessRevokedUpdateAuthorizedDevicePolicyTest {
     private val findAuthorizedDevicePort: FindAuthorizedDevicePort = mock()
     private val saveAuthorizedDevicePort: SaveAuthorizedDevicePort = mock()
 
     private val policy =
-        OnClientKickedUpdateAuthorizedDevicePolicy(
+        OnClientAccessRevokedUpdateAuthorizedDevicePolicy(
             findAuthorizedDevicePort,
             saveAuthorizedDevicePort,
         )
@@ -34,10 +34,10 @@ class OnClientKickedUpdateAuthorizedDevicePolicyTest {
         given(findAuthorizedDevicePort.findByMacAndTicketId("AA:BB:CC:DD:EE:FF", ticketId)).willReturn(null)
 
         policy.on(
-            ClientKickedEvent(
+            ClientAccessRevokedEvent(
                 ticketId = ticketId,
                 deviceMacAddress = "AA:BB:CC:DD:EE:FF",
-                kickedAt = Instant.parse("2025-01-01T10:00:00Z"),
+                revokedAt = Instant.parse("2025-01-01T10:00:00Z"),
             ),
         )
 
@@ -45,22 +45,22 @@ class OnClientKickedUpdateAuthorizedDevicePolicyTest {
     }
 
     @Test
-    fun `ignores event when device already kicked`() {
+    fun `ignores event when device already access revoked`() {
         val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000031"))
         val device =
             AuthorizedDevice(
                 ticketId = ticketId,
                 mac = "AA:BB:CC:DD:EE:FF",
                 name = "phone",
-                wasKicked = true,
+                wasAccessRevoked = true,
             )
         given(findAuthorizedDevicePort.findByMacAndTicketId("AA:BB:CC:DD:EE:FF", ticketId)).willReturn(device)
 
         policy.on(
-            ClientKickedEvent(
+            ClientAccessRevokedEvent(
                 ticketId = ticketId,
                 deviceMacAddress = "AA:BB:CC:DD:EE:FF",
-                kickedAt = Instant.parse("2025-01-01T10:00:00Z"),
+                revokedAt = Instant.parse("2025-01-01T10:00:00Z"),
             ),
         )
 
@@ -68,27 +68,27 @@ class OnClientKickedUpdateAuthorizedDevicePolicyTest {
     }
 
     @Test
-    fun `updates device when not kicked yet`() {
+    fun `updates device when access not revoked yet`() {
         val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000032"))
         val device =
             AuthorizedDevice(
                 ticketId = ticketId,
                 mac = "AA:BB:CC:DD:EE:FF",
                 name = "phone",
-                wasKicked = false,
+                wasAccessRevoked = false,
             )
         given(findAuthorizedDevicePort.findByMacAndTicketId("AA:BB:CC:DD:EE:FF", ticketId)).willReturn(device)
 
         policy.on(
-            ClientKickedEvent(
+            ClientAccessRevokedEvent(
                 ticketId = ticketId,
                 deviceMacAddress = "AA:BB:CC:DD:EE:FF",
-                kickedAt = Instant.parse("2025-01-01T10:00:00Z"),
+                revokedAt = Instant.parse("2025-01-01T10:00:00Z"),
             ),
         )
 
         val deviceCaptor = argumentCaptor<AuthorizedDevice>()
         verify(saveAuthorizedDevicePort).save(deviceCaptor.capture())
-        assertTrue(deviceCaptor.firstValue.wasKicked)
+        assertTrue(deviceCaptor.firstValue.wasAccessRevoked)
     }
 }

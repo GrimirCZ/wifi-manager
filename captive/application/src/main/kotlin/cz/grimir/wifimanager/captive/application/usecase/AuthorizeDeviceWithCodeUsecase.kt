@@ -4,6 +4,9 @@ import cz.grimir.wifimanager.captive.application.command.AuthorizeDeviceWithCode
 import cz.grimir.wifimanager.captive.application.ports.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.ports.ModifyAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.core.exceptions.InvalidAccessCodeException
+import cz.grimir.wifimanager.shared.core.TimeProvider
+import cz.grimir.wifimanager.shared.events.DeviceAuthorizedEvent
 import org.springframework.stereotype.Service
 
 @Service
@@ -11,8 +14,26 @@ class AuthorizeDeviceWithCodeUsecase(
     private val findAuthorizationTokenPort: FindAuthorizationTokenPort,
     private val modifyAuthorizationTokenPort: ModifyAuthorizationTokenPort,
     private val eventPublisher: CaptiveEventPublisher,
+    private val timeProvider: TimeProvider,
 ) {
     fun authorize(command: AuthorizeDeviceWithCodeCommand) {
-        // TODO: implement
+        val token =
+            findAuthorizationTokenPort.findByAccessCode(command.accessCode)
+                ?: throw InvalidAccessCodeException(command.accessCode, command.device.mac)
+
+        token.authorizeDevice(command.device)
+        modifyAuthorizationTokenPort.save(token)
+
+        eventPublisher.publish(
+            DeviceAuthorizedEvent(
+                ticketId = token.id,
+                device =
+                    DeviceAuthorizedEvent.Device(
+                        macAddress = command.device.mac,
+                        name = command.device.name,
+                    ),
+                authorizedAt = timeProvider.get(),
+            ),
+        )
     }
 }

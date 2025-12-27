@@ -14,7 +14,6 @@ class CaptiveSecurityConfig {
         http
             .securityMatcher("/captive/**")
             .authorizeHttpRequests { auth -> auth.anyRequest().permitAll() }
-            .csrf { csrf -> csrf.disable() }
         return http.build()
     }
 }

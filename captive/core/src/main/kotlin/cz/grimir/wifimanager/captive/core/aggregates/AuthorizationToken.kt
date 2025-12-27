@@ -3,6 +3,7 @@ package cz.grimir.wifimanager.captive.core.aggregates
 import cz.grimir.wifimanager.captive.core.exceptions.KickedAddressAttemptedLoginException
 import cz.grimir.wifimanager.captive.core.value.Device
 import cz.grimir.wifimanager.shared.core.TicketId
+import java.time.Instant
 
 class AuthorizationToken(
     val id: TicketId,
@@ -10,6 +11,10 @@ class AuthorizationToken(
      * Access code required to use this ticket.
      */
     val accessCode: String,
+    /**
+     * UTC time of ticket expiration.
+     */
+    val validUntil: Instant,
     /**
      * List of devices authorized using this ticket.
      */
