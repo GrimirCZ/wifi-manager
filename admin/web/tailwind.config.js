@@ -4,6 +4,7 @@ module.exports = {
   content: [
     "./admin/web/src/**/*.html",
     "./shared/ui/src/**/*.html",
+    "./shared/ui/src/**/*.js",
   ],
   safelist: [],
 };

@@ -89,6 +89,7 @@
 
                     <button class="btn btn-secondary print:hidden" type="button"
                             th:hx-delete="@{/admin/ticket/{ticketId}(ticketId=${ticket.id})}"
+                            th:hx-confirm="#{admin.ticket.active.end.confirm}"
                             hx-target="closest .card"
                             hx-swap="outerHTML"
                             th:text="#{admin.ticket.active.end}">

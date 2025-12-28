@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <div
-        th:fragment="header(appName)"
-        xmlns:th="http://www.thymeleaf.org"
-        class="border-b border-border bg-surface"
+    th:fragment="header(appName)"
+    xmlns:th="http://www.thymeleaf.org"
+    class="border-b border-border bg-surface"
 >
+    <wm-confirm-dialog
+        th:attr="title-text=#{captive.confirm.title},confirm-text=#{captive.confirm.confirm},cancel-text=#{captive.confirm.cancel}">
+    </wm-confirm-dialog>
     <div class="container-page flex items-center justify-between py-4 h-16">
         <a class="text-xl font-semibold no-underline text-black items-center flex gap-x-1 hover:!text-black"
            th:href="@{/captive}"
@@ -14,41 +17,41 @@
 
         <div class="relative group">
             <button
-                    type="button"
-                    class="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    aria-haspopup="menu"
-                    aria-label="Language menu"
+                type="button"
+                class="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-brand-500"
+                aria-haspopup="menu"
+                aria-label="Language menu"
             >
                 <img
-                        th:if="${#locale.language == 'cs'}"
-                        th:src="@{/assets/shared/flags/cz.svg}"
-                        alt=""
-                        class="h-5 w-5 rounded-sm"
+                    th:if="${#locale.language == 'cs'}"
+                    th:src="@{/assets/shared/flags/cz.svg}"
+                    alt=""
+                    class="h-5 w-5 rounded-sm"
                 />
                 <img
-                        th:if="${#locale.language != 'cs'}"
-                        th:src="@{/assets/shared/flags/gb.svg}"
-                        alt=""
-                        class="h-5 w-5 rounded-sm"
+                    th:if="${#locale.language != 'cs'}"
+                    th:src="@{/assets/shared/flags/gb.svg}"
+                    alt=""
+                    class="h-5 w-5 rounded-sm"
                 />
 
                 <svg
-                        class="h-4 w-4 text-text-muted"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
+                    class="h-4 w-4 text-text-muted"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
                 >
                     <path
-                            fill-rule="evenodd"
-                            d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.25a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08Z"
-                            clip-rule="evenodd"
+                        fill-rule="evenodd"
+                        d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.25a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08Z"
+                        clip-rule="evenodd"
                     />
                 </svg>
             </button>
 
             <div
-                    role="menu"
-                    class="absolute right-0 z-20 mt-0 hidden w-56 overflow-hidden rounded-xl border border-border bg-surface py-2 shadow-lg group-hover:block group-focus-within:block"
+                role="menu"
+                class="absolute right-0 z-20 mt-0 hidden w-56 overflow-hidden rounded-xl border border-border bg-surface py-2 shadow-lg group-hover:block group-focus-within:block"
             >
                 <div class="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-text-muted"
                      th:text="#{captive.language.label}">
@@ -59,9 +62,9 @@
                    href="?lang=en"
                    role="menuitem">
                     <img
-                            th:src="@{/assets/shared/flags/gb.svg}"
-                            alt=""
-                            class="h-4 w-4 rounded-sm"
+                        th:src="@{/assets/shared/flags/gb.svg}"
+                        alt=""
+                        class="h-4 w-4 rounded-sm"
                     />
                     <span th:text="#{captive.language.en}">English</span>
                 </a>
@@ -70,9 +73,9 @@
                    href="?lang=cs"
                    role="menuitem">
                     <img
-                            th:src="@{/assets/shared/flags/cz.svg}"
-                            alt=""
-                            class="h-4 w-4 rounded-sm"
+                        th:src="@{/assets/shared/flags/cz.svg}"
+                        alt=""
+                        class="h-4 w-4 rounded-sm"
                     />
                     <span th:text="#{captive.language.cs}">Czech</span>
                 </a>

@@ -5,6 +5,9 @@
         xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
         class="border-b border-border bg-surface"
 >
+    <wm-confirm-dialog
+            th:attr="title-text=#{admin.confirm.title},confirm-text=#{admin.confirm.confirm},cancel-text=#{admin.confirm.cancel}">
+    </wm-confirm-dialog>
     <div class="container-page flex items-center justify-between py-4 h-16">
         <a class="text-xl font-semibold no-underline text-black items-center flex gap-x-1 hover:!text-black"
            th:href="@{/admin}">
