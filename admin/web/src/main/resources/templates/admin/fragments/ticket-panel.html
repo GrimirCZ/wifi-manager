@@ -101,7 +101,8 @@
                     class="shrink-0 self-center rounded-xl border border-border bg-surface p-4 md:self-auto md:p-6 flex flex-col gap-y-4 items-center justify-center">
                     <div th:data-payload="${@QrCodeBuilder.createWifiQrCode(wifiSsid)}"
                          class="w-30 h-30 md:w-40 md:h-40"
-                         data-script="on load make a QRCode from me, @data-payload"></div>
+                         th:data-alt="#{admin.ticket.active.wifi-qr-code}"
+                         data-script="on load make a QRCode from me, @data-payload then set (<img/> in me)'s @alt to my @data-alt"></div>
                     <svg th:data-payload="${ticket.accessCode}"
                          class="w-full h-16"
                          data-script="on load call JsBarcode(me, @data-payload, { format: 'CODE128', displayValue: false, margin: 0})"></svg>

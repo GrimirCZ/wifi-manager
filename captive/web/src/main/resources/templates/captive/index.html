@@ -217,7 +217,7 @@
       </div>
     </main>
 
-    <script th:src="@{/assets/shared/quagga.min.js}"></script>
+    <script th:src="@{/assets/shared/quagga.min.js}" defer></script>
     <script>
       window.wmQuaggaStopSafe = () => {
         if (!window.Quagga || typeof Quagga.stop !== "function") return;
