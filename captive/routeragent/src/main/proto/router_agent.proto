@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package cz.grimir.wifimanager.captive.routeragent.grpc;
+
+option java_multiple_files = true;
+option java_package = "cz.grimir.wifimanager.captive.routeragent.grpc";
+option java_outer_classname = "RouterAgentServiceOuterClass";
+
+service RouterAgentService {
+  // Single bidirectional stream for agent notifications and server commands.
+  rpc Connect(stream RouterAgentMessage) returns (stream RouterAgentCommand);
+}
+
+message RouterAgentMessage {
+  oneof message {
+    Synchronize synchronize = 1;
+    CommandAck ack = 2;
+  }
+}
+
+message RouterAgentCommand {
+  oneof command {
+    GetClientInfo get_client_info = 1;
+    AllowClientAccess allow_client_access = 2;
+    RevokeClientAccess revoke_client_access = 3;
+    SetAllowedClients set_allowed_clients = 4;
+  }
+}
+
+message Synchronize {
+  string reason = 1;
+}
+
+message GetClientInfo {
+  // All router agents must return identical results for the same request.
+  string id = 1;
+  string ip_address = 2;
+}
+
+message AllowClientAccess {
+  string id = 1;
+  repeated string mac_addresses = 2;
+}
+
+message RevokeClientAccess {
+  string id = 1;
+  repeated string mac_addresses = 2;
+}
+
+message SetAllowedClients {
+  string id = 1;
+  repeated string mac_addresses = 2;
+}
+
+message CommandAck {
+  string id = 1;
+  bool success = 2;
+  // Present only when success=false.
+  optional string error_message = 3;
+  // success=true with mac_address and hostname unset indicates client not found
+  optional string mac_address = 4;
+  optional string hostname = 5;
+}

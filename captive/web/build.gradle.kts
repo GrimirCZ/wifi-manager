@@ -8,6 +8,7 @@ dependencies {
 
     implementation(libs.bundles.springWebUi)
     implementation(libs.bundles.htmx)
+    implementation(libs.kotlinLogging)
 
     testImplementation(platform(libs.junitBom))
     testImplementation(libs.bundles.testBase)

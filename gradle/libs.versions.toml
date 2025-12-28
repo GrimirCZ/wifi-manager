@@ -11,6 +11,8 @@ htmxSpringBoot = "5.0.0"
 springBoot = "4.0.0"
 shedlock = "7.3.0"
 hibernateHypersistenceUtils = "3.14.0"
+grpc = "1.78.0"
+protobuf = "3.25.5"
 
 [libraries]
 junitBom = { module = "org.junit:junit-bom", version = "5.10.0" }
@@ -36,6 +38,10 @@ htmxSpringBootThymeleaf = { module = "io.github.wimdeblauwe:htmx-spring-boot-thy
 shedlock-spring = { module = "net.javacrumbs.shedlock:shedlock-spring", version.ref = "shedlock" }
 shedlock-provider-jdbc-template = { module = "net.javacrumbs.shedlock:shedlock-provider-jdbc-template", version.ref = "shedlock" }
 hypersistence-utils-hibernate = { module = "io.hypersistence:hypersistence-utils-hibernate-71", version.ref = "hibernateHypersistenceUtils" }
+grpcNettyShaded = { module = "io.grpc:grpc-netty-shaded", version.ref = "grpc" }
+grpcProtobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpc" }
+grpcStub = { module = "io.grpc:grpc-stub", version.ref = "grpc" }
+protobufJava = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
 
 [bundles]
 springContextTx = ["springContext", "springTx"]
@@ -50,6 +56,8 @@ testBase = ["junitJupiter"]
 testRuntime = ["junitPlatformLauncher"]
 testMockito = ["mockitoCore", "mockitoJunitJupiter", "mockitoKotlin"]
 htmx = ["htmxSpringBoot", "htmxSpringBootThymeleaf"]
+grpc = ["grpcNettyShaded", "grpcProtobuf", "grpcStub", "protobufJava"]
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
+protobuf = { id = "com.google.protobuf", version = "0.9.4" }

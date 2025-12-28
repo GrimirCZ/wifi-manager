@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":admin:events:local"))
 
     implementation(project(":captive:application"))
+    implementation(project(":captive:routeragent"))
     implementation(project(":captive:persistence"))
     implementation(project(":captive:web"))
     implementation(project(":captive:events:local"))

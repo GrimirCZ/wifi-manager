@@ -7,10 +7,14 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+    open-in-view: false
 
   docker:
     compose:
       file: file:${PROJECT_ROOT:.}/app/compose.yml
+
+server:
+  forward-headers-strategy: framework
 
 app:
   locale:

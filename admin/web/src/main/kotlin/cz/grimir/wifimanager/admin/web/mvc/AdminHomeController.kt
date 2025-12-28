@@ -4,10 +4,13 @@ import cz.grimir.wifimanager.admin.application.commands.CancelTicketCommand
 import cz.grimir.wifimanager.admin.application.commands.CreateTicketCommand
 import cz.grimir.wifimanager.admin.application.model.UserIdentity
 import cz.grimir.wifimanager.admin.application.model.UserRole
-import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
+import cz.grimir.wifimanager.admin.application.queries.FindTicketByIdQuery
+import cz.grimir.wifimanager.admin.application.queries.FindTicketsByAuthorIdWithDeviceCountQuery
+import cz.grimir.wifimanager.admin.application.queries.models.TicketWithDeviceCount
 import cz.grimir.wifimanager.admin.application.usecases.commands.CancelTicketUsecase
 import cz.grimir.wifimanager.admin.application.usecases.commands.CreateTicketUsecase
-import cz.grimir.wifimanager.admin.core.aggregates.Ticket
+import cz.grimir.wifimanager.admin.application.usecases.queries.FindTicketByIdUsecase
+import cz.grimir.wifimanager.admin.application.usecases.queries.FindTicketsByAuthorIdWithDeviceCountUsecase
 import cz.grimir.wifimanager.admin.core.exceptions.UserAlreadyHasActiveTickets
 import cz.grimir.wifimanager.admin.web.AdminWifiProperties
 import cz.grimir.wifimanager.admin.web.mvc.dto.CreateTicketRequestDto
@@ -33,7 +36,8 @@ import java.util.UUID
 class AdminHomeController(
     private val createTicketUsecase: CreateTicketUsecase,
     private val cancelTicketUsecase: CancelTicketUsecase,
-    private val findTicketPort: FindTicketPort,
+    private val findTicketByIdUsecase: FindTicketByIdUsecase,
+    private val findTicketsByAuthorIdWithDeviceCountUsecase: FindTicketsByAuthorIdWithDeviceCountUsecase,
     private val wifiProperties: AdminWifiProperties,
 ) {
     @GetMapping("/admin", "/admin/")
@@ -106,7 +110,7 @@ class AdminHomeController(
         @RequestParam(required = false) validUntil: Long?,
         modelMap: ModelMap,
     ): String {
-        val ticket = findTicketPort.findById(TicketId(ticketId))
+        val ticket = findTicketByIdUsecase.find(FindTicketByIdQuery(TicketId(ticketId)))
 
         if (ticket != null && ticket.authorId.id != user.userId.id) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND)
@@ -134,7 +138,7 @@ class AdminHomeController(
     ): String {
         val isHtmx = htmxRequest.isHtmxRequest
 
-        val ticket = findTicketPort.findById(TicketId(ticketId))
+        val ticket = findTicketByIdUsecase.find(FindTicketByIdQuery(TicketId(ticketId)))
 
         if (ticket != null && ticket.authorId.id != user.userId.id) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND)
@@ -159,12 +163,12 @@ class AdminHomeController(
     @GetMapping("/admin/components")
     fun components(): String = "admin/components"
 
-    private fun findActiveTickets(user: UserIdentity): List<Ticket> {
+    private fun findActiveTickets(user: UserIdentity): List<TicketWithDeviceCount> {
         val now = Instant.now()
-        return findTicketPort
-            .findByAuthorId(user.userId.id)
-            .filter { it.isActive(now) }
-            .sortedByDescending { it.createdAt }
+        return findTicketsByAuthorIdWithDeviceCountUsecase
+            .find(FindTicketsByAuthorIdWithDeviceCountQuery(user.userId))
+            .filter { it.ticket.isActive(now) }
+            .sortedByDescending { it.ticket.createdAt }
     }
 
     private fun populateModel(

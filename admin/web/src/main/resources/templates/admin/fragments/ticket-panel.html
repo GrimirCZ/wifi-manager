@@ -63,7 +63,8 @@
             </details>
         </div>
 
-        <div th:each="ticket : ${activeTickets}" class="card space-y-6"
+        <div th:each="ticketWithCount : ${activeTickets}" class="card space-y-6"
+             th:with="ticket=${ticketWithCount.ticket},deviceCount=${ticketWithCount.deviceCount}"
              th:attr="data-ends-at=${@DateFormatter.toTimestamp(ticket.validUntil)}"
              th:hx-get="@{/admin/ticket/{ticketId}/_ended-banner(ticketId=${ticket.id},accessCode=${ticket.accessCode},createdAt=${@DateFormatter.toTimestamp(ticket.createdAt)},validUntil=${@DateFormatter.toTimestamp(ticket.validUntil)})}"
              hx-trigger="ticketExpired"
@@ -114,7 +115,7 @@
                             <span class="text-text-muted"
                                   th:text="#{admin.ticket.active.devices}">Authorized devices:</span>
                             <!--                            TODO: display device count-->
-                            <span th:text="${0}">0</span>
+                            <span th:text="${deviceCount}">0</span>
                         </div>
                     </div>
 

@@ -35,6 +35,8 @@ spring:
               - profile
               - email
               - roles
+  jpa:
+    show-sql: true
 wifimanager:
   admin:
     security:
@@ -43,3 +45,11 @@ wifimanager:
         admin: keycloak-realm-roles
   wifi:
     ssid: my-wifi
+  captive:
+    router-agent:
+      grpc:
+        port: 9091
+        tls:
+          enabled: false
+          require-client-auth: false
+      type: dummy

@@ -36,6 +36,7 @@
             <option value="$PROJECT_DIR$/captive/events" />
             <option value="$PROJECT_DIR$/captive/events/local" />
             <option value="$PROJECT_DIR$/captive/persistence" />
+            <option value="$PROJECT_DIR$/captive/routeragent" />
             <option value="$PROJECT_DIR$/captive/web" />
             <option value="$PROJECT_DIR$/shared" />
             <option value="$PROJECT_DIR$/shared/core" />

@@ -17,4 +17,13 @@ interface CaptiveAuthorizationTokenJpaRepository : JpaRepository<CaptiveAuthoriz
         """,
     )
     fun findByAuthorizedDeviceMac(macAddress: String): CaptiveAuthorizationTokenEntity?
+
+    @Query(
+        """
+        select distinct device.mac
+        from CaptiveAuthorizationTokenEntity token
+        join token.authorizedDevices device
+        """,
+    )
+    fun findAllAuthorizedDeviceMacs(): List<String>
 }

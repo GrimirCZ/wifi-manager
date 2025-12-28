@@ -1,5 +1,7 @@
 package cz.grimir.wifimanager.web.captive.security.support
 
+import cz.grimir.wifimanager.captive.application.ports.RouterAgentPort
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.core.MethodParameter
 import org.springframework.stereotype.Component
@@ -8,9 +10,12 @@ import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
 
+private val logger = KotlinLogging.logger {}
+
 @Component
 class CurrentClientArgumentResolver(
     private val cache: CurrentClientIdentityCache,
+    private val routerAgentPort: RouterAgentPort,
 ) : HandlerMethodArgumentResolver {
     override fun supportsParameter(parameter: MethodParameter): Boolean {
         val hasAnnotation = parameter.hasParameterAnnotation(CurrentClient::class.java)
@@ -29,12 +34,19 @@ class CurrentClientArgumentResolver(
                 ?: error("No HttpServletRequest")
 
         return cache.getOrLoad(request) {
-            // TODO: fetch from router agent
+            val ip = request.remoteAddr
+
+            val clientInfo = routerAgentPort.getClientInfo(ip)
+            if (clientInfo == null) {
+                logger.warn { "Could not find client info for $ip" }
+                error("Unable to identify client based on provided IP address")
+            }
+            // NOTE: improve user facing error handling?
 
             ClientInfo(
-                ipAddress = "0.0.0.0",
-                macAddress = "00:00:00:00:00:00",
-                hostname = "Localhost",
+                ipAddress = ip,
+                macAddress = clientInfo.macAddress,
+                hostname = clientInfo.hostname,
             )
         }
     }

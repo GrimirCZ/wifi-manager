@@ -32,6 +32,7 @@ include("admin:events:local")
 
 include("captive:core")
 include("captive:application")
+include("captive:routeragent")
 include("captive:web")
 include("captive:persistence")
 include("captive:events:local")

@@ -2,6 +2,7 @@ package cz.grimir.wifimanager.admin.persistence
 
 import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
 import cz.grimir.wifimanager.admin.application.ports.SaveTicketPort
+import cz.grimir.wifimanager.admin.application.queries.models.TicketWithDeviceCount
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.admin.persistence.mapper.TicketMapper
 import cz.grimir.wifimanager.shared.core.TicketId
@@ -18,9 +19,19 @@ class JpaTicketRepositoryAdapter(
     SaveTicketPort {
     override fun findById(id: TicketId): Ticket? = jpaRepository.findByIdOrNull(id.id)?.let(mapper::ticketToDomain)
 
-    override fun findByAccessCode(accessCode: String): Ticket? = jpaRepository.findByAccessCode(accessCode)?.let(mapper::ticketToDomain)
+    override fun findByAccessCode(accessCode: String): Ticket? =
+        jpaRepository.findByAccessCode(accessCode)?.let(mapper::ticketToDomain)
 
-    override fun findByAuthorId(authorId: UUID): List<Ticket> = jpaRepository.findByAuthorId(authorId).map(mapper::ticketToDomain)
+    override fun findByAuthorId(authorId: UUID): List<Ticket> =
+        jpaRepository.findByAuthorId(authorId).map(mapper::ticketToDomain)
+
+    override fun findByAuthorIdWithDeviceCount(authorId: UUID): List<TicketWithDeviceCount> =
+        jpaRepository.findByAuthorIdWithDeviceCount(authorId).map {
+            TicketWithDeviceCount(
+                ticket = mapper.ticketToDomain(it.ticket),
+                deviceCount = it.deviceCount.toInt(),
+            )
+        }
 
     override fun findExpired(at: Instant): List<Ticket> =
         jpaRepository

@@ -4,8 +4,10 @@ import cz.grimir.wifimanager.admin.application.model.UserIdentity
 import cz.grimir.wifimanager.admin.application.ports.FindUserIdentityPort
 import cz.grimir.wifimanager.admin.application.queries.FindUserByOidcIdentityQuery
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional(readOnly = true)
 class FindUserIdentityByOidcIdentityUsecase(
     private val findUserPort: FindUserIdentityPort,
 ) {

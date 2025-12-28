@@ -26,11 +26,11 @@ class RemoveAuthorizationTokenUsecase(
             return
         }
 
-        token.authorizedDevices
-            .map(Device::mac)
-            .let(localRouterAgentPort::revokeClientAccess)
-
         modifyAuthorizationTokenPort.deleteByTicketId(command.ticketId)
+
+        localRouterAgentPort.revokeClientAccess(
+            token.authorizedDevices.map(Device::mac),
+        )
 
         logger.info { "Removed authorization token for ticket id=${command.ticketId}" }
     }
