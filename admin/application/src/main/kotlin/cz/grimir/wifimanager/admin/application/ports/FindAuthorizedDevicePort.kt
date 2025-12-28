@@ -10,4 +10,6 @@ interface FindAuthorizedDevicePort {
     ): AuthorizedDevice?
 
     fun findByTicketId(ticketId: TicketId): List<AuthorizedDevice>
+
+    fun countByTicketId(ticketId: TicketId): Long
 }

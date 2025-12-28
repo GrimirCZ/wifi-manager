@@ -21,6 +21,8 @@ class JpaAuthorizedDeviceRepositoryAdapter(
     override fun findByTicketId(ticketId: TicketId): List<AuthorizedDevice> =
         jpaRepository.findAllByTicketId(ticketId.id).map(mapper::authorizedDeviceToDomain)
 
+    override fun countByTicketId(ticketId: TicketId): Long = jpaRepository.countByTicketId(ticketId.id)
+
     override fun save(authorizedDevice: AuthorizedDevice) {
         jpaRepository.save(mapper.authorizedDeviceToEntity(authorizedDevice))
     }

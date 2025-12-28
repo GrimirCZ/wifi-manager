@@ -10,9 +10,12 @@ import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.admin.core.exceptions.UserAlreadyHasActiveTickets
 import cz.grimir.wifimanager.shared.core.TicketId
 import cz.grimir.wifimanager.shared.events.TicketCreatedEvent
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
+
+private val logger = KotlinLogging.logger {}
 
 @Service
 class CreateTicketUsecase(
@@ -60,6 +63,10 @@ class CreateTicketUsecase(
                     ),
             ),
         )
+
+        logger.info {
+            "Ticket created id=${ticket.id} authorId=${command.user.userId} validUntil=${ticket.validUntil}"
+        }
 
         return ticket
     }

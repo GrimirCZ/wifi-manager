@@ -46,7 +46,7 @@ class GrpcServerRouterAgent(
         return ack?.takeIf { it.macAddress != null }?.let {
             ClientInfo(
                 macAddress = it.macAddress!!,
-                hostname = it.hostname
+                hostname = it.hostname,
             )
         }
     }

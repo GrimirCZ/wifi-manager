@@ -4,11 +4,13 @@ import cz.grimir.wifimanager.captive.application.command.AuthorizeDeviceWithCode
 import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.usecase.AuthorizeDeviceWithCodeUsecase
 import cz.grimir.wifimanager.captive.core.exceptions.InvalidAccessCodeException
+import cz.grimir.wifimanager.captive.core.exceptions.KickedAddressAttemptedLoginException
 import cz.grimir.wifimanager.captive.core.value.Device
 import cz.grimir.wifimanager.shared.ui.AccessCodeFormatter
 import cz.grimir.wifimanager.web.captive.mvc.dto.CaptiveAccessCodeForm
 import cz.grimir.wifimanager.web.captive.security.support.ClientInfo
 import cz.grimir.wifimanager.web.captive.security.support.CurrentClient
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HtmxRequest
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -16,6 +18,8 @@ import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PostMapping
+
+private val logger = KotlinLogging.logger {}
 
 @Controller
 class CaptivePortalController(
@@ -76,6 +80,19 @@ class CaptivePortalController(
             form.acceptTerms = false
             applyClientAuthorization(clientInfo, model)
             return if (htmxRequest.isHtmxRequest) "captive/index :: captiveContent" else "captive/index"
+        } catch (ex: KickedAddressAttemptedLoginException) {
+            logger.warn(ex) { "Kicked device attempted login mac=${ex.macAddress}" }
+            form.acceptTerms = false
+            model.addAttribute("deviceLoggedIn", false)
+            model.addAttribute("deviceKicked", true)
+            model.addAttribute(
+                "usedTicketValidUntil",
+                findAuthorizationTokenPort.findByAccessCode(accessCode)?.validUntil,
+            )
+            model.addAttribute("usedTicketDevice", clientInfo.hostname ?: clientInfo.macAddress)
+            model.addAttribute("clientMacAddress", clientInfo.macAddress)
+            model.addAttribute("clientIpAddress", clientInfo.ipAddress)
+            return if (htmxRequest.isHtmxRequest) "captive/index :: captiveContent" else "captive/index"
         }
 
         model.addAttribute("form", CaptiveAccessCodeForm())
@@ -93,6 +110,7 @@ class CaptivePortalController(
         val token = findAuthorizationTokenPort.findByAuthorizedDeviceMac(clientInfo.macAddress)
         if (token == null) {
             model.addAttribute("deviceLoggedIn", false)
+            model.addAttribute("deviceKicked", false)
             model.addAttribute("usedTicketValidUntil", null)
             model.addAttribute("usedTicketDevice", "")
             model.addAttribute("clientMacAddress", clientInfo.macAddress)
@@ -100,7 +118,10 @@ class CaptivePortalController(
             return
         }
 
-        model.addAttribute("deviceLoggedIn", true)
+        val kicked = token.kickedMacAddresses.contains(clientInfo.macAddress)
+
+        model.addAttribute("deviceLoggedIn", !kicked)
+        model.addAttribute("deviceKicked", kicked)
         model.addAttribute("usedTicketValidUntil", token.validUntil)
         model.addAttribute("usedTicketDevice", clientInfo.hostname ?: clientInfo.macAddress)
         model.addAttribute("clientMacAddress", clientInfo.macAddress)

@@ -19,11 +19,9 @@ class JpaTicketRepositoryAdapter(
     SaveTicketPort {
     override fun findById(id: TicketId): Ticket? = jpaRepository.findByIdOrNull(id.id)?.let(mapper::ticketToDomain)
 
-    override fun findByAccessCode(accessCode: String): Ticket? =
-        jpaRepository.findByAccessCode(accessCode)?.let(mapper::ticketToDomain)
+    override fun findByAccessCode(accessCode: String): Ticket? = jpaRepository.findByAccessCode(accessCode)?.let(mapper::ticketToDomain)
 
-    override fun findByAuthorId(authorId: UUID): List<Ticket> =
-        jpaRepository.findByAuthorId(authorId).map(mapper::ticketToDomain)
+    override fun findByAuthorId(authorId: UUID): List<Ticket> = jpaRepository.findByAuthorId(authorId).map(mapper::ticketToDomain)
 
     override fun findByAuthorIdWithDeviceCount(authorId: UUID): List<TicketWithDeviceCount> =
         jpaRepository.findByAuthorIdWithDeviceCount(authorId).map {

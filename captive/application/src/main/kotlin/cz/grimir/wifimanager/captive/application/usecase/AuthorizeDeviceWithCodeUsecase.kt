@@ -7,7 +7,10 @@ import cz.grimir.wifimanager.captive.application.ports.ModifyAuthorizationTokenP
 import cz.grimir.wifimanager.captive.core.exceptions.InvalidAccessCodeException
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.events.DeviceAuthorizedEvent
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+
+private val logger = KotlinLogging.logger {}
 
 @Service
 class AuthorizeDeviceWithCodeUsecase(
@@ -35,5 +38,9 @@ class AuthorizeDeviceWithCodeUsecase(
                 authorizedAt = timeProvider.get(),
             ),
         )
+
+        logger.info {
+            "Device authorized ticketId=${token.id} mac=${command.device.mac} name=${command.device.name ?: "unknown"} validUntil=${token.validUntil}"
+        }
     }
 }

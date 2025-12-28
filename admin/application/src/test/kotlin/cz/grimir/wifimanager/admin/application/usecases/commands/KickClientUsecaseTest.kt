@@ -1,10 +1,13 @@
 package cz.grimir.wifimanager.admin.application.usecases.commands
 
 import cz.grimir.wifimanager.admin.application.commands.KickDeviceCommand
+import cz.grimir.wifimanager.admin.application.model.UserIdentity
+import cz.grimir.wifimanager.admin.application.model.UserRole
 import cz.grimir.wifimanager.admin.application.ports.AdminEventPublisher
 import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
 import cz.grimir.wifimanager.admin.application.ports.SaveTicketPort
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
+import cz.grimir.wifimanager.admin.core.exceptions.UserNotAllowedToKickDevice
 import cz.grimir.wifimanager.shared.core.TicketId
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.core.UserId
@@ -41,6 +44,11 @@ class KickClientUsecaseTest {
     @Test
     fun `records kicked mac and publishes event`() {
         val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000010"))
+        val user =
+            buildUser(
+                UserId(UUID.fromString("00000000-0000-0000-0000-000000000011")),
+                setOf(UserRole.WIFI_STAFF),
+            )
         val ticket =
             Ticket(
                 id = ticketId,
@@ -48,7 +56,7 @@ class KickClientUsecaseTest {
                 createdAt = Instant.parse("2025-01-01T09:00:00Z"),
                 validUntil = Instant.parse("2025-01-01T10:00:00Z"),
                 wasCanceled = false,
-                authorId = UserId(UUID.fromString("00000000-0000-0000-0000-000000000011")),
+                authorId = user.userId,
             )
 
         given(findTicketPort.findById(ticketId)).willReturn(ticket)
@@ -57,7 +65,7 @@ class KickClientUsecaseTest {
             KickDeviceCommand(
                 ticketId = ticketId,
                 deviceMacAddress = "AA:BB:CC:DD:EE:FF",
-                userId = UserId(UUID.fromString("00000000-0000-0000-0000-000000000012")),
+                user = user,
             ),
         )
 
@@ -73,8 +81,75 @@ class KickClientUsecaseTest {
     }
 
     @Test
+    fun `allows admin to kick devices on other users ticket`() {
+        val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000030"))
+        val admin =
+            buildUser(
+                UserId(UUID.fromString("00000000-0000-0000-0000-000000000031")),
+                setOf(UserRole.WIFI_ADMIN),
+            )
+        val ticket =
+            Ticket(
+                id = ticketId,
+                accessCode = "ABC123",
+                createdAt = Instant.parse("2025-01-01T09:00:00Z"),
+                validUntil = Instant.parse("2025-01-01T10:00:00Z"),
+                wasCanceled = false,
+                authorId = UserId(UUID.fromString("00000000-0000-0000-0000-000000000032")),
+            )
+
+        given(findTicketPort.findById(ticketId)).willReturn(ticket)
+
+        usecase.kick(
+            KickDeviceCommand(
+                ticketId = ticketId,
+                deviceMacAddress = "AA:BB:CC:DD:EE:FF",
+                user = admin,
+            ),
+        )
+
+        verify(saveTicketPort).save(ticket)
+    }
+
+    @Test
+    fun `throws when user is not allowed to kick devices`() {
+        val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000040"))
+        val user =
+            buildUser(
+                UserId(UUID.fromString("00000000-0000-0000-0000-000000000041")),
+                setOf(UserRole.WIFI_STAFF),
+            )
+        val ticket =
+            Ticket(
+                id = ticketId,
+                accessCode = "ABC123",
+                createdAt = Instant.parse("2025-01-01T09:00:00Z"),
+                validUntil = Instant.parse("2025-01-01T10:00:00Z"),
+                wasCanceled = false,
+                authorId = UserId(UUID.fromString("00000000-0000-0000-0000-000000000042")),
+            )
+
+        given(findTicketPort.findById(ticketId)).willReturn(ticket)
+
+        assertThrows(UserNotAllowedToKickDevice::class.java) {
+            usecase.kick(
+                KickDeviceCommand(
+                    ticketId = ticketId,
+                    deviceMacAddress = "AA:BB:CC:DD:EE:FF",
+                    user = user,
+                ),
+            )
+        }
+    }
+
+    @Test
     fun `throws when ticket is missing`() {
         val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000020"))
+        val user =
+            buildUser(
+                UserId(UUID.fromString("00000000-0000-0000-0000-000000000021")),
+                setOf(UserRole.WIFI_STAFF),
+            )
         given(findTicketPort.findById(ticketId)).willReturn(null)
 
         assertThrows(IllegalStateException::class.java) {
@@ -82,9 +157,28 @@ class KickClientUsecaseTest {
                 KickDeviceCommand(
                     ticketId = ticketId,
                     deviceMacAddress = "AA:BB:CC:DD:EE:FF",
-                    userId = UserId(UUID.fromString("00000000-0000-0000-0000-000000000021")),
+                    user = user,
                 ),
             )
         }
     }
+
+    private fun buildUser(
+        userId: UserId,
+        roles: Set<UserRole>,
+    ): UserIdentity =
+        UserIdentity(
+            id = UUID.randomUUID(),
+            userId = userId,
+            issuer = "issuer",
+            subject = "subject",
+            email = "user@example.com",
+            username = "user",
+            firstName = "Test",
+            lastName = "User",
+            pictureUrl = null,
+            createdAt = Instant.parse("2025-01-01T00:00:00Z"),
+            lastLoginAt = Instant.parse("2025-01-01T00:00:00Z"),
+            roles = roles,
+        )
 }

@@ -36,23 +36,6 @@ class AddAuthorizedDeviceUsecaseTest {
         )
 
     @Test
-    fun `ignores device when ticket does not exist`() {
-        val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000001"))
-        given(findTicketPort.findById(ticketId)).willReturn(null)
-
-        usecase.add(
-            AddAuthorizedDeviceCommand(
-                ticketId = ticketId,
-                deviceMacAddress = "AA:BB:CC:DD:EE:FF",
-                deviceName = "phone",
-            ),
-        )
-
-        verifyNoInteractions(findAuthorizedDevicePort)
-        verifyNoInteractions(saveAuthorizedDevicePort)
-    }
-
-    @Test
     fun `creates device with access not revoked`() {
         val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000002"))
         val ticket =

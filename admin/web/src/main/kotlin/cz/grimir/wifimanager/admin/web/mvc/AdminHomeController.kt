@@ -2,16 +2,24 @@ package cz.grimir.wifimanager.admin.web.mvc
 
 import cz.grimir.wifimanager.admin.application.commands.CancelTicketCommand
 import cz.grimir.wifimanager.admin.application.commands.CreateTicketCommand
+import cz.grimir.wifimanager.admin.application.commands.KickDeviceCommand
 import cz.grimir.wifimanager.admin.application.model.UserIdentity
 import cz.grimir.wifimanager.admin.application.model.UserRole
+import cz.grimir.wifimanager.admin.application.queries.CountAuthorizedDevicesByTicketIdQuery
+import cz.grimir.wifimanager.admin.application.queries.FindAuthorizedDevicesByTicketIdQuery
 import cz.grimir.wifimanager.admin.application.queries.FindTicketByIdQuery
 import cz.grimir.wifimanager.admin.application.queries.FindTicketsByAuthorIdWithDeviceCountQuery
 import cz.grimir.wifimanager.admin.application.queries.models.TicketWithDeviceCount
 import cz.grimir.wifimanager.admin.application.usecases.commands.CancelTicketUsecase
 import cz.grimir.wifimanager.admin.application.usecases.commands.CreateTicketUsecase
+import cz.grimir.wifimanager.admin.application.usecases.commands.KickClientUsecase
+import cz.grimir.wifimanager.admin.application.usecases.queries.CountAuthorizedDevicesByTicketIdUsecase
+import cz.grimir.wifimanager.admin.application.usecases.queries.FindAuthorizedDevicesByTicketIdUsecase
 import cz.grimir.wifimanager.admin.application.usecases.queries.FindTicketByIdUsecase
 import cz.grimir.wifimanager.admin.application.usecases.queries.FindTicketsByAuthorIdWithDeviceCountUsecase
+import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.admin.core.exceptions.UserAlreadyHasActiveTickets
+import cz.grimir.wifimanager.admin.core.value.AuthorizedDevice
 import cz.grimir.wifimanager.admin.web.AdminWifiProperties
 import cz.grimir.wifimanager.admin.web.mvc.dto.CreateTicketRequestDto
 import cz.grimir.wifimanager.admin.web.security.support.CurrentUser
@@ -38,6 +46,9 @@ class AdminHomeController(
     private val cancelTicketUsecase: CancelTicketUsecase,
     private val findTicketByIdUsecase: FindTicketByIdUsecase,
     private val findTicketsByAuthorIdWithDeviceCountUsecase: FindTicketsByAuthorIdWithDeviceCountUsecase,
+    private val findAuthorizedDevicesByTicketIdUsecase: FindAuthorizedDevicesByTicketIdUsecase,
+    private val countAuthorizedDevicesByTicketIdUsecase: CountAuthorizedDevicesByTicketIdUsecase,
+    private val kickClientUsecase: KickClientUsecase,
     private val wifiProperties: AdminWifiProperties,
 ) {
     @GetMapping("/admin", "/admin/")
@@ -163,6 +174,49 @@ class AdminHomeController(
     @GetMapping("/admin/components")
     fun components(): String = "admin/components"
 
+    @GetMapping("/admin/ticket/{ticketId}/_devices")
+    fun devices(
+        @CurrentUser user: UserIdentity,
+        @PathVariable ticketId: UUID,
+        @RequestParam(required = false, defaultValue = "false") includeDeviceList: Boolean,
+        modelMap: ModelMap,
+    ): String {
+        val ticket = loadTicketForUser(user, ticketId)
+        val devices = loadDevices(ticketId, includeDeviceList)
+        val deviceCount = loadDeviceCount(ticketId, devices, includeDeviceList)
+
+        populateDevicesModel(modelMap, ticketId, devices, deviceCount, includeDeviceList, ticket.kickedMacAddresses)
+
+        return "admin/fragments/ticket-devices :: devicesSwap"
+    }
+
+    @PostMapping("/admin/ticket/{ticketId}/device/_kick")
+    fun kickDevice(
+        @CurrentUser user: UserIdentity,
+        @PathVariable ticketId: UUID,
+        @RequestParam mac: String,
+        modelMap: ModelMap,
+    ): String {
+        loadTicketForUser(user, ticketId)
+
+        kickClientUsecase.kick(
+            KickDeviceCommand(
+                ticketId = TicketId(ticketId),
+                deviceMacAddress = mac,
+                user = user,
+            ),
+        )
+
+        val ticket = loadTicketForUser(user, ticketId)
+        val openDevices = true
+        val devices = loadDevices(ticketId, openDevices)
+        val deviceCount = loadDeviceCount(ticketId, devices, openDevices)
+
+        populateDevicesModel(modelMap, ticketId, devices, deviceCount, openDevices, ticket.kickedMacAddresses)
+
+        return "admin/fragments/ticket-devices :: devicesSwap"
+    }
+
     private fun findActiveTickets(user: UserIdentity): List<TicketWithDeviceCount> {
         val now = Instant.now()
         return findTicketsByAuthorIdWithDeviceCountUsecase
@@ -178,5 +232,60 @@ class AdminHomeController(
         modelMap.addAttribute("activeTickets", findActiveTickets(user))
         modelMap.addAttribute("isAdmin", user.can(UserRole::canHaveMultipleTickets))
         modelMap.addAttribute("wifiSsid", wifiProperties.ssid)
+    }
+
+    private fun loadTicketForUser(
+        user: UserIdentity,
+        ticketId: UUID,
+    ): Ticket {
+        val ticket = findTicketByIdUsecase.find(FindTicketByIdQuery(TicketId(ticketId)))
+
+        val isOwner = ticket?.authorId?.id == user.userId.id
+        val isAdmin = user.can(UserRole::canCancelOtherUsersTickets)
+        if (ticket == null || (!isOwner && !isAdmin)) {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND)
+        }
+
+        return ticket
+    }
+
+    private fun loadDevices(
+        ticketId: UUID,
+        includeDeviceList: Boolean,
+    ): List<AuthorizedDevice> =
+        if (includeDeviceList) {
+            findAuthorizedDevicesByTicketIdUsecase
+                .find(FindAuthorizedDevicesByTicketIdQuery(TicketId(ticketId)))
+                .sortedBy { it.mac }
+        } else {
+            emptyList()
+        }
+
+    private fun loadDeviceCount(
+        ticketId: UUID,
+        devices: List<AuthorizedDevice>,
+        devicesPopulated: Boolean,
+    ): Long =
+        if (devicesPopulated) {
+            devices.size.toLong()
+        } else {
+            countAuthorizedDevicesByTicketIdUsecase.count(
+                CountAuthorizedDevicesByTicketIdQuery(TicketId(ticketId)),
+            )
+        }
+
+    private fun populateDevicesModel(
+        modelMap: ModelMap,
+        ticketId: UUID,
+        devices: List<AuthorizedDevice>,
+        deviceCount: Long,
+        showDeviceList: Boolean,
+        kickedMacAddresses: Set<String>,
+    ) {
+        modelMap.addAttribute("ticketId", ticketId)
+        modelMap.addAttribute("deviceCount", deviceCount)
+        modelMap.addAttribute("devices", devices)
+        modelMap.addAttribute("devicesOpen", showDeviceList)
+        modelMap.addAttribute("kickedMacs", kickedMacAddresses)
     }
 }

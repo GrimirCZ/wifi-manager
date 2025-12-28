@@ -78,6 +78,22 @@
           </p>
         </div>
 
+        <div class="alert alert-danger" th:if="${deviceKicked == true}" role="alert">
+          <div class="font-semibold" th:text="#{captive.kicked.title}">
+            You were disconnected by the administrator.
+          </div>
+          <div class="text-sm"
+               th:if="${usedTicketValidUntil != null}"
+               th:utext="#{captive.kicked.subtitle(${@DateFormatter.timeRelativeNow(usedTicketValidUntil)})}">
+            You will not be able to use another ticket until this one expires (in -).
+          </div>
+          <div class="text-sm"
+               th:if="${usedTicketValidUntil == null}"
+               th:text="#{captive.kicked.subtitle.unknown}">
+            You will not be able to use another ticket until the current one expires.
+          </div>
+        </div>
+
         <div class="card space-y-3" th:if="${deviceLoggedIn == true}">
           <div class="text-sm font-medium" th:text="#{captive.ticket.title}">Ticket in use</div>
           <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
@@ -98,12 +114,22 @@
           </div>
         </div>
 
-        <form class="card space-y-5"
+        <form class="card flex flex-col gap-5"
               th:action="@{/captive}"
               th:object="${form}"
               method="post"
-              th:attr="hx-post=@{/captive},hx-target='#captive-content',hx-swap='outerHTML'"
-              th:if="${deviceLoggedIn != true}">
+              th:attr="hx-post=@{/captive},hx-target='#captive-content',hx-swap='outerHTML',data-ends-at=${deviceKicked == true ? @DateFormatter.toTimestamp(usedTicketValidUntil) : null}"
+              th:if="${deviceLoggedIn != true}"
+              th:classappend="${deviceKicked == true} ? ' hidden' : ''"
+              data-script="on load
+                             if @data-ends-at is not empty
+                               set delay to ((@data-ends-at * 1000) - Date.now())
+                               if delay is less than 0
+                                 remove .hidden from me
+                               else if delay is less than 2147483647
+                                 wait delay then remove .hidden from me
+                               end
+                             end">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
           <div class="alert alert-success" th:if="${codeSubmitted}" role="status"
@@ -115,7 +141,7 @@
             <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">Invalid access code.</div>
           </div>
 
-          <div class="space-y-2">
+          <div class="flex flex-col gap-2">
             <label class="text-sm font-medium" for="access-code" th:text="#{captive.access.label}">
               Access code
             </label>
