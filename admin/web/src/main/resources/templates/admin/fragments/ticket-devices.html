@@ -42,7 +42,8 @@
                             th:hx-post="@{/admin/ticket/{ticketId}/device/_kick(ticketId=${ticketId},mac=${device.mac})}"
                             th:hx-confirm="#{admin.ticket.active.devices.kick.confirm}"
                             hx-swap="none">
-                        <span th:text="#{admin.ticket.active.devices.kick}">Kick</span>
+                        <span class="btn-text" th:text="#{admin.ticket.active.devices.kick}">Kick</span>
+                        <span class="spinner"></span>
                     </button>
                 </div>
             </li>

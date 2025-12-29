@@ -12,12 +12,10 @@ class SpringAdminEventPublisher(
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) : AdminEventPublisher {
     override fun publish(event: TicketCreatedEvent) {
-        // TODO: implement (transport concerns, tracing, etc.)
         applicationEventPublisher.publishEvent(event)
     }
 
     override fun publish(event: ClientKickedEvent) {
-        // TODO: implement (transport concerns, tracing, etc.)
         applicationEventPublisher.publishEvent(event)
     }
 

@@ -2,19 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-canvas.drawingBuffer {
-    display: block;
-    position: absolute;
-    z-index: 2;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
-canvas.drawingBuffer + br {
-    display: none;
-}
 
 @layer base {
   :root {
@@ -174,4 +161,68 @@ canvas.drawingBuffer + br {
   .tooltip[data-tooltip]:focus-visible::before {
     @apply translate-y-0 opacity-100;
   }
+}
+
+/* Form submit spinner */
+
+button:has(.spinner) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+button .spinner {
+  width: 1.2em;
+  height: 1.2em;
+  border: 2px solid transparent; /* light gray background */
+  border-top: 2px solid rgba(0, 0, 0, 0.35); /* visible arc */
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  transition: all 0.2s ease;
+  opacity: 0; /* Hide spinner by default */
+  display: none;
+}
+
+/* Show spinner when form is in-flight */
+form.htmx-request button .spinner, button.htmx-request .spinner {
+  opacity: 1;
+  display: inline-block;
+}
+
+/* Optional: fade text while loading */
+form.htmx-request button .btn-text, button.htmx-request .btn-text {
+  opacity: 0.6;
+}
+
+/* Prevent double clicks */
+form.htmx-request button, button.htmx-request:has(.spinner) {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/*Hide Quagga elements*/
+
+canvas.drawingBuffer {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+canvas.drawingBuffer + br {
+  display: none;
 }

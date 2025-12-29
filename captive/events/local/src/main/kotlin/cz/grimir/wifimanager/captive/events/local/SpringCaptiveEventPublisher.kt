@@ -12,17 +12,14 @@ class SpringCaptiveEventPublisher(
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) : CaptiveEventPublisher {
     override fun publish(event: DeviceAuthorizedEvent) {
-        // TODO: implement (transport concerns, tracing, etc.)
         applicationEventPublisher.publishEvent(event)
     }
 
     override fun publish(event: ClientAccessRevokedEvent) {
-        // TODO: implement (transport concerns, tracing, etc.)
         applicationEventPublisher.publishEvent(event)
     }
 
     override fun publish(event: AuthorizationTokenRemovedEvent) {
-        // TODO: implement (transport concerns, tracing, etc.)
         applicationEventPublisher.publishEvent(event)
     }
 }

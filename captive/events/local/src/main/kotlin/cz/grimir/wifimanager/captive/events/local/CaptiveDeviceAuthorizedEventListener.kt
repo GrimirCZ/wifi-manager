@@ -11,7 +11,6 @@ class CaptiveDeviceAuthorizedEventListener(
 ) {
     @EventListener
     fun on(event: DeviceAuthorizedEvent) {
-        // TODO: implement (idempotency, ordering)
         policy.on(event)
     }
 }

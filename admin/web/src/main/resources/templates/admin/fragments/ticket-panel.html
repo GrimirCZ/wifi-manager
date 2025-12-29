@@ -91,9 +91,9 @@
                             th:hx-delete="@{/admin/ticket/{ticketId}(ticketId=${ticket.id})}"
                             th:hx-confirm="#{admin.ticket.active.end.confirm}"
                             hx-target="closest .card"
-                            hx-swap="outerHTML"
-                            th:text="#{admin.ticket.active.end}">
-                        End early
+                            hx-swap="outerHTML">
+                        <span class="btn-text" th:text="#{admin.ticket.active.end}">End early</span>
+                        <span class="spinner"></span>
                     </button>
                 </div>
 

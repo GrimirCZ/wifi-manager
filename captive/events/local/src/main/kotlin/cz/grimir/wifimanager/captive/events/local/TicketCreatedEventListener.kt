@@ -11,7 +11,6 @@ class TicketCreatedEventListener(
 ) {
     @EventListener
     fun on(event: TicketCreatedEvent) {
-        // TODO: implement (idempotency, ordering)
         policy.on(event)
     }
 }
