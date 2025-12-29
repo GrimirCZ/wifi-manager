@@ -19,7 +19,6 @@ class RouterAgentHub(
     fun registerConnection(responseObserver: StreamObserver<RouterAgentCommand>): String {
         val connectionId = UUID.randomUUID().toString()
         connections[connectionId] = RouterAgentConnection(connectionId, responseObserver, commandTimeout)
-        logger.info { "Router agent connected id=$connectionId total=${connections.size}" }
         return connectionId
     }
 
@@ -35,7 +34,6 @@ class RouterAgentHub(
         connectionId: String,
         ack: CommandAck,
     ) {
-        logger.info { "Router agent ack id=${ack.id} success=${ack.success} connectionId=$connectionId" }
         connections[connectionId]?.handleAck(ack)
     }
 

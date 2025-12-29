@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.task.TaskExecutor
 
 @Configuration
 @EnableConfigurationProperties(RouterAgentProperties::class)
@@ -29,5 +30,6 @@ class CaptiveRouterAgentConfig {
     fun grpcRouterAgent(
         properties: RouterAgentProperties,
         findAuthorizationTokenPort: FindAuthorizationTokenPort,
-    ) = GrpcServerRouterAgent(properties.grpc, findAuthorizationTokenPort)
+        applicationTaskExecutor: TaskExecutor,
+    ) = GrpcServerRouterAgent(properties.grpc, findAuthorizationTokenPort, applicationTaskExecutor)
 }

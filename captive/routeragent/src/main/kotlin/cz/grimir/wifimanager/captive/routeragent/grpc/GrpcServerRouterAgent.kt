@@ -17,6 +17,7 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc.netty.shaded.io.netty.handler.ssl.ClientAuth
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder
 import org.springframework.beans.factory.InitializingBean
+import org.springframework.core.task.TaskExecutor
 import java.io.File
 import java.io.FileInputStream
 import java.net.SocketAddress
@@ -30,11 +31,12 @@ import javax.net.ssl.TrustManagerFactory
 class GrpcServerRouterAgent(
     private val properties: GrpcServerRouterAgentProperties,
     findAuthorizationTokenPort: FindAuthorizationTokenPort,
+    commandExecutor: TaskExecutor,
 ) : RouterAgentPort,
     AutoCloseable,
     InitializingBean {
     private val hub = RouterAgentHub(properties.commandTimeout)
-    private val service = RouterAgentGrpcService(hub, findAuthorizationTokenPort)
+    private val service = RouterAgentGrpcService(hub, findAuthorizationTokenPort, commandExecutor)
     private val server = buildServer(properties, service)
 
     override fun afterPropertiesSet() {
