@@ -32,8 +32,22 @@ class FlywayConfig {
             .load()
 
     @Bean
+    fun userFlyway(dataSource: DataSource): Flyway =
+        Flyway
+            .configure()
+            .dataSource(dataSource)
+            .createSchemas(true)
+            .schemas("auth")
+            .defaultSchema("auth")
+            .locations("classpath:db/migration/auth")
+            .load()
+
+    @Bean
     fun adminFlywayInitializer(adminFlyway: Flyway) = FlywayMigrationInitializer(adminFlyway)
 
     @Bean
     fun captiveFlywayInitializer(captiveFlyway: Flyway) = FlywayMigrationInitializer(captiveFlyway)
+
+    @Bean
+    fun userFlywayInitializer(userFlyway: Flyway) = FlywayMigrationInitializer(userFlyway)
 }

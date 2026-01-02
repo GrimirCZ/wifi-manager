@@ -13,6 +13,8 @@ shedlock = "7.3.0"
 hibernateHypersistenceUtils = "3.14.0"
 grpc = "1.78.0"
 protobuf = "3.25.5"
+coroutines = "1.9.0"
+testcontainers = "1.20.3"
 
 [libraries]
 junitBom = { module = "org.junit:junit-bom", version = "5.10.0" }
@@ -29,6 +31,7 @@ springBootStarterOauth2Client = { module = "org.springframework.boot:spring-boot
 springBootStarterSecurity = { module = "org.springframework.boot:spring-boot-starter-security" }
 springBootStarterThymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
 springBootStarterWeb = { module = "org.springframework.boot:spring-boot-starter-web" }
+springSecurityWeb = { module = "org.springframework.security:spring-security-web" }
 springContext = { module = "org.springframework:spring-context" }
 springSecurityOauth2Jose = { module = "org.springframework.security:spring-security-oauth2-jose" }
 springTx = { module = "org.springframework:spring-tx" }
@@ -42,6 +45,9 @@ grpcNettyShaded = { module = "io.grpc:grpc-netty-shaded", version.ref = "grpc" }
 grpcProtobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpc" }
 grpcStub = { module = "io.grpc:grpc-stub", version.ref = "grpc" }
 protobufJava = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
+kotlinCoroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+testcontainersJunitJupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainersPostgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 
 [bundles]
 springContextTx = ["springContext", "springTx"]

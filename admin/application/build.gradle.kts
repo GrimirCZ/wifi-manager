@@ -4,6 +4,7 @@ val mockitoAgent by configurations.creating
 
 dependencies {
     implementation(project(":shared:core"))
+    implementation(project(":shared:application"))
     implementation(project(":shared:events"))
     implementation(project(":admin:core"))
 

@@ -1,25 +1,14 @@
-create table if not exists admin.user
-(
-    id            uuid primary key,
-    created_at    timestamptz not null,
-    updated_at    timestamptz not null,
-    last_login_at timestamptz not null
-);
-
 create table if not exists admin.user_identity
 (
     id            uuid primary key,
-    user_id       uuid        not null references admin.user (id) on delete cascade,
+    user_id       uuid        not null,
     issuer        text        not null,
     subject       text        not null,
     email         text        not null,
-    username      text        not null,
-    first_name    text        null,
-    last_name     text        null,
+    display_name  text        not null,
     picture_url   text        null,
     roles         text[]      not null default '{}',
     created_at    timestamptz not null,
-    last_login_at timestamptz not null,
     unique (issuer, subject)
 );
 

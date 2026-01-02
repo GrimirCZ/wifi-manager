@@ -1,16 +1,16 @@
 package cz.grimir.wifimanager.admin.application.usecases.commands
 
 import cz.grimir.wifimanager.admin.application.commands.KickDeviceCommand
-import cz.grimir.wifimanager.admin.application.model.UserIdentity
-import cz.grimir.wifimanager.admin.application.model.UserRole
 import cz.grimir.wifimanager.admin.application.ports.AdminEventPublisher
 import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
 import cz.grimir.wifimanager.admin.application.ports.SaveTicketPort
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.admin.core.exceptions.UserNotAllowedToKickDevice
+import cz.grimir.wifimanager.shared.application.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.TicketId
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.core.UserId
+import cz.grimir.wifimanager.shared.core.UserRole
 import cz.grimir.wifimanager.shared.events.ClientKickedEvent
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -46,7 +46,7 @@ class KickClientUsecaseTest {
         val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000010"))
         val user =
             buildUser(
-                UserId(UUID.fromString("00000000-0000-0000-0000-000000000011")),
+                UUID.fromString("00000000-0000-0000-0000-000000000011"),
                 setOf(UserRole.WIFI_STAFF),
             )
         val ticket =
@@ -85,7 +85,7 @@ class KickClientUsecaseTest {
         val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000030"))
         val admin =
             buildUser(
-                UserId(UUID.fromString("00000000-0000-0000-0000-000000000031")),
+                UUID.fromString("00000000-0000-0000-0000-000000000031"),
                 setOf(UserRole.WIFI_ADMIN),
             )
         val ticket =
@@ -116,7 +116,7 @@ class KickClientUsecaseTest {
         val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000040"))
         val user =
             buildUser(
-                UserId(UUID.fromString("00000000-0000-0000-0000-000000000041")),
+                UUID.fromString("00000000-0000-0000-0000-000000000041"),
                 setOf(UserRole.WIFI_STAFF),
             )
         val ticket =
@@ -147,7 +147,7 @@ class KickClientUsecaseTest {
         val ticketId = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000020"))
         val user =
             buildUser(
-                UserId(UUID.fromString("00000000-0000-0000-0000-000000000021")),
+                UUID.fromString("00000000-0000-0000-0000-000000000021"),
                 setOf(UserRole.WIFI_STAFF),
             )
         given(findTicketPort.findById(ticketId)).willReturn(null)
@@ -164,21 +164,15 @@ class KickClientUsecaseTest {
     }
 
     private fun buildUser(
-        userId: UserId,
+        userId: UUID,
         roles: Set<UserRole>,
-    ): UserIdentity =
-        UserIdentity(
-            id = UUID.randomUUID(),
-            userId = userId,
-            issuer = "issuer",
-            subject = "subject",
+    ): UserIdentitySnapshot =
+        UserIdentitySnapshot(
+            userId = UserId(userId),
+            identityId = UUID.randomUUID(),
+            displayName = "user",
             email = "user@example.com",
-            username = "user",
-            firstName = "Test",
-            lastName = "User",
             pictureUrl = null,
-            createdAt = Instant.parse("2025-01-01T00:00:00Z"),
-            lastLoginAt = Instant.parse("2025-01-01T00:00:00Z"),
             roles = roles,
         )
 }

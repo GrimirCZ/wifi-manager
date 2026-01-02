@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{captive/fragments/head :: head('Captive login')}"></head>
+  <body class="bg-surface-muted">
+    <main class="container-page">
+      <div class="card">
+        <h1 class="text-xl font-semibold">Captive login</h1>
+
+        <div class="mt-6">
+          <a
+            class="btn btn-primary w-full block text-center"
+            th:href="@{'/oauth2/authorization/' + ${oidcRegistrationId}}"
+            >Sign in with SSO</a
+          >
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

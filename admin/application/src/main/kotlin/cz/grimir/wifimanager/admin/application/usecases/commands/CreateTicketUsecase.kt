@@ -1,7 +1,6 @@
 package cz.grimir.wifimanager.admin.application.usecases.commands
 
 import cz.grimir.wifimanager.admin.application.commands.CreateTicketCommand
-import cz.grimir.wifimanager.admin.application.model.UserRole
 import cz.grimir.wifimanager.admin.application.ports.AdminEventPublisher
 import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
 import cz.grimir.wifimanager.admin.application.ports.SaveTicketPort
@@ -9,6 +8,7 @@ import cz.grimir.wifimanager.admin.application.util.AccessCodeGenerator
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.admin.core.exceptions.UserAlreadyHasActiveTickets
 import cz.grimir.wifimanager.shared.core.TicketId
+import cz.grimir.wifimanager.shared.core.UserRole
 import cz.grimir.wifimanager.shared.events.TicketCreatedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -59,7 +59,7 @@ class CreateTicketUsecase(
                     TicketCreatedEvent.Author(
                         userId = command.user.userId,
                         email = command.user.email,
-                        displayName = command.user.username,
+                        displayName = command.user.displayName,
                     ),
             ),
         )

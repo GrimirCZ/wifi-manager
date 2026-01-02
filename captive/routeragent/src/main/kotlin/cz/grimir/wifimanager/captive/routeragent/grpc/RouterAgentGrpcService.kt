@@ -3,8 +3,8 @@ package cz.grimir.wifimanager.captive.routeragent.grpc
 import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.grpc.stub.StreamObserver
-import org.springframework.core.task.TaskRejectedException
 import org.springframework.core.task.TaskExecutor
+import org.springframework.core.task.TaskRejectedException
 import java.util.concurrent.RejectedExecutionException
 
 private val logger = KotlinLogging.logger {}

@@ -18,7 +18,7 @@
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": true,
       "attributes": {
-        "post.logout.redirect.uris": "http://localhost:8080/admin/login*"
+        "post.logout.redirect.uris": "http://localhost:8080/*"
       },
       "protocolMappers": [
         {
@@ -34,6 +34,20 @@
             "access.token.claim": "true",
             "userinfo.token.claim": "true",
             "multivalued": "false"
+          }
+        },
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "multivalued": "true"
           }
         }
       ],

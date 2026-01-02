@@ -2,6 +2,8 @@ group = "cz.grimir.wifimanager.admin.web"
 
 dependencies {
     implementation(project(":shared:core"))
+    implementation(project(":shared:application"))
+    implementation(project(":shared:security"))
     implementation(project(":shared:ui"))
     implementation(project(":admin:core"))
     implementation(project(":admin:application"))

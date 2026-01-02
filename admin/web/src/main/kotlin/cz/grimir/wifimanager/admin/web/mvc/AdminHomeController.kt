@@ -3,8 +3,6 @@ package cz.grimir.wifimanager.admin.web.mvc
 import cz.grimir.wifimanager.admin.application.commands.CancelTicketCommand
 import cz.grimir.wifimanager.admin.application.commands.CreateTicketCommand
 import cz.grimir.wifimanager.admin.application.commands.KickDeviceCommand
-import cz.grimir.wifimanager.admin.application.model.UserIdentity
-import cz.grimir.wifimanager.admin.application.model.UserRole
 import cz.grimir.wifimanager.admin.application.queries.CountAuthorizedDevicesByTicketIdQuery
 import cz.grimir.wifimanager.admin.application.queries.FindAuthorizedDevicesByTicketIdQuery
 import cz.grimir.wifimanager.admin.application.queries.FindTicketByIdQuery
@@ -22,8 +20,10 @@ import cz.grimir.wifimanager.admin.core.exceptions.UserAlreadyHasActiveTickets
 import cz.grimir.wifimanager.admin.core.value.AuthorizedDevice
 import cz.grimir.wifimanager.admin.web.AdminWifiProperties
 import cz.grimir.wifimanager.admin.web.mvc.dto.CreateTicketRequestDto
-import cz.grimir.wifimanager.admin.web.security.support.CurrentUser
+import cz.grimir.wifimanager.shared.application.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.TicketId
+import cz.grimir.wifimanager.shared.core.UserRole
+import cz.grimir.wifimanager.shared.security.mvc.CurrentUser
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HtmxRequest
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
@@ -53,7 +53,7 @@ class AdminHomeController(
 ) {
     @GetMapping("/admin", "/admin/")
     fun index(
-        @CurrentUser user: UserIdentity,
+        @CurrentUser user: UserIdentitySnapshot,
         htmxRequest: HtmxRequest,
         modelMap: ModelMap,
     ): String {
@@ -72,7 +72,7 @@ class AdminHomeController(
     @PostMapping("/admin/ticket")
     fun createTicket(
         @CurrentUser
-        user: UserIdentity,
+        user: UserIdentitySnapshot,
         @ModelAttribute request: CreateTicketRequestDto,
         redirectAttributes: RedirectAttributes,
         htmxRequest: HtmxRequest,
@@ -114,7 +114,7 @@ class AdminHomeController(
 
     @GetMapping("/admin/ticket/{ticketId}/_ended-banner")
     fun ticketExpiredBanner(
-        @CurrentUser user: UserIdentity,
+        @CurrentUser user: UserIdentitySnapshot,
         @PathVariable ticketId: UUID,
         @RequestParam(required = false) accessCode: String?,
         @RequestParam(required = false) createdAt: Long?,
@@ -141,7 +141,7 @@ class AdminHomeController(
 
     @DeleteMapping("/admin/ticket/{ticketId}")
     fun endTicketEarly(
-        @CurrentUser user: UserIdentity,
+        @CurrentUser user: UserIdentitySnapshot,
         @PathVariable ticketId: UUID,
         redirectAttributes: RedirectAttributes,
         htmxRequest: HtmxRequest,
@@ -176,7 +176,7 @@ class AdminHomeController(
 
     @GetMapping("/admin/ticket/{ticketId}/_devices")
     fun devices(
-        @CurrentUser user: UserIdentity,
+        @CurrentUser user: UserIdentitySnapshot,
         @PathVariable ticketId: UUID,
         @RequestParam(required = false, defaultValue = "false") includeDeviceList: Boolean,
         modelMap: ModelMap,
@@ -192,7 +192,7 @@ class AdminHomeController(
 
     @PostMapping("/admin/ticket/{ticketId}/device/_kick")
     fun kickDevice(
-        @CurrentUser user: UserIdentity,
+        @CurrentUser user: UserIdentitySnapshot,
         @PathVariable ticketId: UUID,
         @RequestParam mac: String,
         modelMap: ModelMap,
@@ -217,7 +217,7 @@ class AdminHomeController(
         return "admin/fragments/ticket-devices :: devicesSwap"
     }
 
-    private fun findActiveTickets(user: UserIdentity): List<TicketWithDeviceCount> {
+    private fun findActiveTickets(user: UserIdentitySnapshot): List<TicketWithDeviceCount> {
         val now = Instant.now()
         return findTicketsByAuthorIdWithDeviceCountUsecase
             .find(FindTicketsByAuthorIdWithDeviceCountQuery(user.userId))
@@ -226,7 +226,7 @@ class AdminHomeController(
     }
 
     private fun populateModel(
-        user: UserIdentity,
+        user: UserIdentitySnapshot,
         modelMap: ModelMap,
     ) {
         modelMap.addAttribute("activeTickets", findActiveTickets(user))
@@ -235,7 +235,7 @@ class AdminHomeController(
     }
 
     private fun loadTicketForUser(
-        user: UserIdentity,
+        user: UserIdentitySnapshot,
         ticketId: UUID,
     ): Ticket {
         val ticket = findTicketByIdUsecase.find(FindTicketByIdQuery(TicketId(ticketId)))

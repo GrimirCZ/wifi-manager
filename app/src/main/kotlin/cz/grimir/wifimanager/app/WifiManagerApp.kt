@@ -9,6 +9,10 @@ import cz.grimir.wifimanager.captive.application.CaptiveApplicationConfig
 import cz.grimir.wifimanager.captive.events.local.CaptiveLocalEventsConfig
 import cz.grimir.wifimanager.captive.persistence.CaptivePersistenceConfig
 import cz.grimir.wifimanager.captive.routeragent.CaptiveRouterAgentConfig
+import cz.grimir.wifimanager.shared.security.UiSecurityConfig
+import cz.grimir.wifimanager.user.application.UserApplicationConfig
+import cz.grimir.wifimanager.user.events.local.UserLocalEventsConfig
+import cz.grimir.wifimanager.user.persistence.UserPersistenceConfig
 import cz.grimir.wifimanager.web.captive.CaptiveWebConfig
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -23,6 +27,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
     AdminWebConfig::class,
     AdminSchedulerConfig::class,
     AdminLocalEventsConfig::class,
+    UserApplicationConfig::class,
+    UserPersistenceConfig::class,
+    UserLocalEventsConfig::class,
+    UiSecurityConfig::class,
     CaptiveApplicationConfig::class,
     CaptivePersistenceConfig::class,
     CaptiveWebConfig::class,

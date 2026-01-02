@@ -1,8 +1,6 @@
 package cz.grimir.wifimanager.admin.application.commands
 
-import cz.grimir.wifimanager.admin.application.model.User
-import cz.grimir.wifimanager.admin.application.model.UserIdentity
-import cz.grimir.wifimanager.shared.core.UserId
+import cz.grimir.wifimanager.shared.application.UserIdentitySnapshot
 import java.time.Duration
 
 data class CreateTicketCommand(
@@ -17,5 +15,5 @@ data class CreateTicketCommand(
     /**
      * User that request ticket creation.
      */
-    val user: UserIdentity,
+    val user: UserIdentitySnapshot,
 )

@@ -1,11 +1,11 @@
 package cz.grimir.wifimanager.admin.application.usecases.commands
 
 import cz.grimir.wifimanager.admin.application.commands.CancelTicketCommand
-import cz.grimir.wifimanager.admin.application.model.UserRole
 import cz.grimir.wifimanager.admin.application.ports.AdminEventPublisher
 import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
 import cz.grimir.wifimanager.admin.application.ports.SaveTicketPort
 import cz.grimir.wifimanager.admin.core.exceptions.CannotCancelInactiveTicket
+import cz.grimir.wifimanager.shared.core.UserRole
 import cz.grimir.wifimanager.shared.events.TicketEndedEvent
 import cz.grimir.wifimanager.shared.events.TicketEndedEvent.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging

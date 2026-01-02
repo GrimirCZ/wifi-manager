@@ -4,12 +4,17 @@ plugins {
 
 dependencies {
     implementation(project(":shared:ui"))
+    implementation(project(":shared:security"))
 
     implementation(project(":admin:application"))
     implementation(project(":admin:persistence"))
     implementation(project(":admin:web"))
     implementation(project(":admin:scheduler"))
     implementation(project(":admin:events:local"))
+
+    implementation(project(":user:application"))
+    implementation(project(":user:persistence"))
+    implementation(project(":user:events:local"))
 
     implementation(project(":captive:application"))
     implementation(project(":captive:routeragent"))

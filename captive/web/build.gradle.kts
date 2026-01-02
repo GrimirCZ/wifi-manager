@@ -2,6 +2,7 @@ group = "cz.grimir.wifimanager.captive.web"
 
 dependencies {
     implementation(project(":shared:core"))
+    implementation(project(":shared:security"))
     implementation(project(":shared:ui"))
     implementation(project(":captive:core"))
     implementation(project(":captive:application"))

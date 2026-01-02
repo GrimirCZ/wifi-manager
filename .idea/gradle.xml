@@ -39,10 +39,17 @@
             <option value="$PROJECT_DIR$/captive/routeragent" />
             <option value="$PROJECT_DIR$/captive/web" />
             <option value="$PROJECT_DIR$/shared" />
+            <option value="$PROJECT_DIR$/shared/application" />
             <option value="$PROJECT_DIR$/shared/core" />
             <option value="$PROJECT_DIR$/shared/events" />
+            <option value="$PROJECT_DIR$/shared/security" />
             <option value="$PROJECT_DIR$/shared/ui" />
             <option value="$PROJECT_DIR$/shared/util" />
+            <option value="$PROJECT_DIR$/user" />
+            <option value="$PROJECT_DIR$/user/application" />
+            <option value="$PROJECT_DIR$/user/events" />
+            <option value="$PROJECT_DIR$/user/events/local" />
+            <option value="$PROJECT_DIR$/user/persistence" />
           </set>
         </option>
       </GradleProjectSettings>

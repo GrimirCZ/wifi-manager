@@ -7,6 +7,4 @@ interface FindUserIdentityPort {
         issuer: String,
         subject: String,
     ): UserIdentity?
-
-    fun findByEmail(email: String): UserIdentity?
 }

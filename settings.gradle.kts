@@ -19,7 +19,9 @@ plugins {
 }
 
 include("shared:core")
+include("shared:application")
 include("shared:events")
+include("shared:security")
 include("shared:ui")
 include("shared:util")
 
@@ -29,6 +31,10 @@ include("admin:web")
 include("admin:persistence")
 include("admin:scheduler")
 include("admin:events:local")
+
+include("user:application")
+include("user:persistence")
+include("user:events:local")
 
 include("captive:core")
 include("captive:application")
