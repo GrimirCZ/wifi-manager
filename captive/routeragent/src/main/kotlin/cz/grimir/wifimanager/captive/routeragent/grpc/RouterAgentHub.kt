@@ -27,7 +27,6 @@ class RouterAgentHub(
         cause: Throwable? = null,
     ) {
         connections.remove(connectionId)?.close(cause)
-        logger.info { "Router agent disconnected id=$connectionId total=${connections.size}" }
     }
 
     fun handleAck(

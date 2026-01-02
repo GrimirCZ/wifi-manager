@@ -49,7 +49,7 @@ wifimanager:
         tls:
           enabled: false
           require-client-auth: false
-      type: dummy
+      type: grpc
     auth:
       keycloak:
         enabled: true
