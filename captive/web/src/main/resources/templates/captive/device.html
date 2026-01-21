@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{captive/fragments/head :: head(#{captive.device.title})}"></head>
+  <body class="bg-surface-muted">
+    <div th:replace="~{captive/fragments/header :: header(#{captive.device.title})}"></div>
+    <main class="container-page py-8">
+      <div class="mx-auto max-w-2xl space-y-6">
+        <div class="card space-y-2">
+          <h1 class="text-2xl font-semibold" th:text="#{captive.device.title}">Authorize device</h1>
+          <p class="text-text-muted" th:text="#{captive.device.subtitle}">
+            Follow the steps to authorize this device for long-term access.
+          </p>
+        </div>
+
+        <div class="card space-y-2">
+          <div class="text-sm font-medium" th:text="#{captive.device.step.details}">Step 1: Device details</div>
+          <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
+            <span th:text="#{captive.client.mac}">MAC address</span>
+            <span class="text-right font-medium" th:text="${deviceMac}">00:00:00:00:00:00</span>
+          </div>
+          <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
+            <span th:text="#{captive.device.hostname}">Hostname</span>
+            <span class="text-right" th:text="${deviceHostname ?: '-'}">-</span>
+          </div>
+        </div>
+
+        <div class="alert alert-warning" th:if="${deviceRandomized == true}" role="alert">
+          <div class="font-medium" th:text="#{captive.device.randomized.title}">Randomized MAC detected</div>
+          <div class="text-sm" th:text="#{captive.device.randomized.subtitle}">
+            Your device is using a private address that can change.
+          </div>
+          <a class="text-sm text-primary underline" th:href="@{/captive/help/randomized-mac}"
+             th:text="#{captive.device.randomized.link}">
+            Learn how to disable randomized MAC
+          </a>
+        </div>
+
+        <div class="alert alert-danger" th:if="${noDeviceAccess == true}" role="alert">
+          <div class="font-medium" th:text="#{captive.device.no-access.title}">Device access is not available.</div>
+          <div class="text-sm" th:text="#{captive.device.no-access.subtitle}">
+            Your account is not eligible for BYOC device authorization.
+          </div>
+        </div>
+
+        <div class="card space-y-3" th:if="${limitReached == true}">
+          <div class="text-sm font-medium" th:text="#{captive.device.limit.title}">
+            Device limit reached
+          </div>
+          <p class="text-sm text-text-muted" th:text="#{captive.device.limit.subtitle(${deviceCount}, ${deviceLimit})}">
+            Remove a device to authorize another.
+          </p>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between gap-4" th:each="device : ${devices}">
+              <div class="space-y-0.5">
+                <div class="text-sm font-medium" th:text="${device.name}">Device name</div>
+                <div class="text-xs text-text-muted" th:text="${device.mac}">00:00:00:00:00:00</div>
+              </div>
+              <form th:action="@{/captive/device/remove}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="mac" th:value="${device.mac}" />
+                <button class="btn btn-secondary" type="submit" th:text="#{captive.device.remove}">Remove</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <form class="card flex flex-col gap-4"
+              th:if="${noDeviceAccess != true && limitReached != true}"
+              th:action="@{/captive/device/authorize}"
+              th:object="${form}"
+              method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+          <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}" role="alert">
+            <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error</div>
+          </div>
+
+          <div class="text-sm font-medium" th:text="#{captive.device.step.name}">Step 2: Name this device</div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium" for="device-name" th:text="#{captive.device.name.label}">
+              Device name
+            </label>
+            <input
+              id="device-name"
+              type="text"
+              class="input w-full"
+              th:field="*{name}"
+              th:placeholder="#{captive.device.name.placeholder}"
+              required
+            />
+            <div class="text-xs text-red-600" th:if="${#fields.hasErrors('name')}"
+                 th:text="${#fields.errors('name')[0]}">
+              Device name is required.
+            </div>
+          </div>
+
+          <button class="btn btn-primary w-full" type="submit">
+            <span class="btn-text" th:text="#{captive.device.authorize}">Authorize device</span>
+            <span class="spinner"></span>
+          </button>
+        </form>
+      </div>
+    </main>
+  </body>
+</html>

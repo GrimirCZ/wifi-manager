@@ -52,3 +52,10 @@ wifimanager:
           enabled: false
           require-client-auth: false
       type: dummy
+    auth:
+      keycloak:
+        enabled: true
+        issuer-uri: http://localhost:8081/realms/wifimanager
+        client-id: captive-portal
+        client-secret: captive-portal-secret
+        allowed-devices-by-role: WIFI_STAFF=1;WIFI_ADMIN=5

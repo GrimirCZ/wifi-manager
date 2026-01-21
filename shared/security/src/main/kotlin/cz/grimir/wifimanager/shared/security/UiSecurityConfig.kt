@@ -33,7 +33,9 @@ class UiSecurityConfig(
             }
 
         http
-            .authorizeHttpRequests { auth ->
+            .securityContext {
+                it.requireExplicitSave(false)
+            }.authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers("/assets/**")
                     .permitAll()

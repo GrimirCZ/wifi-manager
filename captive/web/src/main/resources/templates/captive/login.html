@@ -1,17 +1,68 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head th:replace="~{captive/fragments/head :: head('Captive login')}"></head>
+  <head th:replace="~{captive/fragments/head :: head(#{captive.login.title})}"></head>
   <body class="bg-surface-muted">
-    <main class="container-page">
-      <div class="card">
-        <h1 class="text-xl font-semibold">Captive login</h1>
+    <div th:replace="~{captive/fragments/header :: header(#{captive.login.title})}"></div>
+    <main class="container-page py-8">
+      <div class="card space-y-5">
+        <div class="space-y-2">
+          <h1 class="text-xl font-semibold" th:text="#{captive.login.title}">Captive login</h1>
+          <p class="text-sm text-text-muted" th:text="#{captive.login.subtitle}">
+            Use your directory credentials to sign in.
+          </p>
+        </div>
 
-        <div class="mt-6">
-          <a
-            class="btn btn-primary w-full block text-center"
-            th:href="@{'/oauth2/authorization/' + ${oidcRegistrationId}}"
-            >Sign in with SSO</a
-          >
+        <form class="flex flex-col gap-4" th:action="@{/captive/login}" th:object="${form}" method="post" hx-boost="true">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+          <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}" role="alert">
+            <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">Invalid credentials.</div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium" for="username" th:text="#{captive.login.username.label}">Username</label>
+            <input
+              id="username"
+              type="text"
+              autocomplete="username"
+              class="input w-full"
+              th:field="*{username}"
+              th:placeholder="#{captive.login.username.placeholder}"
+              required
+            />
+            <div class="text-xs text-red-600" th:if="${#fields.hasErrors('username')}"
+                 th:text="${#fields.errors('username')[0]}">
+              Username is required.
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium" for="password" th:text="#{captive.login.password.label}">Password</label>
+            <input
+              id="password"
+              type="password"
+              autocomplete="current-password"
+              class="input w-full"
+              th:field="*{password}"
+              th:placeholder="#{captive.login.password.placeholder}"
+              required
+            />
+            <div class="text-xs text-red-600" th:if="${#fields.hasErrors('password')}"
+                 th:text="${#fields.errors('password')[0]}">
+              Password is required.
+            </div>
+          </div>
+
+          <button class="btn btn-primary w-full" type="submit">
+            <span class="btn-text" th:text="#{captive.login.submit}">Sign in</span>
+            <span class="spinner"></span>
+          </button>
+        </form>
+
+        <div class="text-center text-sm">
+          <a class="text-primary underline" th:href="@{/captive}" th:text="#{captive.login.back}">
+            Use an access code instead
+          </a>
         </div>
       </div>
     </main>

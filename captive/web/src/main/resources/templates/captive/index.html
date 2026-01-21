@@ -78,6 +78,15 @@
           </p>
         </div>
 
+        <div class="alert alert-success" th:if="${accountAuthorized == true}" role="status">
+          <div class="font-medium" th:text="#{captive.account.authorized.title(${authorizedByEmail})}">
+            This device is already authorized.
+          </div>
+          <div class="text-sm text-text-muted" th:text="#{captive.account.authorized.subtitle(${authorizedDeviceName})}">
+            You are signed in on this device.
+          </div>
+        </div>
+
         <div class="alert alert-danger" th:if="${deviceKicked == true}" role="alert">
           <div class="font-semibold" th:text="#{captive.kicked.title}">
             You were disconnected by the administrator.
@@ -94,9 +103,9 @@
           </div>
         </div>
 
-        <div class="card space-y-3" th:if="${deviceLoggedIn == true}">
+        <div class="card space-y-3" th:if="${deviceLoggedIn == true && accountAuthorized != true}">
           <div class="text-sm font-medium" th:text="#{captive.ticket.title}">Ticket in use</div>
-          <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
+          <div th:if="${usedTicketValidUntil}" class="flex items-center justify-between gap-3 text-sm text-text-muted">
             <span th:text="#{captive.ticket.validUntil}">Valid until</span>
             <span class="text-right font-bold" th:text="${@DateFormatter.timeRelativeNow(usedTicketValidUntil)}">TBD</span>
           </div>
@@ -119,7 +128,7 @@
               th:object="${form}"
               method="post"
               th:attr="hx-post=@{/captive},hx-target='#captive-content',hx-swap='outerHTML',data-ends-at=${deviceKicked == true ? @DateFormatter.toTimestamp(usedTicketValidUntil) : null}"
-              th:if="${deviceLoggedIn != true}"
+              th:if="${deviceLoggedIn != true && accountAuthorized != true}"
               th:classappend="${deviceKicked == true} ? ' hidden' : ''"
               data-script="on load
                              if @data-ends-at is not empty
@@ -215,6 +224,12 @@
             <span class="spinner"></span>
           </button>
         </form>
+
+        <div class="text-center text-sm" th:if="${accountAuthorized != true}">
+          <a class="text-primary underline" th:href="@{/captive/login}" th:text="#{captive.account.login.link}">
+            Staff sign-in
+          </a>
+        </div>
       </div>
     </main>
 

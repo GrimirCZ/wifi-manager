@@ -1,8 +1,11 @@
 package cz.grimir.wifimanager.web.captive.mvc
 
 import cz.grimir.wifimanager.captive.application.command.AuthorizeDeviceWithCodeCommand
+import cz.grimir.wifimanager.captive.application.ports.CaptiveUserIdentityPort
 import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.usecase.AuthorizeDeviceWithCodeUsecase
+import cz.grimir.wifimanager.captive.application.usecase.commands.TouchNetworkUserDeviceUsecase
+import cz.grimir.wifimanager.captive.application.usecase.queries.FindNetworkUserDeviceByMacUsecase
 import cz.grimir.wifimanager.captive.core.exceptions.InvalidAccessCodeException
 import cz.grimir.wifimanager.captive.core.exceptions.KickedAddressAttemptedLoginException
 import cz.grimir.wifimanager.captive.core.value.Device
@@ -26,6 +29,9 @@ class CaptivePortalController(
     private val authorizeDeviceWithCodeUsecase: AuthorizeDeviceWithCodeUsecase,
     private val accessCodeFormatter: AccessCodeFormatter,
     private val findAuthorizationTokenPort: FindAuthorizationTokenPort,
+    private val findNetworkUserDeviceByMacUsecase: FindNetworkUserDeviceByMacUsecase,
+    private val touchNetworkUserDeviceUsecase: TouchNetworkUserDeviceUsecase,
+    private val userIdentityPort: CaptiveUserIdentityPort,
 ) {
     @GetMapping("/captive", "/captive/")
     fun index(
@@ -107,8 +113,27 @@ class CaptivePortalController(
         clientInfo: ClientInfo,
         model: Model,
     ) {
+        val networkDevice = findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)
+        if (networkDevice != null) {
+            touchNetworkUserDeviceUsecase.touch(networkDevice.userId, networkDevice.mac)
+            val identity = userIdentityPort.findByUserId(networkDevice.userId)
+            model.addAttribute("accountAuthorized", true)
+            model.addAttribute("deviceLoggedIn", true)
+            model.addAttribute("deviceKicked", false)
+            model.addAttribute("authorizedByEmail", identity?.email ?: "")
+            model.addAttribute("authorizedByName", identity?.displayName ?: "")
+            model.addAttribute(
+                "authorizedDeviceName",
+                networkDevice.name ?: networkDevice.hostname ?: clientInfo.hostname ?: clientInfo.macAddress,
+            )
+            model.addAttribute("clientMacAddress", clientInfo.macAddress)
+            model.addAttribute("clientIpAddress", clientInfo.ipAddress)
+            return
+        }
+
         val token = findAuthorizationTokenPort.findByAuthorizedDeviceMac(clientInfo.macAddress)
         if (token == null) {
+            model.addAttribute("accountAuthorized", false)
             model.addAttribute("deviceLoggedIn", false)
             model.addAttribute("deviceKicked", false)
             model.addAttribute("usedTicketValidUntil", null)
@@ -120,6 +145,7 @@ class CaptivePortalController(
 
         val kicked = token.kickedMacAddresses.contains(clientInfo.macAddress)
 
+        model.addAttribute("accountAuthorized", false)
         model.addAttribute("deviceLoggedIn", !kicked)
         model.addAttribute("deviceKicked", kicked)
         model.addAttribute("usedTicketValidUntil", token.validUntil)

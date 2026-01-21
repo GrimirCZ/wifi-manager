@@ -14,9 +14,14 @@ hibernateHypersistenceUtils = "3.14.0"
 grpc = "1.78.0"
 protobuf = "3.25.5"
 coroutines = "1.9.0"
+googleAuth = "1.41.0"
+googleApiClient = "2.8.1"
+jacksonKotlin = "2.20.1"
 testcontainers = "1.20.3"
 
 [libraries]
+flywayCore = { module = "org.flywaydb:flyway-core" }
+flywayDbPostgresql = { module = "org.flywaydb:flyway-database-postgresql" }
 junitBom = { module = "org.junit:junit-bom", version = "5.10.0" }
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter" }
 junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher" }
@@ -26,7 +31,10 @@ mockitoAgent = { module = "org.mockito:mockito-agent", version.ref = "mockito" }
 mockitoCore = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockitoJunitJupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 mockitoKotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
+springBootStarter = { module = "org.springframework.boot:spring-boot-starter" }
+springBootStarterActuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 springBootStarterDataJpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+springBootStarterFlyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
 springBootStarterOauth2Client = { module = "org.springframework.boot:spring-boot-starter-oauth2-client" }
 springBootStarterSecurity = { module = "org.springframework.boot:spring-boot-starter-security" }
 springBootStarterThymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
@@ -46,6 +54,11 @@ grpcProtobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpc" }
 grpcStub = { module = "io.grpc:grpc-stub", version.ref = "grpc" }
 protobufJava = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
 kotlinCoroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+googleAuthLibrary = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "googleAuth" }
+googleApiClient = { module = "com.google.api-client:google-api-client", version.ref = "googleApiClient" }
+springLdapCore = { module = "org.springframework.ldap:spring-ldap-core" }
+jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind" }
+jacksonKotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jacksonKotlin" }
 testcontainersJunitJupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 testcontainersPostgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 
@@ -63,6 +76,7 @@ testRuntime = ["junitPlatformLauncher"]
 testMockito = ["mockitoCore", "mockitoJunitJupiter", "mockitoKotlin"]
 htmx = ["htmxSpringBoot", "htmxSpringBootThymeleaf"]
 grpc = ["grpcNettyShaded", "grpcProtobuf", "grpcStub", "protobufJava"]
+jackson = ["jacksonDatabind", "jacksonKotlin"]
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }

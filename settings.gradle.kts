@@ -42,6 +42,8 @@ include("captive:routeragent")
 include("captive:web")
 include("captive:persistence")
 include("captive:events:local")
+include("captive:auth:google")
+include("captive:auth:keycloak")
 
 include(":app")
 

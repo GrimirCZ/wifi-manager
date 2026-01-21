@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{captive/fragments/head :: head(#{captive.help.randomized.title})}"></head>
+  <body class="bg-surface-muted">
+    <div th:replace="~{captive/fragments/header :: header(#{captive.help.randomized.title})}"></div>
+    <main class="container-page py-8">
+      <div class="mx-auto max-w-2xl space-y-6">
+        <div class="card space-y-2">
+          <h1 class="text-2xl font-semibold" th:text="#{captive.help.randomized.title}">Disable randomized MAC</h1>
+          <p class="text-text-muted" th:text="#{captive.help.randomized.subtitle}">
+            Randomized MAC addresses change over time and can break long-term access.
+          </p>
+        </div>
+
+        <div class="card space-y-3">
+          <div class="text-sm font-medium" th:text="#{captive.help.randomized.why.title}">Why this matters</div>
+          <p class="text-sm text-text-muted" th:text="#{captive.help.randomized.why.body}">
+            Disabling randomization on our Wi-Fi is safe and required for device authorization.
+          </p>
+        </div>
+
+        <div class="card space-y-4">
+          <div class="text-sm font-medium" th:text="#{captive.help.randomized.steps.title}">Help links</div>
+          <ul class="space-y-2 text-sm">
+            <li>
+              <a class="text-primary underline" th:href="#{captive.help.ios.url}" th:text="#{captive.help.ios.label}">
+                Apple (iOS)
+              </a>
+            </li>
+            <li>
+              <a class="text-primary underline" th:href="#{captive.help.google.url}" th:text="#{captive.help.google.label}">
+                Google Pixel
+              </a>
+            </li>
+            <li>
+              <a class="text-primary underline" th:href="#{captive.help.samsung.url}" th:text="#{captive.help.samsung.label}">
+                Samsung
+              </a>
+            </li>
+            <li>
+              <a class="text-primary underline" th:href="#{captive.help.xiaomi.url}" th:text="#{captive.help.xiaomi.label}">
+                Xiaomi
+              </a>
+            </li>
+            <li>
+              <a class="text-primary underline" th:href="#{captive.help.motorola.url}" th:text="#{captive.help.motorola.label}">
+                Motorola
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="text-center text-sm">
+          <a class="text-primary underline" th:href="@{/captive/device}" th:text="#{captive.help.randomized.back}">
+            Back to device setup
+          </a>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

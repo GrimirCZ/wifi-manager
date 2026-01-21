@@ -6,6 +6,8 @@ import cz.grimir.wifimanager.admin.persistence.AdminPersistenceConfig
 import cz.grimir.wifimanager.admin.scheduler.AdminSchedulerConfig
 import cz.grimir.wifimanager.admin.web.AdminWebConfig
 import cz.grimir.wifimanager.captive.application.CaptiveApplicationConfig
+import cz.grimir.wifimanager.captive.auth.google.CaptiveAuthGoogleConfig
+import cz.grimir.wifimanager.captive.auth.keycloak.CaptiveAuthKeycloakConfig
 import cz.grimir.wifimanager.captive.events.local.CaptiveLocalEventsConfig
 import cz.grimir.wifimanager.captive.persistence.CaptivePersistenceConfig
 import cz.grimir.wifimanager.captive.routeragent.CaptiveRouterAgentConfig
@@ -36,6 +38,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
     CaptiveWebConfig::class,
     CaptiveLocalEventsConfig::class,
     CaptiveRouterAgentConfig::class,
+    CaptiveAuthGoogleConfig::class,
+    CaptiveAuthKeycloakConfig::class,
 )
 class Application
 

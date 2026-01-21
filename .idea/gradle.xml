@@ -32,6 +32,9 @@
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/captive" />
             <option value="$PROJECT_DIR$/captive/application" />
+            <option value="$PROJECT_DIR$/captive/auth" />
+            <option value="$PROJECT_DIR$/captive/auth/google" />
+            <option value="$PROJECT_DIR$/captive/auth/keycloak" />
             <option value="$PROJECT_DIR$/captive/core" />
             <option value="$PROJECT_DIR$/captive/events" />
             <option value="$PROJECT_DIR$/captive/events/local" />

@@ -4,6 +4,7 @@ dependencies {
     implementation(project(":shared:core"))
     implementation(project(":shared:events"))
     implementation(project(":shared:util"))
+    implementation(project(":shared:application"))
 
     implementation(project(":captive:core"))
 
