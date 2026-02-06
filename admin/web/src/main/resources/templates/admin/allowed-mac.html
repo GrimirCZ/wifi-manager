@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments/head :: head(#{admin.allowedMacs.page.title})}"></head>
+<body class="bg-surface-muted">
+<div th:replace="~{admin/fragments/header :: header('WiFi Manager')}"></div>
+<main class="container-page md:min-h-[calc(100vh-4rem-3rem)]">
+    <div class="grid gap-6 md:grid-cols-2 md:items-stretch md:min-h-[calc(100vh-4rem-3rem)]">
+        <div class="md:h-full" th:replace="~{admin/fragments/network-clients :: networkClientList}"></div>
+        <div class="md:h-full" th:replace="~{admin/fragments/allowed-mac :: allowedMacList}"></div>
+    </div>
+</main>
+</body>
+</html>

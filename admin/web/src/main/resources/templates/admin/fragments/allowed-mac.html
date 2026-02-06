@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<div th:fragment="allowedMacList" xmlns:th="http://www.thymeleaf.org" id="allowed-mac-list" class="card space-y-6 md:h-full">
+    <div class="flex items-start justify-between gap-4">
+        <div class="space-y-1">
+            <h2 class="text-xl font-semibold" th:text="#{admin.allowedMacs.title}">Allowed MAC addresses</h2>
+            <p class="text-sm text-text-muted" th:text="#{admin.allowedMacs.subtitle}">
+                Admin allowlist; bypasses captive login.
+            </p>
+        </div>
+        <span class="inline-flex items-center rounded-full bg-border px-3 py-1 text-xs font-medium text-text-muted whitespace-nowrap self-start"
+              th:text="${allowedMacs != null ? allowedMacs.size() : 0} + ' ' + #{admin.allowedMacs.count}">
+            0 entries
+        </span>
+    </div>
+
+    <details id="allowed-mac-form-details" class="rounded-lg border border-border bg-surface-muted/60 p-4">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-2 select-none">
+            <span class="text-sm font-semibold" th:text="#{admin.allowedMacs.form.toggle}">Add allowed MAC</span>
+            <span class="text-xs text-text-muted" th:text="#{admin.allowedMacs.form.hint}">Expand</span>
+        </summary>
+        <form class="mt-4 grid gap-4 md:grid-cols-2"
+              th:object="${allowedMac}"
+              th:hx-post="@{/admin/allowed-mac}"
+              hx-target="#allowed-mac-list"
+              hx-swap="outerHTML">
+            <div class="flex flex-col gap-1 md:col-span-1">
+                <label class="text-sm text-text-muted" for="allowed-mac-input"
+                       th:text="#{admin.allowedMacs.mac}">MAC</label>
+                <input id="allowed-mac-input" class="input" th:field="*{mac}" type="text" required
+                       th:placeholder="#{admin.allowedMacs.mac.placeholder}"/>
+                <input id="allowed-mac-hostname" type="hidden" th:field="*{hostname}"/>
+                <div class="text-xs text-red-600" th:if="${allowedMacErrorKey != null}"
+                     th:text="#{${allowedMacErrorKey}}">Invalid MAC address.
+                </div>
+            </div>
+            <div class="flex flex-col gap-1 md:col-span-1">
+                <label class="text-sm text-text-muted" for="allowed-mac-validity" th:text="#{admin.allowedMacs.validity}">Valid</label>
+                <select id="allowed-mac-validity" class="input" th:field="*{validityMinutes}" required>
+                    <option value="0" th:text="#{admin.allowedMacs.permanent}">Permanent</option>
+                    <option value="30" th:text="#{admin.allowedMacs.validity.30}">30 min</option>
+                    <option value="60" th:text="#{admin.allowedMacs.validity.60}">60 min</option>
+                    <option value="240" th:text="#{admin.allowedMacs.validity.240}">4 h</option>
+                    <option value="1440" th:text="#{admin.allowedMacs.validity.1440}">24 h</option>
+                    <option value="2880" th:text="#{admin.allowedMacs.validity.2880}">2 days</option>
+                    <option value="4320" th:text="#{admin.allowedMacs.validity.4320}">3 days</option>
+                    <option value="10080" th:text="#{admin.allowedMacs.validity.10080}">7 days</option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-1 md:col-span-2">
+                <label class="text-sm text-text-muted" for="allowed-mac-note"
+                       th:text="#{admin.allowedMacs.note.label}">Note</label>
+                <textarea id="allowed-mac-note" class="input min-h-[2.5rem] resize-none" rows="2" th:field="*{note}"
+                          th:placeholder="#{admin.allowedMacs.note.placeholder}"></textarea>
+            </div>
+            <div class="flex justify-end md:col-span-2">
+                <button class="btn btn-primary" type="submit">
+                    <span class="btn-text" th:text="#{admin.allowedMacs.add}">Allow</span>
+                    <span class="spinner"></span>
+                </button>
+            </div>
+        </form>
+    </details>
+
+    <div class="space-y-2">
+        <div th:if="${allowedMacs == null or allowedMacs.isEmpty()}" class="text-sm text-text-muted"
+             th:text="#{admin.allowedMacs.empty}">No allowed MACs.
+        </div>
+        <ul th:if="${allowedMacs != null and !allowedMacs.isEmpty()}" class="space-y-3">
+            <li th:each="allowed : ${allowedMacs}"
+                class="grid gap-3 rounded-lg border border-border bg-surface-muted p-3 md:grid-cols-[1fr_auto] md:items-center">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-semibold"
+                              th:attr="title=${allowed.ownerEmail != null and !#strings.isEmpty(allowed.ownerEmail) ? allowed.ownerDisplayName + ' (' + allowed.ownerEmail + ')' : allowed.ownerDisplayName}"
+                              th:text="${allowed.hostname != null ? allowed.hostname : #messages.msg('admin.allowedMacs.hostname.unknown')}">Unknown</span>
+                        <span class="font-mono text-xs text-text-muted" th:text="${allowed.mac}">AA:BB:CC:DD:EE:FF</span>
+                    </div>
+                    <p class="text-xs text-text-muted max-h-10 overflow-hidden"
+                       th:if="${!#strings.isEmpty(allowed.note)}"
+                       th:text="${allowed.note}">Note</p>
+                    <p class="text-xs text-text-muted"
+                       th:if="${#strings.isEmpty(allowed.note)}">
+                        <span th:text="${allowed.ownerDisplayName}">Owner</span>
+                        <span th:if="${allowed.ownerEmail != null and !#strings.isEmpty(allowed.ownerEmail)}"
+                              th:text="${'(' + allowed.ownerEmail + ')'}">(email)</span>
+                    </p>
+                </div>
+                <div class="flex items-center justify-between gap-3 md:flex-col md:items-end md:justify-between md:min-h-[3.5rem]">
+                    <span class="text-xs text-text-muted"
+                          th:text="${allowed.validUntil != null ? @DateFormatter.timeRelativeNow(allowed.validUntil) : #messages.msg('admin.allowedMacs.permanent')}">
+                        Permanent
+                    </span>
+                    <button class="btn btn-danger text-xs px-2 py-1" type="button"
+                            th:hx-delete="@{/admin/allowed-mac/{mac}(mac=${allowed.mac})}"
+                            th:hx-confirm="#{admin.allowedMacs.delete.confirm}"
+                            hx-target="#allowed-mac-list"
+                            hx-swap="outerHTML">
+                        <span class="btn-text" th:text="#{admin.allowedMacs.delete}">Remove</span>
+                        <span class="spinner"></span>
+                    </button>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>

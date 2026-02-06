@@ -24,6 +24,7 @@ message RouterAgentCommand {
     AllowClientAccess allow_client_access = 2;
     RevokeClientAccess revoke_client_access = 3;
     SetAllowedClients set_allowed_clients = 4;
+    ListNetworkClients list_network_clients = 5;
   }
 }
 
@@ -52,6 +53,17 @@ message SetAllowedClients {
   repeated string mac_addresses = 2;
 }
 
+message ListNetworkClients {
+  string id = 1;
+}
+
+message NetworkClient {
+  string mac_address = 1;
+  repeated string ip_addresses = 2;
+  optional string hostname = 3;
+  bool allowed = 4;
+}
+
 message CommandAck {
   string id = 1;
   bool success = 2;
@@ -60,4 +72,5 @@ message CommandAck {
   // success=true with mac_address and hostname unset indicates client not found
   optional string mac_address = 4;
   optional string hostname = 5;
+  repeated NetworkClient clients = 6;
 }

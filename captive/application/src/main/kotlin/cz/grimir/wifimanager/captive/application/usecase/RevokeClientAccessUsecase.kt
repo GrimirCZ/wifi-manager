@@ -1,6 +1,7 @@
 package cz.grimir.wifimanager.captive.application.usecase
 
 import cz.grimir.wifimanager.captive.application.command.RevokeClientAccessCommand
+import cz.grimir.wifimanager.captive.application.ports.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.ports.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.ports.ModifyAuthorizationTokenPort
@@ -16,6 +17,7 @@ private val logger = KotlinLogging.logger {}
 class RevokeClientAccessUsecase(
     private val findAuthorizationTokenPort: FindAuthorizationTokenPort,
     private val modifyAuthorizationTokenPort: ModifyAuthorizationTokenPort,
+    private val allowedMacReadPort: AllowedMacReadPort,
     private val routerAgentPort: RouterAgentPort,
     private val eventPublisher: CaptiveEventPublisher,
     private val timeProvider: TimeProvider,
@@ -30,7 +32,10 @@ class RevokeClientAccessUsecase(
         token.kickedMacAddresses.add(command.deviceMacAddress)
         modifyAuthorizationTokenPort.save(token)
 
-        routerAgentPort.revokeClientAccess(listOf(command.deviceMacAddress))
+        val isAllowed = allowedMacReadPort.findByMac(command.deviceMacAddress) != null
+        if (!isAllowed) {
+            routerAgentPort.revokeClientAccess(listOf(command.deviceMacAddress))
+        }
 
         eventPublisher.publish(
             ClientAccessRevokedEvent(

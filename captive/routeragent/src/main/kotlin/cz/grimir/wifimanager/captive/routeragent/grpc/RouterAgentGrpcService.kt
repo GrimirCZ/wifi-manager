@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.routeragent.grpc
 
+import cz.grimir.wifimanager.captive.application.ports.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.grpc.stub.StreamObserver
@@ -12,6 +13,7 @@ private val logger = KotlinLogging.logger {}
 class RouterAgentGrpcService(
     private val hub: RouterAgentHub,
     private val findAuthorizationTokenPort: FindAuthorizationTokenPort,
+    private val allowedMacReadPort: AllowedMacReadPort,
     private val commandExecutor: TaskExecutor,
 ) : RouterAgentServiceGrpc.RouterAgentServiceImplBase() {
     override fun connect(responseObserver: StreamObserver<RouterAgentCommand>): StreamObserver<RouterAgentMessage> {
@@ -35,7 +37,9 @@ class RouterAgentGrpcService(
                         try {
                             commandExecutor.execute {
                                 try {
-                                    val macAddresses = findAuthorizationTokenPort.findAllAuthorizedDeviceMacs()
+                                    val authorizedMacs = findAuthorizationTokenPort.findAllAuthorizedDeviceMacs()
+                                    val allowedMacs = allowedMacReadPort.findAllMacs()
+                                    val macAddresses = (authorizedMacs + allowedMacs).distinct()
                                     hub.broadcastSetAllowedClients(macAddresses)
                                 } catch (ex: Exception) {
                                     logger.error(ex) { "Failed to synchronize allowed clients" }

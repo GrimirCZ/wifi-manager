@@ -1,6 +1,7 @@
 package cz.grimir.wifimanager.captive.application.usecase
 
 import cz.grimir.wifimanager.captive.application.command.RemoveAuthorizationTokenCommand
+import cz.grimir.wifimanager.captive.application.ports.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.ports.ModifyAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.ports.RouterAgentPort
@@ -15,6 +16,7 @@ private val logger = KotlinLogging.logger {}
 class RemoveAuthorizationTokenUsecase(
     private val findAuthorizationTokenPort: FindAuthorizationTokenPort,
     private val modifyAuthorizationTokenPort: ModifyAuthorizationTokenPort,
+    private val allowedMacReadPort: AllowedMacReadPort,
     private val localRouterAgentPort: RouterAgentPort,
 ) {
     @Transactional
@@ -28,9 +30,11 @@ class RemoveAuthorizationTokenUsecase(
 
         modifyAuthorizationTokenPort.deleteByTicketId(command.ticketId)
 
-        localRouterAgentPort.revokeClientAccess(
-            token.authorizedDevices.map(Device::mac),
-        )
+        val allowedMacs = allowedMacReadPort.findAllMacs().toSet()
+        val macsToRevoke = token.authorizedDevices.map(Device::mac).filterNot(allowedMacs::contains)
+        if (macsToRevoke.isNotEmpty()) {
+            localRouterAgentPort.revokeClientAccess(macsToRevoke)
+        }
 
         logger.info { "Removed authorization token for ticket id=${command.ticketId}" }
     }

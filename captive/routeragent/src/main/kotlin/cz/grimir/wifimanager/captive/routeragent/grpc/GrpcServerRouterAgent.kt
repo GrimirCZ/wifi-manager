@@ -1,8 +1,10 @@
 package cz.grimir.wifimanager.captive.routeragent.grpc
 
 import cz.grimir.wifimanager.captive.application.ports.ClientInfo
+import cz.grimir.wifimanager.captive.application.ports.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.ports.RouterAgentPort
+import cz.grimir.wifimanager.shared.application.network.NetworkClient
 import cz.grimir.wifimanager.captive.routeragent.GrpcServerRouterAgentProperties
 import cz.grimir.wifimanager.captive.routeragent.GrpcServerTlsProperties
 import io.grpc.Context
@@ -31,12 +33,13 @@ import javax.net.ssl.TrustManagerFactory
 class GrpcServerRouterAgent(
     private val properties: GrpcServerRouterAgentProperties,
     findAuthorizationTokenPort: FindAuthorizationTokenPort,
+    allowedMacReadPort: AllowedMacReadPort,
     commandExecutor: TaskExecutor,
 ) : RouterAgentPort,
     AutoCloseable,
     InitializingBean {
     private val hub = RouterAgentHub(properties.commandTimeout)
-    private val service = RouterAgentGrpcService(hub, findAuthorizationTokenPort, commandExecutor)
+    private val service = RouterAgentGrpcService(hub, findAuthorizationTokenPort, allowedMacReadPort, commandExecutor)
     private val server = buildServer(properties, service)
 
     override fun afterPropertiesSet() {
@@ -59,6 +62,21 @@ class GrpcServerRouterAgent(
 
     override fun revokeClientAccess(macAddresses: List<String>) {
         hub.broadcastRevokeClientAccess(macAddresses)
+    }
+
+    override fun listNetworkClients(): List<NetworkClient> {
+        val ack = hub.broadcastListNetworkClients() ?: return emptyList()
+        if (!ack.success) {
+            return emptyList()
+        }
+        return ack.clientsList.map { client ->
+            NetworkClient(
+                macAddress = client.macAddress,
+                ipAddresses = client.ipAddressesList,
+                hostname = client.hostname,
+                allowed = client.allowed,
+            )
+        }
     }
 
     override fun close() {

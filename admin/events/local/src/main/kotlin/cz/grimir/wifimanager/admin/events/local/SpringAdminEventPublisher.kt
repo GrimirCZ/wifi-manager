@@ -1,6 +1,8 @@
 package cz.grimir.wifimanager.admin.events.local
 
 import cz.grimir.wifimanager.admin.application.ports.AdminEventPublisher
+import cz.grimir.wifimanager.shared.events.AllowedMacRemovedEvent
+import cz.grimir.wifimanager.shared.events.AllowedMacUpsertedEvent
 import cz.grimir.wifimanager.shared.events.ClientKickedEvent
 import cz.grimir.wifimanager.shared.events.TicketCreatedEvent
 import cz.grimir.wifimanager.shared.events.TicketEndedEvent
@@ -20,6 +22,14 @@ class SpringAdminEventPublisher(
     }
 
     override fun publish(event: TicketEndedEvent) {
+        applicationEventPublisher.publishEvent(event)
+    }
+
+    override fun publish(event: AllowedMacUpsertedEvent) {
+        applicationEventPublisher.publishEvent(event)
+    }
+
+    override fun publish(event: AllowedMacRemovedEvent) {
         applicationEventPublisher.publishEvent(event)
     }
 }

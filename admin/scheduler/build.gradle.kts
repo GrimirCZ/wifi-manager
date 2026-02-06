@@ -1,6 +1,7 @@
 group = "cz.grimir.wifimanager.admin.scheduler"
 
 dependencies {
+    implementation(project(":shared:core"))
     implementation(project(":admin:application"))
 
     implementation("org.springframework:spring-context")

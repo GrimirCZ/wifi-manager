@@ -68,6 +68,12 @@
                    th:text="#{admin.account.settings}">Settings</a>
                 <a class="block px-4 py-2 text-sm hover:bg-surface-muted" href="#" role="menuitem"
                    th:text="#{admin.account.help}">Help</a>
+                <a class="block px-4 py-2 text-sm hover:bg-surface-muted"
+                   th:href="@{/admin}" role="menuitem"
+                   th:text="#{admin.account.tickets}">Tickets</a>
+                <a th:if="${canManageAllowedMacs}" class="block px-4 py-2 text-sm hover:bg-surface-muted"
+                   th:href="@{/admin/allowed-mac}" role="menuitem"
+                   th:text="#{admin.account.allowedMacs}">Allowed MACs</a>
 
                 <div class="border-t border-border"></div>
 

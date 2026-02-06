@@ -7,6 +7,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":shared:application"))
     implementation(project(":captive:application"))
     implementation(libs.springBootStarterWeb)
     implementation(libs.kotlinLogging)

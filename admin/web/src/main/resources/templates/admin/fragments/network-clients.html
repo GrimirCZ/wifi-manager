@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<div th:fragment="networkClientList" xmlns:th="http://www.thymeleaf.org" id="network-client-list" class="card space-y-4 md:h-full">
+    <div class="flex items-center justify-between gap-4">
+        <div class="space-y-1">
+            <h2 class="text-xl font-semibold" th:text="#{admin.networkClients.title}">Network clients</h2>
+            <span class="text-text-muted text-sm" th:text="#{admin.networkClients.subtitle}">Live view from router.</span>
+        </div>
+        <button class="btn btn-secondary" type="button"
+                th:hx-get="@{/admin/_network-clients}"
+                hx-target="#network-client-list"
+                hx-swap="outerHTML">
+            <span class="btn-text" th:text="#{admin.networkClients.load}">Load</span>
+            <span class="spinner"></span>
+        </button>
+    </div>
+
+    <div th:if="${networkClients == null or networkClients.isEmpty()}" class="text-sm text-text-muted"
+         th:text="#{admin.networkClients.empty}">No clients found.</div>
+
+    <ul th:if="${networkClients != null and !networkClients.isEmpty()}" class="space-y-3">
+        <li th:each="client : ${networkClients}"
+            class="grid gap-3 rounded-lg border border-border bg-surface-muted p-3 md:grid-cols-[1fr_auto] md:items-center">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold"
+                          th:text="${client.hostname != null ? client.hostname : #messages.msg('admin.networkClients.unknown')}">hostname</span>
+                </div>
+                <span class="font-mono text-sm" th:text="${client.macAddress}">AA:BB:CC:DD:EE:FF</span>
+                <span class="text-text-muted text-xs">
+                    <span th:each="ip, stat : ${client.ipAddresses}" th:text="${ip + (stat.last ? '' : ', ')}">192.168.0.10</span>
+                </span>
+            </div>
+            <div class="flex items-center justify-between gap-2 md:flex-col md:items-end">
+                <div class="flex items-center gap-2">
+                    <span class="badge" th:classappend="${client.allowed ? ' bg-success/10 text-success' : ' bg-border text-text-muted'}"
+                          th:text="${client.allowed ? #messages.msg('admin.networkClients.allowed') : #messages.msg('admin.networkClients.notAllowed')}">
+                        Allowed
+                    </span>
+                    <span th:if="${client.isLocalAdmin}" class="badge bg-border text-text-muted text-xs"
+                          th:text="#{admin.allowedMacs.tag.localAdmin}">Randomized</span>
+                </div>
+                <button class="btn btn-secondary text-xs px-2 py-1 select-none" type="button"
+                        th:attr="data-mac=${client.macAddress},data-hostname=${client.hostname}"
+                        data-script="on click set #allowed-mac-form-details.open to true then set #allowed-mac-input.value to my @data-mac then set #allowed-mac-hostname.value to my @data-hostname then if window.innerWidth < 768 then call #allowed-mac-form-details.scrollIntoView()">
+                    <span class="btn-text" th:text="#{admin.networkClients.select}">Select</span>
+                </button>
+            </div>
+        </li>
+    </ul>
+
+</div>

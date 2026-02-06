@@ -23,6 +23,7 @@ import cz.grimir.wifimanager.admin.web.mvc.dto.CreateTicketRequestDto
 import cz.grimir.wifimanager.shared.application.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.TicketId
 import cz.grimir.wifimanager.shared.core.UserRole
+
 import cz.grimir.wifimanager.shared.security.mvc.CurrentUser
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HtmxRequest
 import org.springframework.http.HttpStatus
@@ -58,11 +59,9 @@ class AdminHomeController(
         modelMap: ModelMap,
     ): String {
         populateModel(user, modelMap)
-
         modelMap.addAttribute("createTicket", CreateTicketRequestDto())
 
         if (htmxRequest.isHtmxRequest) {
-            populateModel(user, modelMap)
             return "admin/fragments/ticket-panel :: ticketPanel"
         }
 
@@ -147,8 +146,6 @@ class AdminHomeController(
         htmxRequest: HtmxRequest,
         modelMap: ModelMap,
     ): String {
-        val isHtmx = htmxRequest.isHtmxRequest
-
         val ticket = findTicketByIdUsecase.find(FindTicketByIdQuery(TicketId(ticketId)))
 
         if (ticket != null && ticket.authorId.id != user.userId.id) {
@@ -159,7 +156,7 @@ class AdminHomeController(
 
         redirectAttributes.addFlashAttribute("ticketDeleted", true)
 
-        if (isHtmx) {
+        if (htmxRequest.isHtmxRequest) {
             modelMap.addAttribute("isAdmin", user.can(UserRole::canHaveMultipleTickets))
             modelMap.addAttribute("expiredAccessCode", ticket?.accessCode ?: ticketId.toString())
             modelMap.addAttribute("expiredCreatedAt", ticket?.createdAt)
@@ -217,6 +214,7 @@ class AdminHomeController(
         return "admin/fragments/ticket-devices :: devicesSwap"
     }
 
+
     private fun findActiveTickets(user: UserIdentitySnapshot): List<TicketWithDeviceCount> {
         val now = Instant.now()
         return findTicketsByAuthorIdWithDeviceCountUsecase
@@ -231,6 +229,7 @@ class AdminHomeController(
     ) {
         modelMap.addAttribute("activeTickets", findActiveTickets(user))
         modelMap.addAttribute("isAdmin", user.can(UserRole::canHaveMultipleTickets))
+        modelMap.addAttribute("canManageAllowedMacs", user.can(UserRole::canManageAllowedMacs))
         modelMap.addAttribute("wifiSsid", wifiProperties.ssid)
     }
 

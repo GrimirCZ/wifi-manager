@@ -109,6 +109,21 @@ class RouterAgentHub(
         return waitForFirstSuccessfulAck(sendToAll(command), commandId(command))
     }
 
+    fun broadcastListNetworkClients(): CommandAck? {
+        val commandId = UUID.randomUUID().toString()
+        val command =
+            RouterAgentCommand
+                .newBuilder()
+                .setListNetworkClients(
+                    ListNetworkClients
+                        .newBuilder()
+                        .setId(commandId)
+                        .build(),
+                ).build()
+        logger.info { "Listing network clients commandId=$commandId" }
+        return waitForFirstSuccessfulAck(sendToAll(command), commandId(command))
+    }
+
     private fun sendToAll(command: RouterAgentCommand): List<CompletableFuture<CommandAck>> {
         if (connections.isEmpty()) {
             logger.warn { "No router agents available for command=$command" }
@@ -189,6 +204,7 @@ class RouterAgentHub(
             RouterAgentCommand.CommandCase.ALLOW_CLIENT_ACCESS -> command.allowClientAccess.id
             RouterAgentCommand.CommandCase.REVOKE_CLIENT_ACCESS -> command.revokeClientAccess.id
             RouterAgentCommand.CommandCase.SET_ALLOWED_CLIENTS -> command.setAllowedClients.id
+            RouterAgentCommand.CommandCase.LIST_NETWORK_CLIENTS -> command.listNetworkClients.id
             RouterAgentCommand.CommandCase.COMMAND_NOT_SET -> error("Invalid command: $command")
         }
 }
@@ -231,6 +247,7 @@ private class RouterAgentConnection(
             RouterAgentCommand.CommandCase.ALLOW_CLIENT_ACCESS -> command.allowClientAccess.id
             RouterAgentCommand.CommandCase.REVOKE_CLIENT_ACCESS -> command.revokeClientAccess.id
             RouterAgentCommand.CommandCase.SET_ALLOWED_CLIENTS -> command.setAllowedClients.id
+            RouterAgentCommand.CommandCase.LIST_NETWORK_CLIENTS -> command.listNetworkClients.id
             RouterAgentCommand.CommandCase.COMMAND_NOT_SET -> error("Invalid command: $command")
         }
 }
