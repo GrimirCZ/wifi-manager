@@ -23,7 +23,6 @@ import cz.grimir.wifimanager.admin.web.mvc.dto.CreateTicketRequestDto
 import cz.grimir.wifimanager.shared.application.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.TicketId
 import cz.grimir.wifimanager.shared.core.UserRole
-
 import cz.grimir.wifimanager.shared.security.mvc.CurrentUser
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HtmxRequest
 import org.springframework.http.HttpStatus
@@ -213,7 +212,6 @@ class AdminHomeController(
 
         return "admin/fragments/ticket-devices :: devicesSwap"
     }
-
 
     private fun findActiveTickets(user: UserIdentitySnapshot): List<TicketWithDeviceCount> {
         val now = Instant.now()

@@ -2,7 +2,8 @@ package cz.grimir.wifimanager.admin.web.mvc
 
 internal object MacAddressNormalizer {
     fun normalize(raw: String): String =
-        raw.trim()
+        raw
+            .trim()
             .lowercase()
             .replace("-", ":")
 }

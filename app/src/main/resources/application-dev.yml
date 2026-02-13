@@ -35,8 +35,6 @@ spring:
               - profile
               - email
               - roles
-  jpa:
-    show-sql: true
 wifimanager:
   security:
     oidc-registration-id: admin

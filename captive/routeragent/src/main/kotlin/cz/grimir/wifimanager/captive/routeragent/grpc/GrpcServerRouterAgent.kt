@@ -1,12 +1,12 @@
 package cz.grimir.wifimanager.captive.routeragent.grpc
 
-import cz.grimir.wifimanager.captive.application.ports.ClientInfo
 import cz.grimir.wifimanager.captive.application.ports.AllowedMacReadPort
+import cz.grimir.wifimanager.captive.application.ports.ClientInfo
 import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.ports.RouterAgentPort
-import cz.grimir.wifimanager.shared.application.network.NetworkClient
 import cz.grimir.wifimanager.captive.routeragent.GrpcServerRouterAgentProperties
 import cz.grimir.wifimanager.captive.routeragent.GrpcServerTlsProperties
+import cz.grimir.wifimanager.shared.application.network.NetworkClient
 import io.grpc.Context
 import io.grpc.Contexts
 import io.grpc.Grpc

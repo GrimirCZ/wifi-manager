@@ -130,7 +130,12 @@ class AdminAllowedMacController(
             }
 
     private fun isLocallyAdministered(mac: String): Boolean {
-        val firstOctet = MacAddressNormalizer.normalize(mac).split(":").firstOrNull()?.toIntOrNull(16) ?: return false
+        val firstOctet =
+            MacAddressNormalizer
+                .normalize(mac)
+                .split(":")
+                .firstOrNull()
+                ?.toIntOrNull(16) ?: return false
         return firstOctet and 0x02 == 0x02
     }
 

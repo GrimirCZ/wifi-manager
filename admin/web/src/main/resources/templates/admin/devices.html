@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments/head :: head(#{admin.devices.title})}"></head>
+<body class="bg-surface-muted">
+<div th:replace="~{admin/fragments/header :: header('WiFi Manager')}"></div>
+<main class="container-page">
+    <div th:replace="~{admin/fragments/user-devices :: userDeviceList}"></div>
+</main>
+</body>
+</html>

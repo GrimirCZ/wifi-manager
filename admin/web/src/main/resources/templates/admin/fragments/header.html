@@ -71,6 +71,9 @@
                 <a class="block px-4 py-2 text-sm hover:bg-surface-muted"
                    th:href="@{/admin}" role="menuitem"
                    th:text="#{admin.account.tickets}">Tickets</a>
+                <a class="block px-4 py-2 text-sm hover:bg-surface-muted"
+                   th:href="@{/admin/devices}" role="menuitem"
+                   th:text="#{admin.account.devices}">Devices</a>
                 <a th:if="${canManageAllowedMacs}" class="block px-4 py-2 text-sm hover:bg-surface-muted"
                    th:href="@{/admin/allowed-mac}" role="menuitem"
                    th:text="#{admin.account.allowedMacs}">Allowed MACs</a>

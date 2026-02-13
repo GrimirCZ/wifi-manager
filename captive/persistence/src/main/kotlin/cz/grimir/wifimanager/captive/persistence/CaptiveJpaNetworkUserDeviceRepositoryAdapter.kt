@@ -29,6 +29,7 @@ class CaptiveJpaNetworkUserDeviceRepositoryAdapter(
         repository.save(mapper.toEntity(device))
     }
 
+    @Transactional
     override fun delete(
         userId: UserId,
         mac: String,

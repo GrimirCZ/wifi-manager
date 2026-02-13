@@ -11,7 +11,10 @@ class CaptiveUpsertAllowedMacUsecase(
     private val allowedMacWritePort: AllowedMacWritePort,
     private val routerAgentPort: RouterAgentPort,
 ) {
-    fun upsert(macAddress: String, validUntil: Instant?) {
+    fun upsert(
+        macAddress: String,
+        validUntil: Instant?,
+    ) {
         allowedMacWritePort.save(
             AllowedMac(
                 mac = macAddress,

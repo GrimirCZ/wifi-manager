@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<div th:fragment="userDeviceList" xmlns:th="http://www.thymeleaf.org" id="user-device-list" class="card space-y-4">
+    <div class="flex items-start justify-between gap-3">
+        <div class="space-y-1">
+            <h1 class="text-2xl font-semibold" th:text="#{admin.devices.title}">Devices</h1>
+            <p class="text-sm text-text-muted" th:text="#{admin.devices.subtitle}">
+                Manage authorized user devices.
+            </p>
+        </div>
+        <span class="inline-flex items-center rounded-full bg-border px-3 py-1 text-xs font-medium text-text-muted"
+              th:text="${devices != null ? devices.size() : 0} + ' ' + #{admin.devices.count}">
+            0 devices
+        </span>
+    </div>
+
+    <div class="flex items-center gap-2" th:if="${canViewAllDevices}">
+        <a class="btn btn-secondary text-xs px-3 py-1 cursor-pointer no-underline"
+           th:classappend="${deviceScope == 'mine'} ? ' !bg-brand-100 !text-brand-700'"
+           th:href="@{/admin/devices(scope='mine')}"
+           th:hx-get="@{/admin/devices/_list(scope='mine')}"
+           th:attr="hx-push-url=@{/admin/devices(scope='mine')}"
+           hx-target="#user-device-list"
+           hx-swap="outerHTML"
+           th:text="#{admin.devices.scope.mine}">
+            My devices
+        </a>
+        <a class="btn btn-secondary text-xs px-3 py-1 cursor-pointer no-underline"
+           th:classappend="${deviceScope == 'all'} ? ' !bg-brand-100 !text-brand-700'"
+           th:href="@{/admin/devices(scope='all')}"
+           th:hx-get="@{/admin/devices/_list(scope='all')}"
+           th:attr="hx-push-url=@{/admin/devices(scope='all')}"
+           hx-target="#user-device-list"
+           hx-swap="outerHTML"
+           th:text="#{admin.devices.scope.all}">
+            All devices
+        </a>
+    </div>
+
+    <div th:if="${devices == null or devices.isEmpty()}" class="text-sm text-text-muted" th:text="#{admin.devices.empty}">
+        No devices found.
+    </div>
+
+    <ul th:if="${devices != null and !devices.isEmpty()}" class="space-y-3">
+        <li th:each="device : ${devices}"
+            class="grid gap-3 rounded-lg border border-border bg-surface-muted p-3 md:grid-cols-[1fr_auto] md:items-center">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold"
+                          th:text="${device.name != null and !#strings.isEmpty(device.name) ? device.name : #messages.msg('admin.devices.unknown.name')}">
+                        Unknown device
+                    </span>
+                    <span class="badge bg-border text-text-muted text-xs"
+                          th:if="${device.isRandomized}"
+                          th:text="#{admin.devices.randomized}">
+                        Randomized
+                    </span>
+                </div>
+                <div class="text-xs text-text-muted font-mono" th:text="${device.mac}">AA:BB:CC:DD:EE:FF</div>
+                <div class="text-xs text-text-muted"
+                     th:text="#{admin.devices.hostname.label(${device.hostname != null ? device.hostname : '-'})}">
+                    Hostname: -
+                </div>
+                <div class="text-xs text-text-muted"
+                     th:text="#{admin.devices.authorizedAt.label(${@DateFormatter.absolute(device.authorizedAt)})}">
+                    Authorized: -
+                </div>
+                <div class="text-xs text-text-muted"
+                     th:text="#{admin.devices.lastSeenAt.label(${@DateFormatter.timeRelativeNow(device.lastSeenAt)})}">
+                    Last seen: -
+                </div>
+                <div class="text-xs text-text-muted" th:if="${deviceScope == 'all'}"
+                     th:text="#{admin.devices.owner.label(${device.userId})}">
+                    Owner: -
+                </div>
+                <div class="text-xs text-danger" th:if="${device.disconnectError}"
+                     th:text="#{admin.devices.deauthorize.error}">
+                    Failed to disconnect device.
+                </div>
+            </div>
+            <div class="flex items-center md:justify-end">
+                <button class="btn btn-danger text-xs px-2 py-1"
+                        type="button"
+                        th:hx-post="@{/admin/devices/{mac}/_deauthorize(mac=${device.mac},userId=${device.userId},scope=${deviceScope})}"
+                        th:hx-confirm="#{admin.devices.deauthorize.confirm}"
+                        hx-target="#user-device-list"
+                        hx-swap="outerHTML">
+                    <span class="btn-text"
+                          th:text="#{admin.devices.deauthorize.action}">
+                        Disconnect
+                    </span>
+                    <span class="spinner"></span>
+                </button>
+            </div>
+        </li>
+    </ul>
+
+    <div class="hidden"
+         th:hx-get="@{/admin/devices/_list(scope=${deviceScope})}"
+         hx-trigger="every 30s"
+         hx-target="#user-device-list"
+         hx-swap="outerHTML"></div>
+</div>
