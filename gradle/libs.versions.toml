@@ -17,7 +17,8 @@ coroutines = "1.9.0"
 googleAuth = "1.41.0"
 googleApiClient = "2.8.1"
 jacksonKotlin = "2.20.1"
-testcontainers = "1.20.3"
+testcontainers = "2.0.3"
+playwright = "1.54.0"
 
 [libraries]
 flywayCore = { module = "org.flywaydb:flyway-core" }
@@ -39,6 +40,7 @@ springBootStarterOauth2Client = { module = "org.springframework.boot:spring-boot
 springBootStarterSecurity = { module = "org.springframework.boot:spring-boot-starter-security" }
 springBootStarterThymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
 springBootStarterWeb = { module = "org.springframework.boot:spring-boot-starter-web" }
+springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test" }
 springSecurityWeb = { module = "org.springframework.security:spring-security-web" }
 springContext = { module = "org.springframework:spring-context" }
 springSecurityOauth2Jose = { module = "org.springframework.security:spring-security-oauth2-jose" }
@@ -59,8 +61,10 @@ googleApiClient = { module = "com.google.api-client:google-api-client", version.
 springLdapCore = { module = "org.springframework.ldap:spring-ldap-core" }
 jacksonDatabind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 jacksonKotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jacksonKotlin" }
-testcontainersJunitJupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
-testcontainersPostgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainersJunitJupiter = { module = "org.testcontainers:testcontainers-junit-jupiter", version.ref = "testcontainers" }
+testcontainersPostgresql = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
+testcontainersCore = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
 
 [bundles]
 springContextTx = ["springContext", "springTx"]

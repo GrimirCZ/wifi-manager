@@ -46,6 +46,7 @@ include("captive:auth:google")
 include("captive:auth:keycloak")
 
 include(":app")
+include(":e2e")
 
 rootProject.name = "wifimanager"
 include("shared:events")
