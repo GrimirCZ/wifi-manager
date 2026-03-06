@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.captive.routeragent
 
-import cz.grimir.wifimanager.captive.application.ports.AllowedMacReadPort
-import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.ports.RouterAgentPort
+import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadPort
+import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
 import cz.grimir.wifimanager.captive.routeragent.grpc.GrpcServerRouterAgent
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties

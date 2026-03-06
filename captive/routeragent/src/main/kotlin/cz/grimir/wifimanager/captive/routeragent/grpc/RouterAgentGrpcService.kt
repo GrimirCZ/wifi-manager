@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.routeragent.grpc
 
-import cz.grimir.wifimanager.captive.application.ports.AllowedMacReadPort
-import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadPort
+import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.grpc.stub.StreamObserver
 import org.springframework.core.task.TaskExecutor

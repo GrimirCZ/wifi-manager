@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.captive.persistence.mapper
 
-import cz.grimir.wifimanager.captive.application.allowed.AllowedMac
+import cz.grimir.wifimanager.captive.application.allowedmac.model.AllowedMac
 import cz.grimir.wifimanager.captive.persistence.entity.CaptiveAllowedMacEntity
 import org.springframework.stereotype.Component
 

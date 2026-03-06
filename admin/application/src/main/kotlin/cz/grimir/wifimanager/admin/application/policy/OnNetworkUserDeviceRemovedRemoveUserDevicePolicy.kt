@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.admin.application.policy
 
-import cz.grimir.wifimanager.admin.application.usecases.commands.RemoveUserDeviceUsecase
+import cz.grimir.wifimanager.admin.application.device.handler.command.RemoveUserDeviceUsecase
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceRemovedEvent
 import org.springframework.stereotype.Service
 

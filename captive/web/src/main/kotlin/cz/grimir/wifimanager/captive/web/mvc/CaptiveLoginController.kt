@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
-import cz.grimir.wifimanager.captive.application.usecase.queries.FindNetworkUserDeviceByMacUsecase
-import cz.grimir.wifimanager.captive.application.user.UserCredentials
+import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.query.FindNetworkUserDeviceByMacUsecase
+import cz.grimir.wifimanager.captive.application.auth.model.UserCredentials
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveLdapLoginForm
 import cz.grimir.wifimanager.captive.web.security.CaptiveAuthSessionLoginHandler
 import cz.grimir.wifimanager.captive.web.security.LdapLoginFailureReason

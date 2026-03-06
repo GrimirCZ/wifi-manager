@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.captive.events.local
 
-import cz.grimir.wifimanager.captive.application.usecase.commands.RemoveNetworkUserDeviceUsecase
+import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.RemoveNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceDeauthorizeRequestedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component

@@ -1,15 +1,15 @@
 package cz.grimir.wifimanager.admin.web.mvc
 
-import cz.grimir.wifimanager.admin.application.commands.DeleteAllowedMacCommand
-import cz.grimir.wifimanager.admin.application.commands.UpsertAllowedMacCommand
-import cz.grimir.wifimanager.admin.application.usecases.commands.AdminDeleteAllowedMacUsecase
-import cz.grimir.wifimanager.admin.application.usecases.commands.AdminUpsertAllowedMacUsecase
-import cz.grimir.wifimanager.admin.application.usecases.queries.AdminListAllowedMacsUsecase
-import cz.grimir.wifimanager.admin.application.usecases.queries.AdminListNetworkClientsUsecase
+import cz.grimir.wifimanager.admin.application.allowedmac.command.DeleteAllowedMacCommand
+import cz.grimir.wifimanager.admin.application.allowedmac.command.UpsertAllowedMacCommand
+import cz.grimir.wifimanager.admin.application.allowedmac.handler.command.AdminDeleteAllowedMacUsecase
+import cz.grimir.wifimanager.admin.application.allowedmac.handler.command.AdminUpsertAllowedMacUsecase
+import cz.grimir.wifimanager.admin.application.allowedmac.handler.query.AdminListAllowedMacsUsecase
+import cz.grimir.wifimanager.admin.application.device.handler.query.AdminListNetworkClientsUsecase
 import cz.grimir.wifimanager.admin.web.mvc.dto.AllowedMacRequestDto
 import cz.grimir.wifimanager.admin.web.mvc.dto.AllowedMacViewDto
 import cz.grimir.wifimanager.admin.web.mvc.dto.NetworkClientViewDto
-import cz.grimir.wifimanager.shared.application.UserIdentitySnapshot
+import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.application.network.NetworkClient
 import cz.grimir.wifimanager.shared.core.UserRole
 import cz.grimir.wifimanager.shared.security.mvc.CurrentUser

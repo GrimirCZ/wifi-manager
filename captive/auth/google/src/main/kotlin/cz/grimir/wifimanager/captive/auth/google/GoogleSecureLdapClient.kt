@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.captive.auth.google
 
-import cz.grimir.wifimanager.captive.application.user.UserCredentials
+import cz.grimir.wifimanager.captive.application.auth.model.UserCredentials
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.ldap.core.LdapTemplate
 import org.springframework.ldap.support.LdapEncoder

@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.captive.persistence
 
-import cz.grimir.wifimanager.captive.application.network.NetworkUser
-import cz.grimir.wifimanager.captive.application.ports.NetworkUserReadPort
-import cz.grimir.wifimanager.captive.application.ports.NetworkUserWritePort
+import cz.grimir.wifimanager.captive.application.networkuser.model.NetworkUser
+import cz.grimir.wifimanager.captive.application.networkuser.port.NetworkUserReadPort
+import cz.grimir.wifimanager.captive.application.networkuser.port.NetworkUserWritePort
 import cz.grimir.wifimanager.captive.persistence.mapper.CaptiveNetworkUserMapper
 import cz.grimir.wifimanager.shared.core.UserId
 import org.springframework.data.repository.findByIdOrNull

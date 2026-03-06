@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.events.local
 
-import cz.grimir.wifimanager.captive.application.usecase.commands.CaptiveRemoveAllowedMacUsecase
-import cz.grimir.wifimanager.captive.application.usecase.commands.CaptiveUpsertAllowedMacUsecase
+import cz.grimir.wifimanager.captive.application.allowedmac.handler.command.CaptiveRemoveAllowedMacUsecase
+import cz.grimir.wifimanager.captive.application.allowedmac.handler.command.CaptiveUpsertAllowedMacUsecase
 import cz.grimir.wifimanager.shared.events.AllowedMacRemovedEvent
 import cz.grimir.wifimanager.shared.events.AllowedMacUpsertedEvent
 import org.springframework.context.event.EventListener

@@ -1,11 +1,12 @@
 package cz.grimir.wifimanager.admin.application.usecases.commands
 
-import cz.grimir.wifimanager.admin.application.commands.UpsertAllowedMacCommand
-import cz.grimir.wifimanager.admin.application.ports.AdminEventPublisher
-import cz.grimir.wifimanager.admin.application.ports.FindAllowedMacPort
-import cz.grimir.wifimanager.admin.application.ports.SaveAllowedMacPort
+import cz.grimir.wifimanager.admin.application.allowedmac.command.UpsertAllowedMacCommand
+import cz.grimir.wifimanager.admin.application.allowedmac.handler.command.AdminUpsertAllowedMacUsecase
+import cz.grimir.wifimanager.admin.application.shared.port.AdminEventPublisher
+import cz.grimir.wifimanager.admin.application.allowedmac.port.FindAllowedMacPort
+import cz.grimir.wifimanager.admin.application.allowedmac.port.SaveAllowedMacPort
 import cz.grimir.wifimanager.admin.core.value.AllowedMac
-import cz.grimir.wifimanager.shared.application.UserIdentitySnapshot
+import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.core.UserId
 import org.junit.jupiter.api.Assertions.assertEquals

@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.admin.application.policy
 
-import cz.grimir.wifimanager.admin.application.ports.FindAuthorizedDevicePort
-import cz.grimir.wifimanager.admin.application.ports.SaveAuthorizedDevicePort
+import cz.grimir.wifimanager.admin.application.ticket.port.FindAuthorizedDevicePort
+import cz.grimir.wifimanager.admin.application.ticket.port.SaveAuthorizedDevicePort
 import cz.grimir.wifimanager.admin.core.value.AuthorizedDevice
 import cz.grimir.wifimanager.shared.core.TicketId
 import cz.grimir.wifimanager.shared.events.ClientAccessRevokedEvent

@@ -1,13 +1,13 @@
 package cz.grimir.wifimanager.admin.web.mvc
 
-import cz.grimir.wifimanager.admin.application.commands.RequestUserDeviceDeauthorizationCommand
-import cz.grimir.wifimanager.admin.application.queries.FindUserDevicesByUserIdQuery
-import cz.grimir.wifimanager.admin.application.usecases.commands.RequestUserDeviceDeauthorizationUsecase
-import cz.grimir.wifimanager.admin.application.usecases.queries.FindAllUserDevicesUsecase
-import cz.grimir.wifimanager.admin.application.usecases.queries.FindUserDevicesByUserIdUsecase
+import cz.grimir.wifimanager.admin.application.device.command.RequestUserDeviceDeauthorizationCommand
+import cz.grimir.wifimanager.admin.application.device.query.FindUserDevicesByUserIdQuery
+import cz.grimir.wifimanager.admin.application.device.handler.command.RequestUserDeviceDeauthorizationUsecase
+import cz.grimir.wifimanager.admin.application.device.handler.query.FindAllUserDevicesUsecase
+import cz.grimir.wifimanager.admin.application.device.handler.query.FindUserDevicesByUserIdUsecase
 import cz.grimir.wifimanager.admin.core.value.UserDevice
 import cz.grimir.wifimanager.admin.web.mvc.dto.UserDeviceViewDto
-import cz.grimir.wifimanager.shared.application.UserIdentitySnapshot
+import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.core.UserRole
 import cz.grimir.wifimanager.shared.security.mvc.CurrentUser

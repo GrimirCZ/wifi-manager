@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.admin.persistence
 
-import cz.grimir.wifimanager.admin.application.ports.DeleteUserDevicePort
-import cz.grimir.wifimanager.admin.application.ports.FindUserDevicePort
-import cz.grimir.wifimanager.admin.application.ports.SaveUserDevicePort
+import cz.grimir.wifimanager.admin.application.device.port.DeleteUserDevicePort
+import cz.grimir.wifimanager.admin.application.device.port.FindUserDevicePort
+import cz.grimir.wifimanager.admin.application.device.port.SaveUserDevicePort
 import cz.grimir.wifimanager.admin.core.value.UserDevice
 import cz.grimir.wifimanager.admin.persistence.mapper.AdminUserDeviceMapper
 import cz.grimir.wifimanager.shared.core.UserId

@@ -1,12 +1,13 @@
 package cz.grimir.wifimanager.admin.application.usecases.commands
 
-import cz.grimir.wifimanager.admin.application.commands.KickDeviceCommand
-import cz.grimir.wifimanager.admin.application.ports.AdminEventPublisher
-import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
-import cz.grimir.wifimanager.admin.application.ports.SaveTicketPort
+import cz.grimir.wifimanager.admin.application.ticket.command.KickDeviceCommand
+import cz.grimir.wifimanager.admin.application.ticket.handler.command.KickClientUsecase
+import cz.grimir.wifimanager.admin.application.shared.port.AdminEventPublisher
+import cz.grimir.wifimanager.admin.application.ticket.port.FindTicketPort
+import cz.grimir.wifimanager.admin.application.ticket.port.SaveTicketPort
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.admin.core.exceptions.UserNotAllowedToKickDevice
-import cz.grimir.wifimanager.shared.application.UserIdentitySnapshot
+import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.TicketId
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.core.UserId

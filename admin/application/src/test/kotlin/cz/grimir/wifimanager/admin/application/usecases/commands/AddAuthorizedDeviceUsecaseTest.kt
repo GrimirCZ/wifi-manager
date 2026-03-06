@@ -1,9 +1,10 @@
 package cz.grimir.wifimanager.admin.application.usecases.commands
 
-import cz.grimir.wifimanager.admin.application.commands.AddAuthorizedDeviceCommand
-import cz.grimir.wifimanager.admin.application.ports.FindAuthorizedDevicePort
-import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
-import cz.grimir.wifimanager.admin.application.ports.SaveAuthorizedDevicePort
+import cz.grimir.wifimanager.admin.application.ticket.command.AddAuthorizedDeviceCommand
+import cz.grimir.wifimanager.admin.application.ticket.handler.command.AddAuthorizedDeviceUsecase
+import cz.grimir.wifimanager.admin.application.ticket.port.FindAuthorizedDevicePort
+import cz.grimir.wifimanager.admin.application.ticket.port.FindTicketPort
+import cz.grimir.wifimanager.admin.application.ticket.port.SaveAuthorizedDevicePort
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.admin.core.value.AuthorizedDevice
 import cz.grimir.wifimanager.shared.core.TicketId

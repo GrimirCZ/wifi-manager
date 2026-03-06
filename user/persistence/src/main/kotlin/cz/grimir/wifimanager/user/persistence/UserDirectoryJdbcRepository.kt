@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.user.persistence
 
 import cz.grimir.wifimanager.shared.core.UserRole
-import cz.grimir.wifimanager.user.application.ports.UserDirectoryRepository
-import cz.grimir.wifimanager.user.application.ports.UserIdentityRecord
+import cz.grimir.wifimanager.user.application.identity.port.UserDirectoryRepository
+import cz.grimir.wifimanager.user.application.identity.port.UserIdentityRecord
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.Timestamp

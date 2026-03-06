@@ -1,11 +1,11 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
-import cz.grimir.wifimanager.captive.application.command.AuthorizeDeviceWithCodeCommand
-import cz.grimir.wifimanager.captive.application.ports.CaptiveUserIdentityPort
-import cz.grimir.wifimanager.captive.application.ports.FindAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.usecase.AuthorizeDeviceWithCodeUsecase
-import cz.grimir.wifimanager.captive.application.usecase.commands.TouchNetworkUserDeviceUsecase
-import cz.grimir.wifimanager.captive.application.usecase.queries.FindNetworkUserDeviceByMacUsecase
+import cz.grimir.wifimanager.captive.application.authorization.command.AuthorizeDeviceWithCodeCommand
+import cz.grimir.wifimanager.captive.application.identity.port.CaptiveUserIdentityPort
+import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.authorization.handler.command.AuthorizeDeviceWithCodeUsecase
+import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.TouchNetworkUserDeviceUsecase
+import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.query.FindNetworkUserDeviceByMacUsecase
 import cz.grimir.wifimanager.captive.core.exceptions.InvalidAccessCodeException
 import cz.grimir.wifimanager.captive.core.exceptions.KickedAddressAttemptedLoginException
 import cz.grimir.wifimanager.captive.core.value.Device

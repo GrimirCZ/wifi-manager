@@ -1,6 +1,7 @@
 package cz.grimir.wifimanager.admin.application.usecases.commands
 
-import cz.grimir.wifimanager.admin.application.ports.DeleteUserDevicePort
+import cz.grimir.wifimanager.admin.application.device.port.DeleteUserDevicePort
+import cz.grimir.wifimanager.admin.application.device.handler.command.RemoveUserDeviceUsecase
 import cz.grimir.wifimanager.shared.core.UserId
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith

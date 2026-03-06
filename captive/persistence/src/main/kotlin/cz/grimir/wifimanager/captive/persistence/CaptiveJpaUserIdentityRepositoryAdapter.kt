@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.persistence
 
-import cz.grimir.wifimanager.captive.application.network.CaptiveUserIdentityProfile
-import cz.grimir.wifimanager.captive.application.ports.CaptiveUserIdentityPort
+import cz.grimir.wifimanager.captive.application.identity.model.CaptiveUserIdentityProfile
+import cz.grimir.wifimanager.captive.application.identity.port.CaptiveUserIdentityPort
 import cz.grimir.wifimanager.captive.persistence.mapper.CaptiveUserIdentityMapper
 import cz.grimir.wifimanager.shared.core.UserId
 import org.springframework.stereotype.Repository

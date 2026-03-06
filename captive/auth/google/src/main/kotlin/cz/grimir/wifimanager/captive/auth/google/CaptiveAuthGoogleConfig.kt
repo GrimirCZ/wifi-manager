@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.captive.auth.google
 
-import cz.grimir.wifimanager.captive.application.user.UserAuthProvider
+import cz.grimir.wifimanager.captive.application.auth.port.UserAuthProvider
 import cz.grimir.wifimanager.shared.core.UserDirectoryClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

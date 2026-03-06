@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.captive.auth.keycloak
 
-import cz.grimir.wifimanager.shared.application.KeyValueMapParser
+import cz.grimir.wifimanager.shared.application.support.KeyValueMapParser
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "wifimanager.captive.auth.keycloak")

@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.admin.persistence
 
-import cz.grimir.wifimanager.admin.application.model.UserIdentity
-import cz.grimir.wifimanager.admin.application.ports.FindUserIdentityPort
-import cz.grimir.wifimanager.admin.application.ports.SaveUserIdentityPort
+import cz.grimir.wifimanager.admin.application.identity.model.UserIdentity
+import cz.grimir.wifimanager.admin.application.identity.port.FindUserIdentityPort
+import cz.grimir.wifimanager.admin.application.identity.port.SaveUserIdentityPort
 import cz.grimir.wifimanager.admin.persistence.mapper.AdminUserIdentityMapper
 import org.springframework.stereotype.Repository
 

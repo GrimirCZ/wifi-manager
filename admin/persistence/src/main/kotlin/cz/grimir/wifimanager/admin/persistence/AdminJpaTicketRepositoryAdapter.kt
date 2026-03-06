@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.admin.persistence
 
-import cz.grimir.wifimanager.admin.application.ports.FindTicketPort
-import cz.grimir.wifimanager.admin.application.ports.SaveTicketPort
-import cz.grimir.wifimanager.admin.application.queries.models.TicketWithDeviceCount
+import cz.grimir.wifimanager.admin.application.ticket.port.FindTicketPort
+import cz.grimir.wifimanager.admin.application.ticket.port.SaveTicketPort
+import cz.grimir.wifimanager.admin.application.ticket.model.TicketWithDeviceCount
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.admin.persistence.mapper.AdminTicketMapper
 import cz.grimir.wifimanager.shared.core.TicketId

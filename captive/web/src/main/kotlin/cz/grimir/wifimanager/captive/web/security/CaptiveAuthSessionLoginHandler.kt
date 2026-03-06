@@ -1,9 +1,9 @@
 package cz.grimir.wifimanager.captive.web.security
 
-import cz.grimir.wifimanager.captive.application.usecase.commands.UpsertNetworkUserOnLoginUsecase
-import cz.grimir.wifimanager.captive.application.usecase.queries.ResolveNetworkUserLimitUsecase
-import cz.grimir.wifimanager.captive.application.user.UserAuthProvider
-import cz.grimir.wifimanager.captive.application.user.UserCredentials
+import cz.grimir.wifimanager.captive.application.networkuser.handler.command.UpsertNetworkUserOnLoginUsecase
+import cz.grimir.wifimanager.captive.application.networkuser.handler.query.ResolveNetworkUserLimitUsecase
+import cz.grimir.wifimanager.captive.application.auth.port.UserAuthProvider
+import cz.grimir.wifimanager.captive.application.auth.model.UserCredentials
 import cz.grimir.wifimanager.shared.security.mvc.SessionUserIdentity
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest

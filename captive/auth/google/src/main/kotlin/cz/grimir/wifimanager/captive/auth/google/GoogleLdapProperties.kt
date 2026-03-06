@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.captive.auth.google
 
-import cz.grimir.wifimanager.shared.application.KeyValueMapParser
+import cz.grimir.wifimanager.shared.application.support.KeyValueMapParser
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.context.properties.ConfigurationProperties
 import java.time.Duration

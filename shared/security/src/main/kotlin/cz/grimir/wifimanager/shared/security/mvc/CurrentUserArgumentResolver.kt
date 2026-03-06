@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.shared.security.mvc
 
-import cz.grimir.wifimanager.shared.application.UserIdentitySnapshot
+import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.core.MethodParameter
 import org.springframework.stereotype.Component

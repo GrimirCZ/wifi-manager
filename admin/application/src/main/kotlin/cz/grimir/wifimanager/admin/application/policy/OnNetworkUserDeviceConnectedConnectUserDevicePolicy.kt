@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.admin.application.policy
 
-import cz.grimir.wifimanager.admin.application.usecases.commands.ConnectUserDeviceUsecase
+import cz.grimir.wifimanager.admin.application.device.handler.command.ConnectUserDeviceUsecase
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceConnectedEvent
 import org.springframework.stereotype.Service
 

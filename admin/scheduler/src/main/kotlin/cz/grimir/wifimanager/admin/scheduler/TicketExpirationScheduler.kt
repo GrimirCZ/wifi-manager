@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.admin.scheduler
 
-import cz.grimir.wifimanager.admin.application.commands.ExpireTicketsCommand
-import cz.grimir.wifimanager.admin.application.usecases.commands.ExpireExpiredTicketsUsecase
+import cz.grimir.wifimanager.admin.application.ticket.command.ExpireTicketsCommand
+import cz.grimir.wifimanager.admin.application.ticket.handler.command.ExpireExpiredTicketsUsecase
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service

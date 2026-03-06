@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.shared.security.mvc
 
-import cz.grimir.wifimanager.shared.application.UserIdentitySnapshot
+import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.core.UserRole
 import java.io.Serializable
