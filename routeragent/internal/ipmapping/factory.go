@@ -10,7 +10,7 @@ import (
 func New(ctx context.Context, cfg config.Config) Provider {
 	if cfg.DummyMode {
 		log.Printf("warning: dummy ip mapping provider enabled")
-		return NewDummyProvider()
+		return NewDummyProvider(ctx)
 	}
 	return NewNetlinkProvider(ctx)
 }

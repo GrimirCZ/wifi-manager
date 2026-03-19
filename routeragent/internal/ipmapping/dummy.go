@@ -1,11 +1,13 @@
 package ipmapping
 
+import "context"
+
 type DummyProvider struct {
 	store *store
 }
 
-func NewDummyProvider() *DummyProvider {
-	s := newStore()
+func NewDummyProvider(ctx context.Context) *DummyProvider {
+	s := newStore(ctx, nil)
 	s.update("127.0.0.1", "00:00:00:00:00:00")
 	return &DummyProvider{store: s}
 }
@@ -24,4 +26,8 @@ func (d *DummyProvider) LookupMAC(ip string) (string, bool) {
 
 func (d *DummyProvider) IPsForMAC(mac string) []string {
 	return d.store.ipsForMAC(mac)
+}
+
+func (d *DummyProvider) ListClients() []ClientView {
+	return d.store.listClients()
 }

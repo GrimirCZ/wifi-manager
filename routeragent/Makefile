@@ -5,6 +5,9 @@ dummy-router:
 	ROUTERAGENT_DUMMY_MODE=true \
 	go run main.go
 
+build:
+	go build
+
 proto-gen:
 	buf generate ../captive/routeragent/src/main/proto/router_agent.proto \
 		--template ./buf.gen.yaml \

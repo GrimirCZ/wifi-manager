@@ -10,7 +10,7 @@ import (
 func New(cfg config.Config) (Backend, error) {
 	if cfg.DummyMode {
 		log.Printf("warning: dummy firewall backend enabled")
-		return DummyBackend{}, nil
+		return NewDummyBackend(), nil
 	}
 
 	if cfg.NftTable == "" {
