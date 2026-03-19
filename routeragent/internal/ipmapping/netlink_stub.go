@@ -29,3 +29,7 @@ func (n *NetlinkProvider) LookupMAC(ip string) (string, bool) {
 func (n *NetlinkProvider) IPsForMAC(mac string) []string {
 	return nil
 }
+
+func (n *NetlinkProvider) ListClients() []ClientView {
+	return nil
+}

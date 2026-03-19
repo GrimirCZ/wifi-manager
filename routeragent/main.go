@@ -32,18 +32,13 @@ func main() {
 	defer stop()
 
 	ipProvider := ipmapping.New(ctx, cfg)
-	if err := ipProvider.Start(); err != nil {
-		log.Fatalf("ip mapping provider error: %v", err)
-	}
-
 	hostnameProvider := hostname.NewDnsmasqProvider(ctx, cfg.DnsmasqLeasesPath, cfg.DnsmasqPollInterval)
-	if err := hostnameProvider.Start(); err != nil {
-		log.Fatalf("hostname provider error: %v", err)
-	}
-
 	allowedIPs := allowedip.NewMemoryRepository()
 	routerAgent := agent.New(firewallBackend, ipProvider, hostnameProvider, allowedIPs, cfg.ActionTimeout)
+	routerAgent.StartReconciler(ctx, cfg.ReconcileInterval)
 
+	// Start consuming provider updates before ipProvider.Start so replayed
+	// bootstrap deltas are not missed while the initial snapshot goes live.
 	go func() {
 		updates := ipProvider.Updates()
 		if updates == nil {
@@ -61,6 +56,14 @@ func main() {
 			}
 		}
 	}()
+
+	if err := ipProvider.Start(); err != nil {
+		log.Fatalf("ip mapping provider error: %v", err)
+	}
+
+	if err := hostnameProvider.Start(); err != nil {
+		log.Fatalf("hostname provider error: %v", err)
+	}
 
 	if err := grpcclient.Run(ctx, cfg, routerAgent); err != nil {
 		log.Fatalf("grpc loop error: %v", err)
