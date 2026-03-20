@@ -19,4 +19,5 @@ data class CreateCodeBasedAuthorizationCommand(
      */
     var validUntil: Instant,
     val userId: UserId,
+    val requireUserNameOnLogin: Boolean,
 )

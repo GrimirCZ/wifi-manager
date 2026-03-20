@@ -15,6 +15,7 @@ class AuthorizationToken(
      * UTC time of ticket expiration.
      */
     val validUntil: Instant,
+    val requireUserNameOnLogin: Boolean,
     /**
      * List of devices authorized using this ticket.
      */

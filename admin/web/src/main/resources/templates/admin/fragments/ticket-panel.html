@@ -75,12 +75,12 @@
                             </div>
                         </div>
 
-                        <div class="flex flex-wrap items-center gap-4 print:hidden">
+                        <div class="flex flex-wrap items-center gap-4">
                             <span class="text-sm text-text-muted">
                                 <span th:text="#{admin.ticket.active.validUntil}">Valid until:</span>
                                 <span th:text="${@DateFormatter.timeRelativeNow(ticket.validUntil)}">-</span>
                             </span>
-                            <button class="btn btn-danger" type="button"
+                            <button class="btn btn-danger print:hidden" type="button"
                                     th:hx-delete="@{/admin/ticket/{ticketId}(ticketId=${ticket.id})}"
                                     th:hx-confirm="#{admin.ticket.active.end.confirm}"
                                     hx-target="closest .ticket-card"

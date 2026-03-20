@@ -25,6 +25,8 @@ class AdminTicketEntity(
     var wasCanceled: Boolean,
     @Column(name = "author_id")
     val authorId: UUID,
+    @Column(name = "require_user_name_on_login")
+    val requireUserNameOnLogin: Boolean,
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "kicked_mac_addresses", columnDefinition = "text[]")
     var kickedMacAddresses: Array<String>,

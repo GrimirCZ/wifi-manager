@@ -35,6 +35,31 @@
         </div>
     </div>
 
+    <div class="space-y-2">
+        <label class="checkbox-label">
+            <input class="checkbox" type="checkbox" th:field="*{requireUserNameOnLogin}"/>
+            <span class="inline-flex items-center gap-2">
+                <span th:text="#{admin.ticket.create.requireName.label}">Require user name during login</span>
+                <span
+                    class="tooltip"
+                    th:attr="data-tooltip=#{admin.ticket.create.requireName.help}"
+                >
+                    <button
+                        type="button"
+                        class="tooltip-icon"
+                        th:attr="aria-label=#{admin.ticket.create.requireName.help}"
+                    >
+                        <img
+                            th:src="@{/assets/shared/icons/outline/help-circle.svg}"
+                            alt=""
+                            class="h-4 w-4"
+                        />
+                    </button>
+                </span>
+            </span>
+        </label>
+    </div>
+
     <button class="btn btn-primary w-full justify-center" type="submit">
         <span class="btn-text" th:text="#{admin.ticket.create.submit}">Create</span>
         <span class="spinner"></span>

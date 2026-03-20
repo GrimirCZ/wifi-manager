@@ -16,9 +16,11 @@ class CaptiveDeviceEntity(
     @Id
     @Column(name = "mac")
     val mac: String,
+    @Column(name = "display_name")
+    val displayName: String?,
     /**
-     * Device hostname, if provided.
+     * Device hostname or another device-provided label, if provided.
      */
-    @Column(name = "name")
-    val name: String?,
+    @Column(name = "device_name")
+    val deviceName: String?,
 )

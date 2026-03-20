@@ -153,12 +153,12 @@
   }
 
   .tooltip[data-tooltip] {
-    @apply underline decoration-dashed decoration-1 underline-offset-4;
+    @apply inline-flex;
   }
 
   .tooltip[data-tooltip]::after {
     content: attr(data-tooltip);
-    @apply pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 max-w-sm -translate-x-1/2 translate-y-0.5 whitespace-nowrap rounded-lg bg-[rgb(var(--text))] px-2.5 py-1.5 text-sm leading-tight text-[rgb(var(--surface))] opacity-0 shadow-lg;
+    @apply pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-64 max-w-[calc(100vw-2rem)] -translate-x-1/2 translate-y-0.5 whitespace-normal rounded-2xl bg-[rgb(var(--text))] px-3 py-2 text-left text-sm leading-6 text-[rgb(var(--surface))] opacity-0 shadow-[0_18px_40px_-24px_rgba(22,29,31,0.45)];
     @apply transition-transform duration-150 ease-out;
   }
 
@@ -169,10 +169,20 @@
   }
 
   .tooltip[data-tooltip]:hover::after,
+  .tooltip[data-tooltip]:focus-within::after,
+  .tooltip[data-tooltip]:active::after,
   .tooltip[data-tooltip]:focus-visible::after,
   .tooltip[data-tooltip]:hover::before,
+  .tooltip[data-tooltip]:focus-within::before,
+  .tooltip[data-tooltip]:active::before,
   .tooltip[data-tooltip]:focus-visible::before {
     @apply translate-y-0 opacity-100;
+  }
+
+  .tooltip-icon {
+    @apply inline-flex h-5 w-5 items-center justify-center rounded-full bg-surface-muted text-text-muted transition-colors duration-150;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/20 focus-visible:ring-offset-2;
+    @apply hover:bg-[rgb(var(--surface-high))];
   }
 
   .app-shell {

@@ -18,6 +18,7 @@ data class TicketCreatedEvent(
      * UTC time of ticket expiration.
      */
     var validUntil: Instant,
+    val requireUserNameOnLogin: Boolean,
     val author: Author,
 ) {
     data class Author(

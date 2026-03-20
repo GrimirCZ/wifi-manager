@@ -50,7 +50,13 @@ class CaptiveJpaNetworkUserDeviceRepositoryAdapter(
         hostname: String?,
     ) {
         val existing = deviceRepository.findByIdOrNull(mac)
-        val resolvedName = hostname ?: existing?.name
-        deviceRepository.save(CaptiveDeviceEntity(mac = mac, name = resolvedName))
+        val resolvedDeviceName = hostname ?: existing?.deviceName
+        deviceRepository.save(
+            CaptiveDeviceEntity(
+                mac = mac,
+                displayName = existing?.displayName,
+                deviceName = resolvedDeviceName,
+            ),
+        )
     }
 }

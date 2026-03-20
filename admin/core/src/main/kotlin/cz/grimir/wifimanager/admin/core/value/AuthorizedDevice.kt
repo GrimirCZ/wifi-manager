@@ -10,9 +10,13 @@ data class AuthorizedDevice(
      */
     val mac: String,
     /**
-     * Device hostname, if provided.
+     * Primary label shown in the ticket device list.
      */
-    val name: String?,
+    val displayName: String?,
+    /**
+     * Device hostname or another device-provided label, if provided.
+     */
+    val deviceName: String?,
     /**
      * ID of ticket that was used to authorize this device.
      */

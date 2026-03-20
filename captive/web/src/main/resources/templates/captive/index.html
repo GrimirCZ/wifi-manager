@@ -6,7 +6,9 @@
     _="
       on load
         set :scannerActive to false
-        set #scanner-toggle.textContent to #scanner-toggle.dataset.startText
+        if #scanner-toggle exists
+          set #scanner-toggle.textContent to #scanner-toggle.dataset.startText
+        end
         call Quagga.onDetected(window.wmQuaggaDetected)
       end
 
@@ -46,10 +48,12 @@
       end
 
       on quaggaDetected
-        set #access-code.value to event.detail.code
-        call window.wmQuaggaStopSafe()
-        send scannerReset to me
-        call #access-code.focus()
+        if #access-code exists
+          set #access-code.value to event.detail.code
+          call window.wmQuaggaStopSafe()
+          send scannerReset to me
+          call #access-code.focus()
+        end
       end
 
       on quaggaStopFailed
@@ -69,11 +73,11 @@
       <div id="captive-content" class="mx-auto max-w-2xl space-y-6" th:fragment="captiveContent">
         <div class="card space-y-4">
           <h1 class="text-2xl font-semibold"
-              th:text="${deviceLoggedIn == true} ? #{captive.page.connectedHeading} : #{captive.page.heading}">
+              th:text="${deviceLoggedIn == true} ? #{captive.page.connectedHeading} : (${requireUserNameStep == true} ? #{captive.page.name.heading} : #{captive.page.heading})">
             Connect with access code
           </h1>
           <p class="text-text-muted"
-             th:text="${deviceLoggedIn == true} ? #{captive.page.connectedSubtitle} : #{captive.page.subtitle}">
+             th:text="${deviceLoggedIn == true} ? #{captive.page.connectedSubtitle} : (${requireUserNameStep == true} ? #{captive.page.name.subtitle} : #{captive.page.subtitle})">
             Enter the access code or scan the barcode on your ticket.
           </p>
 
@@ -107,6 +111,10 @@
             <div th:if="${usedTicketValidUntil}" class="flex items-center justify-between gap-3 text-sm text-text-muted">
               <span th:text="#{captive.ticket.validUntil}">Valid until</span>
               <span class="text-right font-bold" th:text="${@DateFormatter.timeRelativeNow(usedTicketValidUntil)}">TBD</span>
+            </div>
+            <div th:if="${usedTicketName != null and !#strings.isEmpty(usedTicketName)}" class="flex items-center justify-between gap-3 text-sm text-text-muted">
+              <span th:text="#{captive.ticket.name}">Name</span>
+              <span class="text-right" th:text="${usedTicketName}">TBD</span>
             </div>
             <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
               <span th:text="#{captive.ticket.device}">Device</span>
@@ -148,7 +156,7 @@
             <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">Invalid access code.</div>
           </div>
 
-          <div class="flex flex-col gap-2">
+          <div class="flex flex-col gap-2" th:if="${requireUserNameStep != true}">
             <label class="text-sm font-medium" for="access-code" th:text="#{captive.access.label}">
               Access code
             </label>
@@ -167,8 +175,27 @@
               Access code is required.
             </div>
           </div>
+          <input th:if="${requireUserNameStep == true}" id="access-code" type="hidden" th:field="*{accessCode}"/>
 
-          <div class="space-y-3">
+          <div class="flex flex-col gap-2" th:if="${requireUserNameStep == true}">
+            <label class="text-sm font-medium" for="required-name" th:text="#{captive.name.label}">
+              Your name
+            </label>
+            <input
+              id="required-name"
+              type="text"
+              class="input w-full"
+              th:field="*{name}"
+              th:placeholder="#{captive.name.placeholder}"
+              required
+            />
+            <div class="text-xs text-red-600" th:if="${#fields.hasErrors('name')}"
+                 th:text="${#fields.errors('name')[0]}">
+              Please enter at least 3 characters.
+            </div>
+          </div>
+
+          <div class="space-y-3" th:classappend="${requireUserNameStep == true} ? ' hidden' : ''">
             <div class="flex items-center justify-between gap-3">
               <div>
                 <div class="text-sm font-medium" th:text="#{captive.scan.title}">Scan barcode</div>
@@ -206,7 +233,7 @@
             </div>
           </div>
 
-          <div class="space-y-2">
+          <div class="space-y-2" th:if="${requireUserNameStep != true}">
             <label class="checkbox-label">
               <input class="checkbox" type="checkbox" th:field="*{acceptTerms}" required/>
               <span th:text="#{captive.terms.label}">I agree to the terms and conditions.</span>
@@ -216,9 +243,10 @@
               You must accept the terms.
             </div>
           </div>
+          <input th:if="${requireUserNameStep == true}" type="hidden" th:field="*{acceptTerms}"/>
 
           <button class="btn btn-primary w-full" type="submit">
-            <span class="btn-text" th:text="#{captive.action.continue}">Continue</span>
+            <span class="btn-text" th:text="${requireUserNameStep == true} ? #{captive.action.authorize} : #{captive.action.continue}">Continue</span>
             <span class="spinner"></span>
           </button>
           </form>

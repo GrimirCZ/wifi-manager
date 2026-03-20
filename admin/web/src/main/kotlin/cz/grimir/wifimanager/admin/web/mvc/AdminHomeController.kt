@@ -84,6 +84,7 @@ class AdminHomeController(
                     accessCode = null,
                     duration = Duration.ofMinutes(request.validityMinutes.toLong()),
                     user = user,
+                    requireUserNameOnLogin = request.requireUserNameOnLogin,
                 ),
             )
 

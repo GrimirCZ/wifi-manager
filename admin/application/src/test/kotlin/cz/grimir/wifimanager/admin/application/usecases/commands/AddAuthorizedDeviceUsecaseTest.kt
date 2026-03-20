@@ -57,6 +57,7 @@ class AddAuthorizedDeviceUsecaseTest {
             AddAuthorizedDeviceCommand(
                 ticketId = ticketId,
                 deviceMacAddress = "AA:BB:CC:DD:EE:FF",
+                displayName = null,
                 deviceName = "phone",
             ),
         )
@@ -64,7 +65,8 @@ class AddAuthorizedDeviceUsecaseTest {
         val deviceCaptor = argumentCaptor<AuthorizedDevice>()
         verify(saveAuthorizedDevicePort).save(deviceCaptor.capture())
         assertFalse(deviceCaptor.firstValue.wasAccessRevoked)
-        assertEquals("phone", deviceCaptor.firstValue.name)
+        assertEquals("phone", deviceCaptor.firstValue.displayName)
+        assertEquals("phone", deviceCaptor.firstValue.deviceName)
     }
 
     @Test
@@ -88,6 +90,7 @@ class AddAuthorizedDeviceUsecaseTest {
             AddAuthorizedDeviceCommand(
                 ticketId = ticketId,
                 deviceMacAddress = "AA:BB:CC:DD:EE:FF",
+                displayName = null,
                 deviceName = "phone",
             ),
         )
@@ -95,7 +98,8 @@ class AddAuthorizedDeviceUsecaseTest {
         val deviceCaptor = argumentCaptor<AuthorizedDevice>()
         verify(saveAuthorizedDevicePort).save(deviceCaptor.capture())
         assertFalse(deviceCaptor.firstValue.wasAccessRevoked)
-        assertEquals("phone", deviceCaptor.firstValue.name)
+        assertEquals("phone", deviceCaptor.firstValue.displayName)
+        assertEquals("phone", deviceCaptor.firstValue.deviceName)
     }
 
     @Test
@@ -115,7 +119,8 @@ class AddAuthorizedDeviceUsecaseTest {
             AuthorizedDevice(
                 ticketId = ticketId,
                 mac = "11:22:33:44:55:66",
-                name = "old",
+                displayName = "old",
+                deviceName = "old-host",
                 wasAccessRevoked = true,
             )
 
@@ -126,13 +131,15 @@ class AddAuthorizedDeviceUsecaseTest {
             AddAuthorizedDeviceCommand(
                 ticketId = ticketId,
                 deviceMacAddress = "11:22:33:44:55:66",
+                displayName = "Visitor Name",
                 deviceName = "new",
             ),
         )
 
         val deviceCaptor = argumentCaptor<AuthorizedDevice>()
         verify(saveAuthorizedDevicePort).save(deviceCaptor.capture())
-        assertEquals("new", deviceCaptor.firstValue.name)
+        assertEquals("Visitor Name", deviceCaptor.firstValue.displayName)
+        assertEquals("new", deviceCaptor.firstValue.deviceName)
         assertTrue(deviceCaptor.firstValue.wasAccessRevoked)
     }
 }

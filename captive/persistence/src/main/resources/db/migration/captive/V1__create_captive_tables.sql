@@ -3,12 +3,14 @@ create schema if not exists captive;
 create table if not exists captive.captive_authorization_token (
     id uuid primary key,
     access_code text not null unique,
+    require_user_name_on_login boolean not null default false,
     kicked_macs text[] not null default '{}'
 );
 
 create table if not exists captive.captive_device (
     mac text primary key,
-    name text null
+    display_name text null,
+    device_name text null
 );
 
 create table if not exists captive.captive_authorized_device (

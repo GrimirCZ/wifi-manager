@@ -10,6 +10,7 @@ data class DeviceAuthorizedEvent(
 ) {
     data class Device(
         val macAddress: String,
-        val name: String?,
+        val displayName: String?,
+        val deviceName: String?,
     )
 }

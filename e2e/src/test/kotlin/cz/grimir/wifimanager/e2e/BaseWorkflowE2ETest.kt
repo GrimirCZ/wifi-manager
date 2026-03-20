@@ -238,7 +238,10 @@ abstract class BaseWorkflowE2ETest {
         }
     }
 
-    protected fun createTicketAndReturnCsrfToken(validityMinutes: String = "45"): String {
+    protected fun createTicketAndReturnCsrfToken(
+        validityMinutes: String = "45",
+        requireUserNameOnLogin: Boolean = false,
+    ): String {
         page.navigate("$baseUrl/admin")
 
         val form = page.locator("form:has(select[name='validityMinutes'])").first()
@@ -260,6 +263,11 @@ abstract class BaseWorkflowE2ETest {
 
         val csrfToken = form.locator("input[name='_csrf']").first().inputValue()
         form.locator("select[name='validityMinutes']").selectOption(validityMinutes)
+        if (requireUserNameOnLogin) {
+            form.locator("input[name='requireUserNameOnLogin']").check()
+        } else {
+            form.locator("input[name='requireUserNameOnLogin']").uncheck()
+        }
         form.getByRole(AriaRole.BUTTON, Locator.GetByRoleOptions().setName("Create")).click()
 
         assertThat(page.locator("#ticket-panel .ticket-card")).isVisible()
@@ -267,7 +275,7 @@ abstract class BaseWorkflowE2ETest {
     }
 
     protected fun extractActiveTicketCode(): String {
-        val formatted = page.locator("#ticket-panel .ticket-card span.font-semibold.text-xl").first().innerText()
+        val formatted = page.locator("#ticket-panel .ticket-card .code-card span").first().innerText()
         return formatted.replace(Regex("[^0-9A-Za-z]"), "")
     }
 
@@ -298,6 +306,7 @@ abstract class BaseWorkflowE2ETest {
     protected fun submitCaptiveAccessCode(
         accessCode: String,
         acceptTerms: Boolean = true,
+        name: String? = null,
     ) {
         page.navigate("$baseUrl/captive")
 
@@ -313,6 +322,12 @@ abstract class BaseWorkflowE2ETest {
         }
 
         form.getByRole(AriaRole.BUTTON, Locator.GetByRoleOptions().setName("Continue")).click()
+
+        if (name != null) {
+            assertThat(page.getByLabel("Your name")).isVisible()
+            page.getByLabel("Your name").fill(name)
+            page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Authorize")).click()
+        }
     }
 
     protected fun loginCaptiveAndAuthorizeDevice(

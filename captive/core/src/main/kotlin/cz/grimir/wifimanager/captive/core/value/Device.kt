@@ -8,7 +8,11 @@ data class Device(
      */
     val mac: String,
     /**
-     * Device hostname, if provided.
+     * Person name captured during ticket login, if any.
      */
-    val name: String?,
+    val displayName: String?,
+    /**
+     * Device hostname or another device-provided label, if provided.
+     */
+    val deviceName: String?,
 )

@@ -16,7 +16,10 @@ import java.util.UUID
 class AdminAuthorizedDeviceEntity(
     @Id
     val mac: String,
-    val name: String?,
+    @Column(name = "display_name")
+    val displayName: String?,
+    @Column(name = "device_name")
+    val deviceName: String?,
     @Id
     @Column(name = "ticket_id")
     val ticketId: UUID,

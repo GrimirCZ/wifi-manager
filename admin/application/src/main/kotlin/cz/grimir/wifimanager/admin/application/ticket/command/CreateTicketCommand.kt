@@ -16,4 +16,5 @@ data class CreateTicketCommand(
      * User that request ticket creation.
      */
     val user: UserIdentitySnapshot,
+    val requireUserNameOnLogin: Boolean,
 )

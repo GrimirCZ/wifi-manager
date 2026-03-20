@@ -33,6 +33,10 @@ class CaptivePortalController(
     private val touchNetworkUserDeviceUsecase: TouchNetworkUserDeviceUsecase,
     private val userIdentityPort: CaptiveUserIdentityPort,
 ) {
+    companion object {
+        private const val MIN_REQUIRED_NAME_LENGTH = 3
+    }
+
     @GetMapping("/captive", "/captive/")
     fun index(
         @CurrentClient
@@ -42,6 +46,7 @@ class CaptivePortalController(
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", CaptiveAccessCodeForm())
         }
+        model.addAttribute("requireUserNameStep", false)
         applyClientAuthorization(clientInfo, model)
         return "captive/index"
     }
@@ -57,6 +62,9 @@ class CaptivePortalController(
         htmxRequest: HtmxRequest,
     ): String {
         val accessCode = form.accessCode?.let(accessCodeFormatter::normalize).orEmpty()
+        val trimmedName = form.name?.trim().orEmpty()
+        form.accessCode = accessCode
+        form.name = trimmedName.ifBlank { null }
 
         if (accessCode.isBlank()) {
             bindingResult.rejectValue("accessCode", "captive.error.code.required")
@@ -66,6 +74,30 @@ class CaptivePortalController(
         }
 
         if (bindingResult.hasErrors()) {
+            model.addAttribute("requireUserNameStep", false)
+            applyClientAuthorization(clientInfo, model)
+            return if (htmxRequest.isHtmxRequest) "captive/index :: captiveContent" else "captive/index"
+        }
+
+        val token =
+            findAuthorizationTokenPort.findByAccessCode(accessCode)
+                ?: run {
+                    bindingResult.reject("captive.error.code.invalid")
+                    form.acceptTerms = false
+                    model.addAttribute("requireUserNameStep", false)
+                    applyClientAuthorization(clientInfo, model)
+                    return if (htmxRequest.isHtmxRequest) "captive/index :: captiveContent" else "captive/index"
+                }
+
+        if (token.requireUserNameOnLogin && trimmedName.isBlank()) {
+            model.addAttribute("requireUserNameStep", true)
+            applyClientAuthorization(clientInfo, model)
+            return if (htmxRequest.isHtmxRequest) "captive/index :: captiveContent" else "captive/index"
+        }
+
+        if (trimmedName.isNotBlank() && trimmedName.length < MIN_REQUIRED_NAME_LENGTH) {
+            bindingResult.rejectValue("name", "captive.error.name.min-length")
+            model.addAttribute("requireUserNameStep", token.requireUserNameOnLogin)
             applyClientAuthorization(clientInfo, model)
             return if (htmxRequest.isHtmxRequest) "captive/index :: captiveContent" else "captive/index"
         }
@@ -77,23 +109,26 @@ class CaptivePortalController(
                     device =
                         Device(
                             mac = clientInfo.macAddress,
-                            name = clientInfo.hostname,
+                            displayName = trimmedName.ifBlank { null },
+                            deviceName = clientInfo.hostname,
                         ),
                 ),
             )
         } catch (_: InvalidAccessCodeException) {
             bindingResult.reject("captive.error.code.invalid")
             form.acceptTerms = false
+            model.addAttribute("requireUserNameStep", false)
             applyClientAuthorization(clientInfo, model)
             return if (htmxRequest.isHtmxRequest) "captive/index :: captiveContent" else "captive/index"
         } catch (ex: KickedAddressAttemptedLoginException) {
             logger.warn(ex) { "Kicked device attempted login mac=${ex.macAddress}" }
             form.acceptTerms = false
+            model.addAttribute("requireUserNameStep", false)
             model.addAttribute("deviceLoggedIn", false)
             model.addAttribute("deviceKicked", true)
             model.addAttribute(
                 "usedTicketValidUntil",
-                findAuthorizationTokenPort.findByAccessCode(accessCode)?.validUntil,
+                token.validUntil,
             )
             model.addAttribute("usedTicketDevice", clientInfo.hostname ?: clientInfo.macAddress)
             model.addAttribute("clientMacAddress", clientInfo.macAddress)
@@ -102,6 +137,7 @@ class CaptivePortalController(
         }
 
         model.addAttribute("form", CaptiveAccessCodeForm())
+        model.addAttribute("requireUserNameStep", false)
         applyClientAuthorization(clientInfo, model)
         return if (htmxRequest.isHtmxRequest) "captive/index :: captiveContent" else "captive/index"
     }
@@ -137,6 +173,7 @@ class CaptivePortalController(
             model.addAttribute("deviceLoggedIn", false)
             model.addAttribute("deviceKicked", false)
             model.addAttribute("usedTicketValidUntil", null)
+            model.addAttribute("usedTicketName", null)
             model.addAttribute("usedTicketDevice", "")
             model.addAttribute("clientMacAddress", clientInfo.macAddress)
             model.addAttribute("clientIpAddress", clientInfo.ipAddress)
@@ -144,12 +181,17 @@ class CaptivePortalController(
         }
 
         val kicked = token.kickedMacAddresses.contains(clientInfo.macAddress)
+        val authorizedDevice = token.authorizedDevices.firstOrNull { it.mac == clientInfo.macAddress }
 
         model.addAttribute("accountAuthorized", false)
         model.addAttribute("deviceLoggedIn", !kicked)
         model.addAttribute("deviceKicked", kicked)
         model.addAttribute("usedTicketValidUntil", token.validUntil)
-        model.addAttribute("usedTicketDevice", clientInfo.hostname ?: clientInfo.macAddress)
+        model.addAttribute("usedTicketName", authorizedDevice?.displayName)
+        model.addAttribute(
+            "usedTicketDevice",
+            authorizedDevice?.deviceName ?: clientInfo.hostname ?: clientInfo.macAddress,
+        )
         model.addAttribute("clientMacAddress", clientInfo.macAddress)
         model.addAttribute("clientIpAddress", clientInfo.ipAddress)
     }

@@ -15,5 +15,6 @@ dependencies {
 
     testImplementation(platform(libs.junitBom))
     testImplementation(libs.bundles.testBase)
+    testImplementation(libs.bundles.testMockito)
     testRuntimeOnly(libs.bundles.testRuntime)
 }

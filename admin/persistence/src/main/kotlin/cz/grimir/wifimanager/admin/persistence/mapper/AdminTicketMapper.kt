@@ -19,6 +19,7 @@ class AdminTicketMapper {
             validUntil = entity.validUntil,
             wasCanceled = entity.wasCanceled,
             authorId = UserId(entity.authorId),
+            requireUserNameOnLogin = entity.requireUserNameOnLogin,
             kickedMacAddresses = entity.kickedMacAddresses.toMutableSet(),
         )
 
@@ -30,6 +31,7 @@ class AdminTicketMapper {
             validUntil = domain.validUntil,
             wasCanceled = domain.wasCanceled,
             authorId = domain.authorId.id,
+            requireUserNameOnLogin = domain.requireUserNameOnLogin,
             kickedMacAddresses = domain.kickedMacAddresses.toTypedArray(),
         )
 }

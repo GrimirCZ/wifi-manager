@@ -17,6 +17,7 @@ class WhenTicketCreatedCreateCodeBasedAuthorizationPolicy(
                 createdAt = event.createdAt,
                 validUntil = event.validUntil,
                 userId = event.author.userId,
+                requireUserNameOnLogin = event.requireUserNameOnLogin,
             ),
         )
     }

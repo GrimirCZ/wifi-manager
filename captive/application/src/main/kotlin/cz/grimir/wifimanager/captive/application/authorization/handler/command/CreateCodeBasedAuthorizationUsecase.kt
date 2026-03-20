@@ -15,6 +15,7 @@ class CreateCodeBasedAuthorizationUsecase(
                 id = command.ticketId,
                 accessCode = command.accessCode,
                 validUntil = command.validUntil,
+                requireUserNameOnLogin = command.requireUserNameOnLogin,
                 authorizedDevices = mutableListOf(),
                 kickedMacAddresses = mutableSetOf(),
             ),

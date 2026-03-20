@@ -24,7 +24,8 @@ class AddAuthorizedDeviceUsecase(
             logger.info { "Device $existingDevice was already authorized, updating to $command." }
             saveAuthorizedDevicePort.save(
                 existingDevice.copy(
-                    name = command.deviceName ?: existingDevice.name,
+                    displayName = command.displayName ?: existingDevice.displayName,
+                    deviceName = command.deviceName ?: existingDevice.deviceName,
                 ),
             )
         } else {
@@ -32,7 +33,8 @@ class AddAuthorizedDeviceUsecase(
                 AuthorizedDevice(
                     ticketId = command.ticketId,
                     mac = command.deviceMacAddress,
-                    name = command.deviceName,
+                    displayName = command.displayName ?: command.deviceName,
+                    deviceName = command.deviceName,
                     wasAccessRevoked = false,
                 ),
             )

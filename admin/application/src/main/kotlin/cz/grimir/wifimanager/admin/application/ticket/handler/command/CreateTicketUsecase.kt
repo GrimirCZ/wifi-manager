@@ -45,6 +45,7 @@ class CreateTicketUsecase(
                 validUntil = validUntil,
                 wasCanceled = false,
                 authorId = command.user.userId,
+                requireUserNameOnLogin = command.requireUserNameOnLogin,
             )
 
         saveTicketPort.save(ticket)
@@ -55,6 +56,7 @@ class CreateTicketUsecase(
                 accessCode = ticket.accessCode,
                 createdAt = ticket.createdAt,
                 validUntil = ticket.validUntil,
+                requireUserNameOnLogin = ticket.requireUserNameOnLogin,
                 author =
                     TicketCreatedEvent.Author(
                         userId = command.user.userId,
@@ -65,7 +67,7 @@ class CreateTicketUsecase(
         )
 
         logger.info {
-            "Ticket created id=${ticket.id} authorId=${command.user.userId} validUntil=${ticket.validUntil}"
+            "Ticket created id=${ticket.id} authorId=${command.user.userId} validUntil=${ticket.validUntil} requireUserNameOnLogin=${ticket.requireUserNameOnLogin}"
         }
 
         return ticket

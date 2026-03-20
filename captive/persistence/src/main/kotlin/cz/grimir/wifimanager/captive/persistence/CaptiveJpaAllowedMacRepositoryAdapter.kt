@@ -22,7 +22,7 @@ class CaptiveJpaAllowedMacRepositoryAdapter(
 
     override fun save(allowedMac: AllowedMac) {
         if (!deviceRepository.existsById(allowedMac.mac)) {
-            deviceRepository.save(CaptiveDeviceEntity(mac = allowedMac.mac, name = null))
+            deviceRepository.save(CaptiveDeviceEntity(mac = allowedMac.mac, displayName = null, deviceName = null))
         }
         allowedMacRepository.save(mapper.toEntity(allowedMac))
     }

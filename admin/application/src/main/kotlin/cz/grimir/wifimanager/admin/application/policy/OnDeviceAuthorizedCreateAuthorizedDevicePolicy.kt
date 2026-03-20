@@ -14,7 +14,8 @@ class OnDeviceAuthorizedCreateAuthorizedDevicePolicy(
             AddAuthorizedDeviceCommand(
                 ticketId = event.ticketId,
                 deviceMacAddress = event.device.macAddress,
-                deviceName = event.device.name,
+                displayName = event.device.displayName,
+                deviceName = event.device.deviceName,
             ),
         )
     }

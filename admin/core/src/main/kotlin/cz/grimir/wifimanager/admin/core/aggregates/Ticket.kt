@@ -29,6 +29,10 @@ class Ticket(
      */
     var authorId: UserId,
     /**
+     * Whether code login should require a user name before authorization completes.
+     */
+    val requireUserNameOnLogin: Boolean = false,
+    /**
      * MAC addresses that were kicked from this ticket.
      */
     var kickedMacAddresses: MutableSet<String> = mutableSetOf(),
@@ -57,5 +61,5 @@ class Ticket(
     }
 
     override fun toString(): String =
-        "Ticket(id=$id, accessCode='$accessCode', createdAt=$createdAt, validUntil=$validUntil, wasCanceled=$wasCanceled, authorId=$authorId, kickedMacAddresses=$kickedMacAddresses)"
+        "Ticket(id=$id, accessCode='$accessCode', createdAt=$createdAt, validUntil=$validUntil, wasCanceled=$wasCanceled, authorId=$authorId, requireUserNameOnLogin=$requireUserNameOnLogin, kickedMacAddresses=$kickedMacAddresses)"
 }

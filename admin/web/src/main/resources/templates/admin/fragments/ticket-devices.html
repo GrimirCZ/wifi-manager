@@ -24,7 +24,7 @@
                     </span>
                     <div class="space-y-2">
                         <div class="text-lg font-semibold tracking-[-0.03em]"
-                             th:text="${device.name != null and !#strings.isEmpty(device.name) ? device.name : #messages.msg('admin.ticket.active.devices.unknown')}">
+                             th:text="${device.displayName != null and !#strings.isEmpty(device.displayName) ? device.displayName : ((device.deviceName != null and !#strings.isEmpty(device.deviceName)) ? device.deviceName : #messages.msg('admin.ticket.active.devices.unknown'))}">
                             Unknown device name
                         </div>
                         <div class="font-mono text-xs text-text-muted" th:text="${device.mac}">AA:BB:CC:DD:EE:FF</div>

@@ -33,14 +33,15 @@ class AuthorizeDeviceWithCodeUsecase(
                 device =
                     DeviceAuthorizedEvent.Device(
                         macAddress = command.device.mac,
-                        name = command.device.name,
+                        displayName = command.device.displayName,
+                        deviceName = command.device.deviceName,
                     ),
                 authorizedAt = timeProvider.get(),
             ),
         )
 
         logger.info {
-            "Device authorized ticketId=${token.id} mac=${command.device.mac} name=${command.device.name ?: "unknown"} validUntil=${token.validUntil}"
+            "Device authorized ticketId=${token.id} mac=${command.device.mac} displayName=${command.device.displayName ?: "unknown"} deviceName=${command.device.deviceName ?: "unknown"} validUntil=${token.validUntil}"
         }
     }
 }

@@ -7,7 +7,8 @@ create table if not exists admin.ticket
     created_at   timestamptz not null,
     valid_until  timestamptz not null,
     was_canceled boolean     not null,
-    author_id    uuid        not null
+    author_id    uuid        not null,
+    require_user_name_on_login boolean not null default false
 );
 
 create index if not exists idx_ticket_author_id on admin.ticket (author_id);
@@ -16,7 +17,8 @@ create index if not exists idx_ticket_valid_until on admin.ticket (valid_until);
 create table if not exists admin.authorized_device
 (
     mac        text    not null,
-    name       text    null,
+    display_name text  null,
+    device_name text   null,
     was_access_revoked boolean not null default false,
     ticket_id  uuid    not null references admin.ticket (id) on delete cascade,
     primary key (ticket_id, mac)

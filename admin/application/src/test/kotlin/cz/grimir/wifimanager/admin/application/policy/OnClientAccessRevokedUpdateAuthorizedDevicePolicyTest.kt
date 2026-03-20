@@ -51,7 +51,8 @@ class OnClientAccessRevokedUpdateAuthorizedDevicePolicyTest {
             AuthorizedDevice(
                 ticketId = ticketId,
                 mac = "AA:BB:CC:DD:EE:FF",
-                name = "phone",
+                displayName = "phone",
+                deviceName = "phone",
                 wasAccessRevoked = true,
             )
         given(findAuthorizedDevicePort.findByMacAndTicketId("AA:BB:CC:DD:EE:FF", ticketId)).willReturn(device)
@@ -74,7 +75,8 @@ class OnClientAccessRevokedUpdateAuthorizedDevicePolicyTest {
             AuthorizedDevice(
                 ticketId = ticketId,
                 mac = "AA:BB:CC:DD:EE:FF",
-                name = "phone",
+                displayName = "phone",
+                deviceName = "phone",
                 wasAccessRevoked = false,
             )
         given(findAuthorizedDevicePort.findByMacAndTicketId("AA:BB:CC:DD:EE:FF", ticketId)).willReturn(device)

@@ -28,6 +28,8 @@ class CaptiveAuthorizationTokenEntity(
      */
     @Column(name = "valid_until")
     val validUntil: java.time.Instant,
+    @Column(name = "require_user_name_on_login")
+    val requireUserNameOnLogin: Boolean,
     /**
      * List of devices authorized using this ticket.
      */

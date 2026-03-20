@@ -14,6 +14,7 @@ class CaptiveAuthorizationTokenMapper {
             id = TicketId(entity.id),
             accessCode = entity.accessCode,
             validUntil = entity.validUntil,
+            requireUserNameOnLogin = entity.requireUserNameOnLogin,
             authorizedDevices = entity.authorizedDevices.map(::deviceToDomain).toMutableList(),
             kickedMacAddresses = entity.kickedMacAddresses.toMutableSet(),
         )
@@ -23,6 +24,7 @@ class CaptiveAuthorizationTokenMapper {
             id = domain.id.id,
             accessCode = domain.accessCode,
             validUntil = domain.validUntil,
+            requireUserNameOnLogin = domain.requireUserNameOnLogin,
             authorizedDevices = domain.authorizedDevices.map(::deviceToEntity).toMutableList(),
             kickedMacAddresses = domain.kickedMacAddresses.toTypedArray(),
         )
@@ -30,12 +32,14 @@ class CaptiveAuthorizationTokenMapper {
     fun deviceToDomain(entity: CaptiveDeviceEntity): Device =
         Device(
             mac = entity.mac,
-            name = entity.name,
+            displayName = entity.displayName,
+            deviceName = entity.deviceName,
         )
 
     fun deviceToEntity(domain: Device): CaptiveDeviceEntity =
         CaptiveDeviceEntity(
             mac = domain.mac,
-            name = domain.name,
+            displayName = domain.displayName,
+            deviceName = domain.deviceName,
         )
 }
