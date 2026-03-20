@@ -20,11 +20,11 @@ func TestObservedNetworkStateLogLinesIncludesClientsAndHostnames(t *testing.T) {
 		&stubIPMappingProvider{
 			clients: []ipmapping.ClientView{
 				{
-					MAC: "aa:aa:aa:aa:aa:aa",
+					MAC: "02:11:22:33:44:55",
 					IPs: []string{"192.0.2.10", "192.0.2.11"},
 				},
 				{
-					MAC: "bb:bb:bb:bb:bb:bb",
+					MAC: "00:11:22:33:44:55",
 					IPs: []string{"192.0.2.20"},
 				},
 			},
@@ -40,8 +40,8 @@ func TestObservedNetworkStateLogLinesIncludesClientsAndHostnames(t *testing.T) {
 
 	want := []string{
 		"observed network state dump (signal=SIGUSR1): current clients",
-		"observed client mac=aa:aa:aa:aa:aa:aa ips=[192.0.2.10 192.0.2.11] hostnames=[laptop]",
-		"observed client mac=bb:bb:bb:bb:bb:bb ips=[192.0.2.20] hostnames=[phone]",
+		"observed client mac=02:11:22:33:44:55 randomized=true ips=[192.0.2.10 192.0.2.11] hostnames=[laptop]",
+		"observed client mac=00:11:22:33:44:55 randomized=false ips=[192.0.2.20] hostnames=[phone]",
 	}
 	if !reflect.DeepEqual(lines, want) {
 		t.Fatalf("unexpected log lines: %#v", lines)

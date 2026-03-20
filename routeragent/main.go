@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"slices"
@@ -127,11 +128,12 @@ func observedNetworkStateLogLines(ipProvider ipmapping.Provider, hostnameProvide
 	lines = append(lines, "observed network state dump (signal=SIGUSR1): current clients")
 	for _, client := range clients {
 		hostnames := observedHostnamesForIPs(hostnameProvider, client.IPs)
+		macDetails := "mac=" + client.MAC + " randomized=" + formatBool(isRandomizedMAC(client.MAC))
 		if len(hostnames) == 0 {
-			lines = append(lines, "observed client mac="+client.MAC+" ips="+formatList(client.IPs))
+			lines = append(lines, "observed client "+macDetails+" ips="+formatList(client.IPs))
 			continue
 		}
-		lines = append(lines, "observed client mac="+client.MAC+" ips="+formatList(client.IPs)+" hostnames="+formatList(hostnames))
+		lines = append(lines, "observed client "+macDetails+" ips="+formatList(client.IPs)+" hostnames="+formatList(hostnames))
 	}
 	return lines
 }
@@ -169,6 +171,21 @@ func formatList(values []string) string {
 		result += value
 	}
 	return result + "]"
+}
+
+func formatBool(value bool) string {
+	if value {
+		return "true"
+	}
+	return "false"
+}
+
+func isRandomizedMAC(value string) bool {
+	parsed, err := net.ParseMAC(value)
+	if err != nil || len(parsed) == 0 {
+		return false
+	}
+	return parsed[0]&0x02 != 0
 }
 
 type runtimeError struct {
