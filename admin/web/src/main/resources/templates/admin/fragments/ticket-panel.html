@@ -3,7 +3,7 @@
     id="ticket-panel"
     th:fragment="ticketPanel"
     xmlns:th="http://www.thymeleaf.org"
-    class="space-y-6"
+    class="space-y-8"
 >
     <div th:if="${alreadyHasOpen}" class="alert alert-warning" th:text="#{admin.ticket.active.alreadyOpen}">
         You already have an active ticket.
@@ -13,140 +13,156 @@
         <span th:text="#{admin.ticket.created(${ticketValidityMinutes})}">Ticket created.</span>
     </div>
 
-    <div th:if="${activeTickets != null and !activeTickets.isEmpty()}" class="space-y-6">
-        <div th:if="${isAdmin}" class="card print:hidden">
-            <details class="space-y-4">
-                <summary class="btn btn-primary inline-flex cursor-pointer list-none"
-                         th:text="#{admin.ticket.create.button}">
+    <div th:if="${activeTickets != null and !activeTickets.isEmpty()}" class="space-y-8">
+        <div th:if="${isAdmin}" class="surface-panel print:hidden">
+            <details class="space-y-5">
+                <summary class="btn btn-primary inline-flex cursor-pointer list-none" th:text="#{admin.ticket.create.button}">
                     Create ticket
                 </summary>
-
-                <div th:replace="~{admin/fragments/ticket-form :: ticketForm(null)}"></div>
+                <div class="rounded-[1.75rem] bg-white p-5">
+                    <div th:replace="~{admin/fragments/ticket-form :: ticketForm(null)}"></div>
+                </div>
             </details>
         </div>
 
-        <div th:each="ticketWithCount : ${activeTickets}" class="card ticket-card space-y-6"
-             th:with="ticket=${ticketWithCount.ticket},deviceCount=${ticketWithCount.deviceCount}"
-             data-devices-open="false"
-             th:attr="data-ends-at=${@DateFormatter.toTimestamp(ticket.validUntil)}"
-             th:hx-get="@{/admin/ticket/{ticketId}/_ended-banner(ticketId=${ticket.id},accessCode=${ticket.accessCode},createdAt=${@DateFormatter.toTimestamp(ticket.createdAt)},validUntil=${@DateFormatter.toTimestamp(ticket.validUntil)})}"
-             hx-trigger="ticketExpired"
-             hx-swap="outerHTML"
-             hx-target="this"
-             data-script="on load
-                              set delay to ((@data-ends-at * 1000) - Date.now())
-                             then if delay is less than 0
-                                 send ticketExpired to me
-                             else if delay is less than 2147483647
-                                 wait delay then send ticketExpired to me
-                             else
-                                 log `Delay ${delay} is too long to be interactive!`
-                             end"
-        >
-            <div class="flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-10">
-                <div class="space-y-4">
+        <section th:each="ticketWithCount : ${activeTickets}" class="ticket-card space-y-8"
+                 th:with="ticket=${ticketWithCount.ticket},deviceCount=${ticketWithCount.deviceCount}"
+                 th:attr="data-ends-at=${@DateFormatter.toTimestamp(ticket.validUntil)}"
+                 th:hx-get="@{/admin/ticket/{ticketId}/_ended-banner(ticketId=${ticket.id},accessCode=${ticket.accessCode},createdAt=${@DateFormatter.toTimestamp(ticket.createdAt)},validUntil=${@DateFormatter.toTimestamp(ticket.validUntil)})}"
+                 hx-trigger="ticketExpired"
+                 hx-swap="outerHTML"
+                 hx-target="this"
+                 data-script="on load
+                                  set delay to ((@data-ends-at * 1000) - Date.now())
+                                 then if delay is less than 0
+                                     send ticketExpired to me
+                                 else if delay is less than 2147483647
+                                     wait delay then send ticketExpired to me
+                                 else
+                                     log `Delay ${delay} is too long to be interactive!`
+                                 end">
+            <div class="hero-shell">
+                <div class="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
+                    <div class="space-y-6">
+                        <div class="space-y-4">
+                            <div class="hero-kicker" th:text="#{admin.ticket.active.title}">Active ticket</div>
+                            <h1 class="hero-title" th:text="#{admin.ticket.active.heading}">How to connect</h1>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-4">
+                                <span class="step-badge">1</span>
+                                <p class="pt-1 text-base leading-8 text-text" th:utext="#{admin.ticket.active.step1(${wifiSsid})}">
+                                    Connect to WiFi network <strong>SSID</strong>.
+                                </p>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <span class="step-badge">2</span>
+                                <p class="pt-1 text-base leading-8 text-text" th:text="#{admin.ticket.active.step2}">
+                                    Enter the access code below or scan the QR and barcode to fill it faster.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="code-card max-w-2xl space-y-3">
+                            <div class="label !mb-0" th:text="#{admin.ticket.active.code.label}">Verification code:</div>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <span class="block cursor-pointer text-4xl font-semibold leading-none tracking-[-0.06em] text-brand-700 md:text-6xl"
+                                      data-script="on click
+                                                     call navigator.clipboard.writeText(my textContent)
+                                                     send showToast to #ticket-copy-toast"
+                                      th:text="${@AccessCodeFormatter.format(ticket.accessCode)}">123456</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-4 print:hidden">
+                            <span class="text-sm text-text-muted">
+                                <span th:text="#{admin.ticket.active.validUntil}">Valid until:</span>
+                                <span th:text="${@DateFormatter.timeRelativeNow(ticket.validUntil)}">-</span>
+                            </span>
+                            <button class="btn btn-danger" type="button"
+                                    th:hx-delete="@{/admin/ticket/{ticketId}(ticketId=${ticket.id})}"
+                                    th:hx-confirm="#{admin.ticket.active.end.confirm}"
+                                    hx-target="closest .ticket-card"
+                                    hx-swap="outerHTML">
+                                <span class="btn-text" th:text="#{admin.ticket.active.end}">End early</span>
+                                <span class="spinner"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="surface-panel flex flex-col items-center gap-5 self-center lg:self-stretch">
+                        <div class="w-full rounded-[1.75rem] bg-white px-3 py-4 shadow-[0_18px_40px_-30px_rgba(0,105,109,0.2)] md:p-6">
+                            <div th:data-payload="${@QrCodeBuilder.createWifiQrCode(wifiSsid)}"
+                                 class="ticket-qr-frame mx-auto aspect-square w-full max-w-[13rem] overflow-hidden"
+                                 th:data-alt="#{admin.ticket.active.wifi-qr-code}"
+                                 data-script="on load make a QRCode from me, @data-payload then set (<img/> in me)'s @alt to my @data-alt"></div>
+                        </div>
+                        <div class="w-full rounded-[1.5rem] bg-white px-4 py-5">
+                            <svg th:data-payload="${ticket.accessCode}"
+                                 class="h-20 w-full"
+                                 data-script="on load call JsBarcode(me, @data-payload, { format: 'CODE128', displayValue: false, margin: 0})"></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-5 print:hidden">
+                <div class="flex items-center justify-between gap-4">
                     <div>
-                        <h1 class="text-3xl font-semibold" th:text="#{admin.ticket.active.title}">Active ticket</h1>
-                        <p class="text-text-muted" th:utext="#{admin.ticket.active.instructions(${wifiSsid})}">
-                            Connect to WiFi and scan QR code.
+                        <h2 class="text-3xl font-semibold tracking-[-0.04em]" th:text="#{admin.ticket.active.devices}">Connected devices</h2>
+                        <p class="mt-2 text-sm leading-7 text-text-muted" th:text="#{admin.ticket.active.devices.toggle}">
+                            Manage devices
                         </p>
                     </div>
+                    <span class="badge bg-brand-500 px-4 py-2 text-white">
+                        <span th:attr="id=${'ticket-device-count-' + ticket.id}" th:text="${deviceCount}">0</span>
+                    </span>
+                </div>
 
-                    <div>
-                        <div>
-                            <span class="text-text-muted"
-                                  th:text="#{admin.ticket.active.code.label}">Verification code:</span>
-                            <span class="font-semibold text-xl cursor-pointer"
-                                  th:attr="data-copy-target=${'ticket-code-copied-' + ticket.id}"
-                                  data-script="on click
-                                                 call navigator.clipboard.writeText(my textContent)
-                                                 send blink to next .ticket-copied"
-                                  th:text="${@AccessCodeFormatter.format(ticket.accessCode)}">123456</span>
-                            <span class="text-xs text-text-muted transition-opacity ticket-copied"
-                                  data-script="on blink
-                                                show with opacity
-                                                wait 2s
-                                                hide with opacity"
-                                  style="opacity: 0"
-                                  th:text="#{admin.ticket.active.code.copied}">Copied</span>
-                        </div>
-
-                        <div>
-                            <span class="text-text-muted" th:text="#{admin.ticket.active.validFrom}">Valid from:</span>
-                            <span th:text="${@DateFormatter.absolute(ticket.createdAt)}">-</span>
-                        </div>
-
-                        <div>
-                            <span class="text-text-muted"
-                                  th:text="#{admin.ticket.active.validUntil}">Valid until:</span>
-                            <span
-                                th:data-tooltip="${@DateFormatter.absolute(ticket.validUntil)}"
-                                th:text="${@DateFormatter.timeRelativeNow(ticket.validUntil)}"
-                                class="tooltip">-</span>
-                        </div>
-
+                <div th:attr="id=${'ticket-device-list-' + ticket.id}" class="grid gap-4 md:grid-cols-2">
+                    <div class="device-row text-sm text-text-muted" th:text="#{admin.ticket.active.devices.empty}">
+                        No connected devices yet.
                     </div>
-
-                    <button class="btn btn-secondary print:hidden" type="button"
-                            th:hx-delete="@{/admin/ticket/{ticketId}(ticketId=${ticket.id})}"
-                            th:hx-confirm="#{admin.ticket.active.end.confirm}"
-                            hx-target="closest .card"
-                            hx-swap="outerHTML">
-                        <span class="btn-text" th:text="#{admin.ticket.active.end}">End early</span>
-                        <span class="spinner"></span>
-                    </button>
                 </div>
 
-                <div
-                    class="shrink-0 self-center rounded-xl border border-border bg-surface p-4 md:self-auto md:p-6 flex flex-col gap-y-4 items-center justify-center">
-                    <div th:data-payload="${@QrCodeBuilder.createWifiQrCode(wifiSsid)}"
-                         class="w-30 h-30 md:w-40 md:h-40"
-                         th:data-alt="#{admin.ticket.active.wifi-qr-code}"
-                         data-script="on load make a QRCode from me, @data-payload then set (<img/> in me)'s @alt to my @data-alt"></div>
-                    <svg th:data-payload="${ticket.accessCode}"
-                         class="w-full h-16"
-                         data-script="on load call JsBarcode(me, @data-payload, { format: 'CODE128', displayValue: false, margin: 0})"></svg>
-                </div>
+                <div class="hidden"
+                     th:hx-get="@{/admin/ticket/{ticketId}/_devices(ticketId=${ticket.id})}"
+                     hx-trigger="load, every 30s"
+                     hx-swap="none"
+                     hx-vals='js:{includeDeviceList: true}'></div>
             </div>
+        </section>
+    </div>
 
-            <div class="border-t border-border pt-4 print:hidden">
-                <details class="space-y-2"
-                         data-script="on toggle
-                                          set @data-devices-open of closest <.ticket-card/> to me.open
-                                          send refreshDevices to closest <.ticket-card/>">
-                    <summary class="cursor-pointer list-none flex items-center justify-between gap-2">
-                        <span class="text-text-muted"
-                              th:text="#{admin.ticket.active.devices}">Authorized devices:</span>
-                        <span class="flex items-center gap-2">
-                            <span th:attr="id=${'ticket-device-count-' + ticket.id}"
-                                  th:text="${deviceCount}">0</span>
-                            <span class="text-sm text-text-muted"
-                                  th:text="#{admin.ticket.active.devices.toggle}">Show devices</span>
-                        </span>
-                    </summary>
-                    <div th:attr="id=${'ticket-device-list-' + ticket.id}" class="mt-2"></div>
-                </details>
-            </div>
+    <div th:if="${activeTickets == null or activeTickets.isEmpty()}" class="hero-shell space-y-5">
+        <div class="space-y-3">
+            <div class="hero-kicker" th:text="#{admin.ticket.create.kicker}">Session setup</div>
+            <h1 class="hero-title" th:text="#{admin.ticket.create.title}">Create ticket</h1>
+            <p class="max-w-2xl text-sm leading-7 text-text-muted" th:text="#{admin.ticket.create.help}">
+                Choose a duration and generate a fresh access code for the network.
+            </p>
+        </div>
 
-            <div class="devices-refresh hidden"
-                 th:hx-get="@{/admin/ticket/{ticketId}/_devices(ticketId=${ticket.id})}"
-                 hx-trigger="load, every 30s, refreshDevices from:closest .ticket-card"
-                 hx-swap="none"
-                 hx-vals="js:{includeDeviceList: this.closest('.ticket-card').dataset.devicesOpen === 'true'}"></div>
+        <div class="rounded-[1.75rem] bg-white p-6">
+                <div th:replace="~{admin/fragments/ticket-form :: ticketForm(' print:hidden')}"></div>
         </div>
     </div>
 
-    <div th:if="${activeTickets == null or activeTickets.isEmpty()}" class="card space-y-6">
-        <div class="flex items-start gap-3">
-            <img th:src="@{/assets/shared/icons/outline/ticket.svg}" alt="" class="mt-1 h-7 w-7 opacity-80"/>
-            <div>
-                <h1 class="text-2xl font-semibold" th:text="#{admin.ticket.create.title}">Create ticket</h1>
-                <p class="text-text-muted" th:text="#{admin.ticket.create.subtitle}">Create a new time-limited access
-                    ticket.</p>
-            </div>
+    <div class="pointer-events-none fixed inset-x-0 bottom-5 z-40 flex justify-center px-4 print:hidden">
+        <div id="ticket-copy-toast"
+             class="ticket-copy-toast hidden rounded-full bg-text px-4 py-2 text-sm font-medium text-[rgb(var(--surface-lowest))] opacity-0 transition-opacity duration-200 shadow-[0_18px_40px_-24px_rgba(22,29,31,0.35)]"
+             data-script="on showToast
+                            remove .hidden from me
+                            wait 10ms
+                            remove .opacity-0 from me
+                            wait 2s
+                            add .opacity-0 to me
+                            wait 200ms
+                            add .hidden to me"
+             th:text="#{admin.ticket.active.code.copied}">
+            Copied
         </div>
-
-        <div th:replace="~{admin/fragments/ticket-form :: ticketForm(' print:hidden')}"></div>
     </div>
 
 </div>

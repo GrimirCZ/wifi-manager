@@ -42,6 +42,8 @@ class AdminAllowedMacController(
     ): String {
         ensureAllowedMacAccess(user)
         modelMap.addAttribute("canManageAllowedMacs", true)
+        modelMap.addAttribute("currentSection", "admin")
+        modelMap.addAttribute("currentAdminSubsection", "overview")
         modelMap.addAttribute("allowedMacs", loadAllowedMacViews())
         modelMap.addAttribute("allowedMac", AllowedMacRequestDto())
         modelMap.addAttribute("networkClients", emptyList<NetworkClient>())

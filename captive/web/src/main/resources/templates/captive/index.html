@@ -67,7 +67,7 @@
     <div th:replace="~{captive/fragments/header :: header(#{captive.page.title})}"></div>
     <main class="container-page py-8">
       <div id="captive-content" class="mx-auto max-w-2xl space-y-6" th:fragment="captiveContent">
-        <div class="card space-y-2">
+        <div class="card space-y-4">
           <h1 class="text-2xl font-semibold"
               th:text="${deviceLoggedIn == true} ? #{captive.page.connectedHeading} : #{captive.page.heading}">
             Connect with access code
@@ -76,54 +76,52 @@
              th:text="${deviceLoggedIn == true} ? #{captive.page.connectedSubtitle} : #{captive.page.subtitle}">
             Enter the access code or scan the barcode on your ticket.
           </p>
-        </div>
 
-        <div class="alert alert-success" th:if="${accountAuthorized == true}" role="status">
-          <div class="font-medium" th:text="#{captive.account.authorized.title(${authorizedByEmail})}">
-            This device is already authorized.
+          <div class="alert alert-success" th:if="${accountAuthorized == true}" role="status">
+            <div class="font-medium" th:text="#{captive.account.authorized.title(${authorizedByEmail})}">
+              This device is already authorized.
+            </div>
+            <div class="text-sm text-text-muted" th:text="#{captive.account.authorized.subtitle(${authorizedDeviceName})}">
+              You are signed in on this device.
+            </div>
           </div>
-          <div class="text-sm text-text-muted" th:text="#{captive.account.authorized.subtitle(${authorizedDeviceName})}">
-            You are signed in on this device.
-          </div>
-        </div>
 
-        <div class="alert alert-danger" th:if="${deviceKicked == true}" role="alert">
-          <div class="font-semibold" th:text="#{captive.kicked.title}">
-            You were disconnected by the administrator.
+          <div class="alert alert-danger" th:if="${deviceKicked == true}" role="alert">
+            <div class="font-semibold" th:text="#{captive.kicked.title}">
+              You were disconnected by the administrator.
+            </div>
+            <div class="text-sm"
+                 th:if="${usedTicketValidUntil != null}"
+                 th:utext="#{captive.kicked.subtitle(${@DateFormatter.timeRelativeNow(usedTicketValidUntil)})}">
+              You will not be able to use another ticket until this one expires (in -).
+            </div>
+            <div class="text-sm"
+                 th:if="${usedTicketValidUntil == null}"
+                 th:text="#{captive.kicked.subtitle.unknown}">
+              You will not be able to use another ticket until the current one expires.
+            </div>
           </div>
-          <div class="text-sm"
-               th:if="${usedTicketValidUntil != null}"
-               th:utext="#{captive.kicked.subtitle(${@DateFormatter.timeRelativeNow(usedTicketValidUntil)})}">
-            You will not be able to use another ticket until this one expires (in -).
-          </div>
-          <div class="text-sm"
-               th:if="${usedTicketValidUntil == null}"
-               th:text="#{captive.kicked.subtitle.unknown}">
-            You will not be able to use another ticket until the current one expires.
-          </div>
-        </div>
 
-        <div class="card space-y-3" th:if="${deviceLoggedIn == true && accountAuthorized != true}">
-          <div class="text-sm font-medium" th:text="#{captive.ticket.title}">Ticket in use</div>
-          <div th:if="${usedTicketValidUntil}" class="flex items-center justify-between gap-3 text-sm text-text-muted">
-            <span th:text="#{captive.ticket.validUntil}">Valid until</span>
-            <span class="text-right font-bold" th:text="${@DateFormatter.timeRelativeNow(usedTicketValidUntil)}">TBD</span>
+          <div class="space-y-3" th:if="${deviceLoggedIn == true && accountAuthorized != true}">
+            <div class="text-sm font-medium" th:text="#{captive.ticket.title}">Ticket in use</div>
+            <div th:if="${usedTicketValidUntil}" class="flex items-center justify-between gap-3 text-sm text-text-muted">
+              <span th:text="#{captive.ticket.validUntil}">Valid until</span>
+              <span class="text-right font-bold" th:text="${@DateFormatter.timeRelativeNow(usedTicketValidUntil)}">TBD</span>
+            </div>
+            <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
+              <span th:text="#{captive.ticket.device}">Device</span>
+              <span class="text-right" th:text="${usedTicketDevice}">TBD</span>
+            </div>
+            <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
+              <span th:text="#{captive.client.mac}">MAC address</span>
+              <span class="text-right" th:text="${clientMacAddress}">00:00:00:00:00:00</span>
+            </div>
+            <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
+              <span th:text="#{captive.client.ip}">IP address</span>
+              <span class="text-right" th:text="${clientIpAddress}">0.0.0.0</span>
+            </div>
           </div>
-          <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
-            <span th:text="#{captive.ticket.device}">Device</span>
-            <span class="text-right" th:text="${usedTicketDevice}">TBD</span>
-          </div>
-          <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
-            <span th:text="#{captive.client.mac}">MAC address</span>
-            <span class="text-right" th:text="${clientMacAddress}">00:00:00:00:00:00</span>
-          </div>
-          <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
-            <span th:text="#{captive.client.ip}">IP address</span>
-            <span class="text-right" th:text="${clientIpAddress}">0.0.0.0</span>
-          </div>
-        </div>
-
-        <form class="card flex flex-col gap-5"
+          <form class="flex flex-col gap-5"
               th:action="@{/captive}"
               th:object="${form}"
               method="post"
@@ -223,7 +221,8 @@
             <span class="btn-text" th:text="#{captive.action.continue}">Continue</span>
             <span class="spinner"></span>
           </button>
-        </form>
+          </form>
+        </div>
 
         <div class="text-center text-sm" th:if="${accountAuthorized != true}">
           <a class="text-primary underline" th:href="@{/captive/login}" th:text="#{captive.account.login.link}">

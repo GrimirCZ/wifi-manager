@@ -228,6 +228,7 @@ class AdminHomeController(
         modelMap.addAttribute("activeTickets", findActiveTickets(user))
         modelMap.addAttribute("isAdmin", user.can(UserRole::canHaveMultipleTickets))
         modelMap.addAttribute("canManageAllowedMacs", user.can(UserRole::canManageAllowedMacs))
+        modelMap.addAttribute("currentSection", "tickets")
         modelMap.addAttribute("wifiSsid", wifiProperties.ssid)
     }
 

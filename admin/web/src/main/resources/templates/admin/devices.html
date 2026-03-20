@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{admin/fragments/head :: head(#{admin.devices.title})}"></head>
-<body class="bg-surface-muted">
+<body class="app-shell">
 <div th:replace="~{admin/fragments/header :: header('WiFi Manager')}"></div>
-<main class="container-page">
+<main class="app-main">
     <div th:replace="~{admin/fragments/user-devices :: userDeviceList}"></div>
 </main>
 </body>

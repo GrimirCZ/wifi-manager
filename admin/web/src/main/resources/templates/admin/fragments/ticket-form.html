@@ -4,7 +4,7 @@
     th:action="@{/admin/ticket}"
     th:object="${createTicket}"
     method="post"
-    class="space-y-6"
+    class="space-y-4"
     th:classappend="${extraClass}"
     th:hx-post="@{/admin/ticket}"
     hx-target="#ticket-panel"
@@ -12,7 +12,7 @@
 >
     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-    <div>
+    <div class="space-y-1.5">
         <label
             class="label"
             for="validityMinutes"
@@ -35,7 +35,7 @@
         </div>
     </div>
 
-    <button class="btn btn-primary w-full" type="submit">
+    <button class="btn btn-primary w-full justify-center" type="submit">
         <span class="btn-text" th:text="#{admin.ticket.create.submit}">Create</span>
         <span class="spinner"></span>
     </button>

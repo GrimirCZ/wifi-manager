@@ -86,6 +86,7 @@ class AdminUserDeviceController(
     ) {
         modelMap.addAttribute("canManageAllowedMacs", user.can(UserRole::canManageAllowedMacs))
         modelMap.addAttribute("canViewAllDevices", user.can(UserRole::canCancelOtherUsersTickets))
+        modelMap.addAttribute("currentSection", "devices")
         populateListModel(modelMap, user, scope, failedMac = null)
     }
 

@@ -3,117 +3,217 @@
         th:fragment="header(appName)"
         xmlns:th="http://www.thymeleaf.org"
         xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-        class="border-b border-border bg-surface"
+        class="app-topbar"
 >
     <wm-confirm-dialog
             th:attr="title-text=#{admin.confirm.title},confirm-text=#{admin.confirm.confirm},cancel-text=#{admin.confirm.cancel}">
     </wm-confirm-dialog>
-    <div class="container-page flex items-center justify-between py-4 h-16">
-        <a class="text-xl font-semibold no-underline text-black items-center flex gap-x-1 hover:!text-black"
-           th:href="@{/admin}">
-            <img th:src="@{/assets/shared/icons/outline/wifi.svg}" alt="Logo" class="inline w-8 h-8">
-            <span th:text="${appName}">WiFi Manager</span>
-        </a>
 
-        <div sec:authorize="isAuthenticated()" class="relative group">
-            <button
-                    type="button"
-                    class="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    aria-haspopup="menu"
-                    aria-label="User menu"
-            >
-                <img
-                        th:if="${currentUser != null and currentUser.pictureUrl != null and !#strings.isEmpty(currentUser.pictureUrl)}"
-                        th:src="${currentUser.pictureUrl}"
-                        alt="Profile picture"
-                        class="h-9 w-9 rounded-full border border-border object-cover"
-                        referrerpolicy="no-referrer"
-                />
+    <div class="app-topbar-inner">
+        <div class="flex min-w-0 items-center gap-4 md:gap-8">
+            <a class="app-brand flex min-w-0 items-center gap-3" th:href="@{/admin}">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full glass-tint shadow-[0_18px_40px_-26px_rgba(0,105,109,0.18)]">
+                    <img th:src="@{/assets/shared/icons/outline/wifi.svg}" alt="Logo" class="h-6 w-6">
+                </span>
+                <span class="truncate text-xl font-semibold tracking-[-0.04em] md:text-2xl" th:text="${appName}">WiFi Manager</span>
+            </a>
 
-                <span
-                        class="text-sm font-medium"
-                        th:text="${currentUser != null ? currentUser.displayName : #authentication.name}"
-                >User</span
-                >
-
-                <svg
-                        class="h-4 w-4 text-text-muted"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                >
-                    <path
-                            fill-rule="evenodd"
-                            d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.25a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08Z"
-                            clip-rule="evenodd"
-                    />
-                </svg>
-            </button>
-
-            <div
-                    role="menu"
-                    class="absolute right-0 z-20 mt-0 hidden w-56 overflow-hidden rounded-xl border border-border bg-surface pt-2 shadow-lg group-hover:block group-focus-within:block"
-            >
-                <div class="px-4 py-3">
-                    <div class="text-sm font-semibold" th:text="#{admin.account.title}">Account</div>
-                    <div
-                            class="text-xs text-text-muted"
-                            th:text="${currentUser != null ? currentUser.email : ''}"
-                    ></div>
-                </div>
-
-                <div class="border-t border-border"></div>
-
-                <a class="block px-4 py-2 text-sm hover:bg-surface-muted" href="#" role="menuitem"
-                   th:text="#{admin.account.settings}">Settings</a>
-                <a class="block px-4 py-2 text-sm hover:bg-surface-muted" href="#" role="menuitem"
-                   th:text="#{admin.account.help}">Help</a>
-                <a class="block px-4 py-2 text-sm hover:bg-surface-muted"
-                   th:href="@{/admin}" role="menuitem"
-                   th:text="#{admin.account.tickets}">Tickets</a>
-                <a class="block px-4 py-2 text-sm hover:bg-surface-muted"
-                   th:href="@{/admin/devices}" role="menuitem"
-                   th:text="#{admin.account.devices}">Devices</a>
-                <a th:if="${canManageAllowedMacs}" class="block px-4 py-2 text-sm hover:bg-surface-muted"
-                   th:href="@{/admin/allowed-mac}" role="menuitem"
-                   th:text="#{admin.account.allowedMacs}">Allowed MACs</a>
-
-                <div class="border-t border-border"></div>
-
-                <div class="px-4 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-text-muted"
-                     th:text="#{admin.language.label}">
-                    Language
-                </div>
-                <a class="flex items-center gap-2 px-4 py-2 text-sm hover:bg-surface-muted"
-                   th:classappend="${#locale.language == 'en'} ? ' font-semibold text-brand-600' : ''"
-                   href="?lang=en"
-                   role="menuitem">
-                    <img
-                            th:src="@{/assets/shared/flags/gb.svg}"
-                            alt=""
-                            class="h-4 w-4 rounded-sm"
-                    />
-                    <span th:text="#{admin.language.en}">English</span>
+            <nav sec:authorize="isAuthenticated()" class="hidden md:flex md:flex-wrap md:items-center md:gap-2">
+                <a class="nav-pill"
+                   th:classappend="${currentSection == 'tickets'} ? ' nav-pill-active'"
+                   th:href="@{/admin}"
+                   th:text="#{admin.nav.tickets}">
+                    Tickets
                 </a>
-                <a class="flex items-center gap-2 px-4 py-2 text-sm hover:bg-surface-muted"
-                   th:classappend="${#locale.language == 'cs'} ? ' font-semibold text-brand-600' : ''"
-                   href="?lang=cs"
-                   role="menuitem">
-                    <img
-                            th:src="@{/assets/shared/flags/cz.svg}"
-                            alt=""
-                            class="h-4 w-4 rounded-sm"
-                    />
-                    <span th:text="#{admin.language.cs}">Czech</span>
+                <a class="nav-pill"
+                   th:classappend="${currentSection == 'devices'} ? ' nav-pill-active'"
+                   th:href="@{/admin/devices}"
+                   th:text="#{admin.nav.devices}">
+                    Devices
                 </a>
+                <a th:if="${canManageAllowedMacs}" class="nav-pill"
+                   th:classappend="${currentSection == 'admin'} ? ' nav-pill-active'"
+                   th:href="@{/admin/allowed-mac}"
+                   th:text="#{admin.nav.admin}">
+                    Admin
+                </a>
+            </nav>
+        </div>
 
-                <div class="border-t border-border"></div>
+        <div sec:authorize="isAuthenticated()" class="flex items-center gap-3">
+            <details class="mobile-menu md:hidden">
+                <summary class="mobile-menu-button list-none">
+                    <span class="sr-only">Open navigation menu</span>
+                    <svg class="h-5 w-5 text-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 17h16"/>
+                    </svg>
+                </summary>
 
-                <form th:action="@{/admin/logout}" method="post" class="p-2">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button class="btn btn-secondary w-full" type="submit" role="menuitem"
-                            th:text="#{admin.account.logout}">Logout</button>
-                </form>
+                <div class="mobile-menu-panel">
+                    <div class="mobile-menu-body">
+                        <nav class="mobile-menu-section mobile-menu-section-primary">
+                            <a class="mobile-menu-link"
+                           th:classappend="${currentSection == 'tickets'} ? ' mobile-menu-link-active'"
+                           th:href="@{/admin}">
+                            <span th:text="#{admin.nav.tickets}">Tickets</span>
+                        </a>
+                            <a class="mobile-menu-link"
+                           th:classappend="${currentSection == 'devices'} ? ' mobile-menu-link-active'"
+                           th:href="@{/admin/devices}">
+                            <span th:text="#{admin.nav.devices}">Devices</span>
+                        </a>
+                            <a th:if="${canManageAllowedMacs}" class="mobile-menu-link"
+                           th:classappend="${currentSection == 'admin'} ? ' mobile-menu-link-active'"
+                           th:href="@{/admin/allowed-mac}">
+                            <span th:text="#{admin.nav.admin}">Admin</span>
+                        </a>
+                        </nav>
+
+                        <div class="mobile-menu-section mobile-menu-section-secondary">
+                            <div class="px-1">
+                                <div class="text-sm font-semibold" th:text="#{admin.account.title}">Account</div>
+                                <div class="mt-1 text-xs text-text-muted"
+                                     th:text="${currentUser != null ? currentUser.displayName : #authentication.name}">
+                                    User
+                                </div>
+                                <div class="text-xs text-text-muted"
+                                     th:text="${currentUser != null ? currentUser.email : ''}">
+                                </div>
+                            </div>
+                            <a class="mobile-menu-link" href="#" role="menuitem" th:text="#{admin.account.settings}">
+                                Settings
+                            </a>
+                            <a class="mobile-menu-link" href="#" role="menuitem" th:text="#{admin.account.help}">
+                                Help
+                            </a>
+                        </div>
+
+                        <div class="mobile-menu-section mobile-menu-section-tertiary">
+                            <div class="px-1 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
+                                 th:text="#{admin.language.label}">
+                                Language
+                            </div>
+                            <a class="mobile-menu-link flex items-center gap-2"
+                               th:classappend="${#locale.language == 'en'} ? ' mobile-menu-link-active'"
+                               href="?lang=en"
+                               role="menuitem">
+                                <img th:src="@{/assets/shared/flags/gb.svg}" alt="" class="h-4 w-4 rounded-sm"/>
+                                <span th:text="#{admin.language.en}">English</span>
+                            </a>
+                            <a class="mobile-menu-link flex items-center gap-2"
+                               th:classappend="${#locale.language == 'cs'} ? ' mobile-menu-link-active'"
+                               href="?lang=cs"
+                               role="menuitem">
+                                <img th:src="@{/assets/shared/flags/cz.svg}" alt="" class="h-4 w-4 rounded-sm"/>
+                                <span th:text="#{admin.language.cs}">Czech</span>
+                            </a>
+                        </div>
+
+                        <form th:action="@{/admin/logout}" method="post" class="mobile-menu-logout">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button class="btn btn-secondary w-full justify-center" type="submit" role="menuitem"
+                                    th:text="#{admin.account.logout}">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </details>
+
+            <div class="group relative hidden md:block">
+                <button
+                        type="button"
+                        class="flex items-center gap-3 rounded-full bg-surface-muted px-2.5 py-2 shadow-[0_18px_40px_-30px_rgba(22,29,31,0.14)] transition hover:bg-[rgb(var(--surface-lowest))]"
+                        aria-haspopup="menu"
+                        th:attr="aria-label=#{admin.nav.profile}"
+                >
+                    <span class="flex h-11 w-11 items-center justify-center rounded-full glass-tint overflow-hidden">
+                        <img
+                                th:if="${currentUser != null and currentUser.pictureUrl != null and !#strings.isEmpty(currentUser.pictureUrl)}"
+                                th:src="${currentUser.pictureUrl}"
+                                alt="Profile picture"
+                                class="h-11 w-11 object-cover"
+                                referrerpolicy="no-referrer"
+                        />
+                        <svg
+                                th:if="${currentUser == null or currentUser.pictureUrl == null or #strings.isEmpty(currentUser.pictureUrl)}"
+                                class="h-5 w-5 text-brand-700"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                aria-hidden="true"
+                        >
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 20a8 8 0 0 1 16 0"/>
+                        </svg>
+                    </span>
+                </button>
+
+                <div
+                        role="menu"
+                        class="absolute right-0 top-full z-20 hidden w-64 pt-3 group-hover:block group-focus-within:block"
+                >
+                    <div class="rounded-[1.75rem] bg-white p-3 shadow-[0_28px_60px_-36px_rgba(22,29,31,0.28)]">
+                        <div class="px-3 py-2">
+                            <div class="text-sm font-semibold" th:text="#{admin.account.title}">Account</div>
+                            <div class="mt-1 text-xs text-text-muted"
+                                 th:text="${currentUser != null ? currentUser.displayName : #authentication.name}">
+                                User
+                            </div>
+                            <div class="text-xs text-text-muted"
+                                 th:text="${currentUser != null ? currentUser.email : ''}">
+                            </div>
+                        </div>
+
+                        <div class="mt-2 space-y-1 rounded-[1.5rem] bg-surface-muted p-2">
+                            <a class="block rounded-full px-3 py-2 text-sm no-underline hover:bg-white"
+                               href="#"
+                               role="menuitem"
+                               th:text="#{admin.account.settings}">
+                                Settings
+                            </a>
+                            <a class="block rounded-full px-3 py-2 text-sm no-underline hover:bg-white"
+                               href="#"
+                               role="menuitem"
+                               th:text="#{admin.account.help}">
+                                Help
+                            </a>
+                        </div>
+
+                        <div class="mt-3 rounded-[1.5rem] bg-surface-muted p-2">
+                            <div class="px-3 pb-1 pt-1 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
+                                 th:text="#{admin.language.label}">
+                                Language
+                            </div>
+                            <a class="flex items-center gap-2 rounded-full px-3 py-2 text-sm no-underline hover:bg-white"
+                               th:classappend="${#locale.language == 'en'} ? ' font-semibold text-brand-700'"
+                               href="?lang=en"
+                               role="menuitem">
+                                <img th:src="@{/assets/shared/flags/gb.svg}" alt="" class="h-4 w-4 rounded-sm"/>
+                                <span th:text="#{admin.language.en}">English</span>
+                            </a>
+                            <a class="flex items-center gap-2 rounded-full px-3 py-2 text-sm no-underline hover:bg-white"
+                               th:classappend="${#locale.language == 'cs'} ? ' font-semibold text-brand-700'"
+                               href="?lang=cs"
+                               role="menuitem">
+                                <img th:src="@{/assets/shared/flags/cz.svg}" alt="" class="h-4 w-4 rounded-sm"/>
+                                <span th:text="#{admin.language.cs}">Czech</span>
+                            </a>
+                        </div>
+
+                        <form th:action="@{/admin/logout}" method="post" class="mt-3">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button class="btn btn-secondary w-full justify-center" type="submit" role="menuitem"
+                                    th:text="#{admin.account.logout}">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
