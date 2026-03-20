@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	GrpcTarget          string
+	ManagedInterfaces   []string
 	ObserveMode         bool
 	TLSEnabled          bool
 	TLSCAFile           string
@@ -32,6 +33,7 @@ type Config struct {
 func Load() (Config, error) {
 	cfg := Config{
 		GrpcTarget:          strings.TrimSpace(os.Getenv("ROUTERAGENT_GRPC_TARGET")),
+		ManagedInterfaces:   envNames("ROUTERAGENT_MANAGED_INTERFACES"),
 		ObserveMode:         envBool("ROUTERAGENT_OBSERVE_MODE", false),
 		TLSEnabled:          envBool("ROUTERAGENT_TLS_ENABLED", false),
 		TLSCAFile:           strings.TrimSpace(os.Getenv("ROUTERAGENT_TLS_CA_FILE")),
@@ -94,4 +96,27 @@ func envDuration(key string, fallback time.Duration) time.Duration {
 		return fallback
 	}
 	return parsed
+}
+
+func envNames(key string) []string {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return nil
+	}
+
+	fields := strings.Fields(value)
+	if len(fields) == 0 {
+		return nil
+	}
+
+	names := make([]string, 0, len(fields))
+	seen := make(map[string]struct{}, len(fields))
+	for _, field := range fields {
+		if _, ok := seen[field]; ok {
+			continue
+		}
+		seen[field] = struct{}{}
+		names = append(names, field)
+	}
+	return names
 }

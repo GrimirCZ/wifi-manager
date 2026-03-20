@@ -9,8 +9,9 @@ import (
 
 type NetlinkProvider struct{}
 
-func NewNetlinkProvider(ctx context.Context) *NetlinkProvider {
+func NewNetlinkProvider(ctx context.Context, managedInterfaces []string) *NetlinkProvider {
 	_ = ctx
+	_ = managedInterfaces
 	return &NetlinkProvider{}
 }
 

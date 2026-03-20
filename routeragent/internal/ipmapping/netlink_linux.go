@@ -4,6 +4,11 @@ package ipmapping
 
 import (
 	"context"
+	"fmt"
+	"log"
+	"slices"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/vishvananda/netlink"
@@ -15,27 +20,36 @@ import (
 // NetlinkProvider bridges the kernel neighbor table into the observed-state
 // store and closes the subscribe/scan startup gap by buffering early events.
 type NetlinkProvider struct {
-	ctx     context.Context
-	updates chan Update
-	store   *store
+	ctx               context.Context
+	updates           chan Update
+	store             *store
+	managedInterfaces []string
+	managedIfIndexes  map[int]string
 
 	bufferMu sync.Mutex
 	live     bool
 	pending  []rawEvent
 }
 
-func NewNetlinkProvider(ctx context.Context) *NetlinkProvider {
+func NewNetlinkProvider(ctx context.Context, managedInterfaces []string) *NetlinkProvider {
 	updates := make(chan Update, UpdateChannelSize)
 	return &NetlinkProvider{
-		ctx:     ctx,
-		updates: updates,
-		store:   newStore(ctx, updates),
+		ctx:               ctx,
+		updates:           updates,
+		store:             newStore(ctx, updates),
+		managedInterfaces: slices.Clone(managedInterfaces),
 	}
 }
 
 // Start subscribes first, scans second, then replays buffered notifications so
 // no netlink updates are lost before live enqueueing begins.
 func (n *NetlinkProvider) Start() error {
+	ifIndexes, err := resolveManagedInterfaces(n.managedInterfaces)
+	if err != nil {
+		return err
+	}
+	n.managedIfIndexes = ifIndexes
+
 	neighUpdates := make(chan netlink.NeighUpdate, UpdateChannelSize)
 	done := make(chan struct{})
 
@@ -53,6 +67,9 @@ func (n *NetlinkProvider) Start() error {
 				if !ok {
 					return
 				}
+				if !n.allowsLinkIndex(update.Neigh.LinkIndex) {
+					continue
+				}
 				event, ok := normalizeRawUpdate(update)
 				if !ok {
 					continue
@@ -62,7 +79,7 @@ func (n *NetlinkProvider) Start() error {
 		}
 	}()
 
-	initial, err := initialNeighborSnapshot()
+	initial, err := initialNeighborSnapshot(n.managedIfIndexes)
 	if err != nil {
 		return err
 	}
@@ -79,6 +96,7 @@ func (n *NetlinkProvider) Start() error {
 	n.bufferMu.Unlock()
 
 	<-doneBootstrap
+	log.Printf("%s (initial=%d replayed=%d)", n.initializationMessage(), len(initial), len(replay))
 	return nil
 }
 
@@ -104,7 +122,7 @@ func (n *NetlinkProvider) handleRawEvent(event rawEvent) {
 
 // initialNeighborSnapshot captures the current neighbor-table seed that becomes
 // the base snapshot before buffered gap events are replayed.
-func initialNeighborSnapshot() ([]rawEvent, error) {
+func initialNeighborSnapshot(managedIfIndexes map[int]string) ([]rawEvent, error) {
 	families := []int{unix.AF_INET, unix.AF_INET6}
 	events := make([]rawEvent, 0)
 
@@ -114,6 +132,9 @@ func initialNeighborSnapshot() ([]rawEvent, error) {
 			return nil, err
 		}
 		for _, neigh := range neighs {
+			if !allowsLinkIndexFromSet(managedIfIndexes, neigh.LinkIndex) {
+				continue
+			}
 			event, ok := normalizeNeighbor(neigh)
 			if !ok || event.Deleted {
 				continue
@@ -173,4 +194,50 @@ func (n *NetlinkProvider) IPsForMAC(mac string) []string {
 
 func (n *NetlinkProvider) ListClients() []ClientView {
 	return n.store.listClients()
+}
+
+func (n *NetlinkProvider) allowsLinkIndex(linkIndex int) bool {
+	return allowsLinkIndexFromSet(n.managedIfIndexes, linkIndex)
+}
+
+func allowsLinkIndexFromSet(managedIfIndexes map[int]string, linkIndex int) bool {
+	if len(managedIfIndexes) == 0 {
+		return true
+	}
+	_, ok := managedIfIndexes[linkIndex]
+	return ok
+}
+
+func resolveManagedInterfaces(names []string) (map[int]string, error) {
+	if len(names) == 0 {
+		return nil, nil
+	}
+
+	indexes := make(map[int]string, len(names))
+	for _, name := range names {
+		link, err := netlink.LinkByName(name)
+		if err != nil {
+			return nil, fmt.Errorf("resolve managed interface %q: %w", name, err)
+		}
+		indexes[link.Attrs().Index] = name
+	}
+	return indexes, nil
+}
+
+func (n *NetlinkProvider) initializationMessage() string {
+	if len(n.managedIfIndexes) == 0 {
+		return "netlink observed-state initialization complete; accepting live notifications on all interfaces"
+	}
+
+	parts := make([]string, 0, len(n.managedInterfaces))
+	for _, name := range n.managedInterfaces {
+		for index, currentName := range n.managedIfIndexes {
+			if currentName != name {
+				continue
+			}
+			parts = append(parts, name+"#"+strconv.Itoa(index))
+			break
+		}
+	}
+	return "netlink observed-state initialization complete; accepting live notifications on managed interfaces=" + strings.Join(parts, ",")
 }

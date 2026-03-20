@@ -12,5 +12,5 @@ func New(ctx context.Context, cfg config.Config) Provider {
 		log.Printf("warning: dummy ip mapping provider enabled")
 		return NewDummyProvider(ctx)
 	}
-	return NewNetlinkProvider(ctx)
+	return NewNetlinkProvider(ctx, cfg.ManagedInterfaces)
 }
