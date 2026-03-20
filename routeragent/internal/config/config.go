@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	GrpcTarget          string
+	ObserveMode         bool
 	TLSEnabled          bool
 	TLSCAFile           string
 	TLSCertFile         string
@@ -31,6 +32,7 @@ type Config struct {
 func Load() (Config, error) {
 	cfg := Config{
 		GrpcTarget:          strings.TrimSpace(os.Getenv("ROUTERAGENT_GRPC_TARGET")),
+		ObserveMode:         envBool("ROUTERAGENT_OBSERVE_MODE", false),
 		TLSEnabled:          envBool("ROUTERAGENT_TLS_ENABLED", false),
 		TLSCAFile:           strings.TrimSpace(os.Getenv("ROUTERAGENT_TLS_CA_FILE")),
 		TLSCertFile:         strings.TrimSpace(os.Getenv("ROUTERAGENT_TLS_CERT_FILE")),
@@ -49,7 +51,7 @@ func Load() (Config, error) {
 		ReconcileInterval:   envDuration("ROUTERAGENT_RECONCILE_INTERVAL", time.Minute),
 	}
 
-	if cfg.GrpcTarget == "" {
+	if !cfg.ObserveMode && cfg.GrpcTarget == "" {
 		return cfg, fmt.Errorf("ROUTERAGENT_GRPC_TARGET is required")
 	}
 
