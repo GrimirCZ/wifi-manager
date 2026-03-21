@@ -154,6 +154,9 @@ func normalizeRawUpdate(update netlink.NeighUpdate) (rawEvent, bool) {
 	if update.Type == unix.RTM_DELNEIGH {
 		return rawEvent{IP: ip, Deleted: true}, true
 	}
+	if !isLiveNeighborState(update.Neigh.State) {
+		return rawEvent{IP: ip, Deleted: true}, true
+	}
 
 	mac, ok := normalize.MACFromNet(update.Neigh.HardwareAddr)
 	if !ok {
@@ -168,6 +171,9 @@ func normalizeRawUpdate(update netlink.NeighUpdate) (rawEvent, bool) {
 func normalizeNeighbor(neigh netlink.Neigh) (rawEvent, bool) {
 	ip, ok := normalize.IPFromNet(neigh.IP)
 	if !ok {
+		return rawEvent{}, false
+	}
+	if !isLiveNeighborState(neigh.State) {
 		return rawEvent{}, false
 	}
 	mac, ok := normalize.MACFromNet(neigh.HardwareAddr)
@@ -240,4 +246,23 @@ func (n *NetlinkProvider) initializationMessage() string {
 		}
 	}
 	return "netlink observed-state initialization complete; accepting live notifications on managed interfaces=" + strings.Join(parts, ",")
+}
+
+func isLiveNeighborState(state int) bool {
+	if state&netlink.NUD_REACHABLE != 0 {
+		return true
+	}
+	if state&netlink.NUD_DELAY != 0 {
+		return true
+	}
+	if state&netlink.NUD_PROBE != 0 {
+		return true
+	}
+	if state&netlink.NUD_PERMANENT != 0 {
+		return true
+	}
+	if state&netlink.NUD_NOARP != 0 {
+		return true
+	}
+	return false
 }
