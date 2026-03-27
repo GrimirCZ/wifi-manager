@@ -1,1 +1,128 @@
 @import "../../../../../shared/ui/tailwind/shared.css";
+
+@layer components {
+  /* Layout */
+  .captive-body {
+    @apply min-h-screen;
+  }
+
+  .captive-main {
+    @apply flex justify-center px-4 py-4 md:py-12;
+  }
+
+  .captive-content {
+    @apply w-full max-w-md space-y-3 md:space-y-4;
+  }
+
+  /* Hero card — icon + title + subtitle at the top of each page */
+  .captive-card-hero {
+    @apply flex flex-col items-center text-center gap-2 pt-4 pb-3 md:gap-3 md:pt-8 md:pb-6;
+  }
+
+  /* Circular icon container — hidden on small screens to save vertical space */
+  .captive-icon-ring {
+    @apply hidden md:flex h-16 w-16 items-center justify-center rounded-full;
+    background-color: rgb(var(--brand-100));
+    color: rgb(var(--brand-600));
+  }
+
+  .captive-icon-ring-success {
+    background-color: rgb(var(--success) / 0.12);
+  }
+
+  .captive-icon-ring-danger {
+    background-color: rgb(var(--danger) / 0.12);
+  }
+
+  .captive-icon-ring-warning {
+    background-color: rgb(var(--warning) / 0.12);
+  }
+
+  .captive-icon {
+    @apply h-8 w-8;
+    color: inherit;
+  }
+
+  /* Icon tinting via filter for SVG <img> elements */
+  .captive-icon-ring .captive-icon {
+    opacity: 0.85;
+  }
+
+  .captive-title {
+    @apply text-xl font-semibold tracking-tight md:text-2xl;
+  }
+
+  .captive-subtitle {
+    @apply text-sm text-text-muted leading-relaxed md:text-base;
+  }
+
+  /* Key–value detail rows */
+  .captive-details {
+    @apply w-full space-y-2 rounded-2xl bg-surface-muted px-4 py-3;
+  }
+
+  .captive-details-label {
+    @apply text-xs font-semibold uppercase tracking-wider text-text-muted pb-1;
+  }
+
+  .captive-detail-row {
+    @apply flex items-center justify-between gap-4 text-sm text-text-muted;
+  }
+
+  .captive-detail-row span:last-child {
+    @apply text-right text-text;
+  }
+
+  .captive-mono {
+    @apply font-mono text-xs;
+  }
+
+  /* Big access-code input */
+  .captive-code-input {
+    @apply text-center text-xl tracking-widest font-medium;
+    letter-spacing: 0.25em;
+  }
+
+  /* Scanner */
+  .captive-scanner-section {
+    @apply rounded-2xl bg-surface-muted p-4 space-y-3;
+  }
+
+  .captive-scanner-header {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .captive-scanner-viewport {
+    @apply overflow-hidden rounded-xl border border-border bg-surface-muted;
+  }
+
+  .captive-scanner-hint {
+    @apply border-t border-border px-4 py-2 text-xs text-text-muted;
+  }
+
+  /* Step header used in device.html */
+  .captive-step-header {
+    @apply flex items-center gap-3;
+  }
+
+  /* Help page link rows */
+  .captive-help-link {
+    @apply flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium no-underline text-text-muted transition-colors;
+    @apply hover:bg-surface-muted hover:text-brand-700;
+  }
+
+  .captive-help-link::after {
+    content: "→";
+    @apply ml-auto text-brand-600 opacity-60;
+  }
+
+  /* Footer link area below cards */
+  .captive-footer-link {
+    @apply text-center text-sm py-2;
+  }
+
+  /* Tighter card padding on small screens */
+  .captive-content .card {
+    @apply p-4 md:p-6;
+  }
+}

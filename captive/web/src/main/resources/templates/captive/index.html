@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head th:replace="~{captive/fragments/head :: head(#{captive.page.title})}"></head>
   <body
-    class="bg-surface-muted"
+    class="bg-surface captive-body"
     _="
       on load
         set :scannerActive to false
@@ -69,35 +69,66 @@
     "
   >
     <div th:replace="~{captive/fragments/header :: header(#{captive.page.title})}"></div>
-    <main class="container-page py-8">
-      <div id="captive-content" class="mx-auto max-w-2xl space-y-6" th:fragment="captiveContent">
-        <div class="card space-y-4">
-          <h1 class="text-2xl font-semibold"
-              th:text="${deviceLoggedIn == true} ? #{captive.page.connectedHeading} : (${requireUserNameStep == true} ? #{captive.page.name.heading} : #{captive.page.heading})">
-            Connect with access code
-          </h1>
-          <p class="text-text-muted"
-             th:text="${deviceLoggedIn == true} ? #{captive.page.connectedSubtitle} : (${requireUserNameStep == true} ? #{captive.page.name.subtitle} : #{captive.page.subtitle})">
-            Enter the access code or scan the barcode on your ticket.
+    <main class="captive-main">
+      <div id="captive-content" class="captive-content" th:fragment="captiveContent">
+
+        <!-- Connected state -->
+        <div class="captive-card captive-card-hero" th:if="${deviceLoggedIn == true}">
+          <div class="captive-icon-ring captive-icon-ring-success">
+            <img th:src="@{/assets/shared/icons/outline/circle-check.svg}" alt="" class="captive-icon" />
+          </div>
+          <h1 class="captive-title" th:text="#{captive.page.connectedHeading}">You're connected</h1>
+          <p class="captive-subtitle" th:text="#{captive.page.connectedSubtitle}">
+            You are connected and ready to browse.
           </p>
 
           <div class="alert alert-success" th:if="${accountAuthorized == true}" role="status">
             <div class="font-medium" th:text="#{captive.account.authorized.title(${authorizedByEmail})}">
-              This device is already authorized.
+              This device is authorized.
             </div>
-            <div class="text-sm text-text-muted" th:text="#{captive.account.authorized.subtitle(${authorizedDeviceName})}">
+            <div class="text-sm" style="opacity:.7" th:text="#{captive.account.authorized.subtitle(${authorizedDeviceName})}">
               You are signed in on this device.
             </div>
           </div>
 
-          <div class="alert alert-danger" th:if="${deviceKicked == true}" role="alert">
+          <div class="captive-details" th:if="${accountAuthorized != true}">
+            <div class="captive-details-label" th:text="#{captive.ticket.title}">Ticket in use</div>
+            <div class="captive-detail-row" th:if="${usedTicketValidUntil}">
+              <span th:text="#{captive.ticket.validUntil}">Valid until</span>
+              <span class="font-semibold" th:text="${@DateFormatter.timeRelativeNow(usedTicketValidUntil)}">TBD</span>
+            </div>
+            <div class="captive-detail-row" th:if="${usedTicketName != null and !#strings.isEmpty(usedTicketName)}">
+              <span th:text="#{captive.ticket.name}">Name</span>
+              <span th:text="${usedTicketName}">TBD</span>
+            </div>
+            <div class="captive-detail-row">
+              <span th:text="#{captive.ticket.device}">Device</span>
+              <span th:text="${usedTicketDevice}">TBD</span>
+            </div>
+            <div class="captive-detail-row">
+              <span th:text="#{captive.client.mac}">MAC address</span>
+              <span class="captive-mono" th:text="${clientMacAddress}">00:00:00:00:00:00</span>
+            </div>
+            <div class="captive-detail-row">
+              <span th:text="#{captive.client.ip}">IP address</span>
+              <span class="captive-mono" th:text="${clientIpAddress}">0.0.0.0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kicked state -->
+        <div class="captive-card captive-card-hero" th:if="${deviceKicked == true}">
+          <div class="captive-icon-ring captive-icon-ring-danger">
+            <img th:src="@{/assets/shared/icons/outline/wifi-off.svg}" alt="" class="captive-icon" />
+          </div>
+          <div class="alert alert-danger" role="alert">
             <div class="font-semibold" th:text="#{captive.kicked.title}">
               You were disconnected by the administrator.
             </div>
             <div class="text-sm"
                  th:if="${usedTicketValidUntil != null}"
                  th:utext="#{captive.kicked.subtitle(${@DateFormatter.timeRelativeNow(usedTicketValidUntil)})}">
-              You will not be able to use another ticket until this one expires (in -).
+              You will not be able to use another ticket until this one expires.
             </div>
             <div class="text-sm"
                  th:if="${usedTicketValidUntil == null}"
@@ -105,156 +136,149 @@
               You will not be able to use another ticket until the current one expires.
             </div>
           </div>
-
-          <div class="space-y-3" th:if="${deviceLoggedIn == true && accountAuthorized != true}">
-            <div class="text-sm font-medium" th:text="#{captive.ticket.title}">Ticket in use</div>
-            <div th:if="${usedTicketValidUntil}" class="flex items-center justify-between gap-3 text-sm text-text-muted">
-              <span th:text="#{captive.ticket.validUntil}">Valid until</span>
-              <span class="text-right font-bold" th:text="${@DateFormatter.timeRelativeNow(usedTicketValidUntil)}">TBD</span>
-            </div>
-            <div th:if="${usedTicketName != null and !#strings.isEmpty(usedTicketName)}" class="flex items-center justify-between gap-3 text-sm text-text-muted">
-              <span th:text="#{captive.ticket.name}">Name</span>
-              <span class="text-right" th:text="${usedTicketName}">TBD</span>
-            </div>
-            <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
-              <span th:text="#{captive.ticket.device}">Device</span>
-              <span class="text-right" th:text="${usedTicketDevice}">TBD</span>
-            </div>
-            <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
-              <span th:text="#{captive.client.mac}">MAC address</span>
-              <span class="text-right" th:text="${clientMacAddress}">00:00:00:00:00:00</span>
-            </div>
-            <div class="flex items-center justify-between gap-3 text-sm text-text-muted">
-              <span th:text="#{captive.client.ip}">IP address</span>
-              <span class="text-right" th:text="${clientIpAddress}">0.0.0.0</span>
-            </div>
-          </div>
-          <form class="flex flex-col gap-5"
-              th:action="@{/captive}"
-              th:object="${form}"
-              method="post"
-              th:attr="hx-post=@{/captive},hx-target='#captive-content',hx-swap='outerHTML',data-ends-at=${deviceKicked == true ? @DateFormatter.toTimestamp(usedTicketValidUntil) : null}"
-              th:if="${deviceLoggedIn != true && accountAuthorized != true}"
-              th:classappend="${deviceKicked == true} ? ' hidden' : ''"
-              data-script="on load
-                             if @data-ends-at is not empty
-                               set delay to ((@data-ends-at * 1000) - Date.now())
-                               if delay is less than 0
-                                 remove .hidden from me
-                               else if delay is less than 2147483647
-                                 wait delay then remove .hidden from me
-                               end
-                             end">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
-          <div class="alert alert-success" th:if="${codeSubmitted}" role="status"
-               th:text="#{captive.success.message}">
-            Access granted. You are now connected.
-          </div>
-
-          <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}" role="alert">
-            <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">Invalid access code.</div>
-          </div>
-
-          <div class="flex flex-col gap-2" th:if="${requireUserNameStep != true}">
-            <label class="text-sm font-medium" for="access-code" th:text="#{captive.access.label}">
-              Access code
-            </label>
-            <input
-              id="access-code"
-              type="text"
-              autocomplete="one-time-code"
-              inputmode="numeric"
-              class="input w-full"
-              th:field="*{accessCode}"
-              th:placeholder="#{captive.access.placeholder}"
-              required
-            />
-            <div class="text-xs text-red-600" th:if="${#fields.hasErrors('accessCode')}"
-                 th:text="${#fields.errors('accessCode')[0]}">
-              Access code is required.
-            </div>
-          </div>
-          <input th:if="${requireUserNameStep == true}" id="access-code" type="hidden" th:field="*{accessCode}"/>
-
-          <div class="flex flex-col gap-2" th:if="${requireUserNameStep == true}">
-            <label class="text-sm font-medium" for="required-name" th:text="#{captive.name.label}">
-              Your name
-            </label>
-            <input
-              id="required-name"
-              type="text"
-              class="input w-full"
-              th:field="*{name}"
-              th:placeholder="#{captive.name.placeholder}"
-              required
-            />
-            <div class="text-xs text-red-600" th:if="${#fields.hasErrors('name')}"
-                 th:text="${#fields.errors('name')[0]}">
-              Please enter at least 3 characters.
-            </div>
-          </div>
-
-          <div class="space-y-3" th:classappend="${requireUserNameStep == true} ? ' hidden' : ''">
-            <div class="flex items-center justify-between gap-3">
-              <div>
-                <div class="text-sm font-medium" th:text="#{captive.scan.title}">Scan barcode</div>
-                <div class="text-xs text-text-muted" th:text="#{captive.scan.subtitle}">
-                  Use your camera to scan the code.
-                </div>
-              </div>
-              <button
-                id="scanner-toggle"
-                class="btn btn-secondary"
-                type="button"
-                th:text="#{captive.scan.start}"
-                th:attr="data-start-text=#{captive.scan.start},data-stop-text=#{captive.scan.stop}"
-              >
-                Start scanner
-              </button>
-            </div>
-
-            <div
-              id="scanner-alert"
-              class="alert alert-warning hidden"
-              role="alert"
-              th:text="#{captive.scan.unavailable}"
-            >
-              Scanner is not available.
-            </div>
-
-            <div id="scanner-panel" class="hidden overflow-hidden rounded-xl border border-border bg-surface-muted">
-              <div id="scanner" class="relative flex justify-center w-full bg-black"
-                   role="region" aria-label="Barcode scanner"></div>
-              <div class="border-t border-border px-4 py-2 text-xs text-text-muted"
-                   th:text="#{captive.scan.hint}">
-                Point the camera at the barcode. The scanner will fill the code automatically.
-              </div>
-            </div>
-          </div>
-
-          <div class="space-y-2" th:if="${requireUserNameStep != true}">
-            <label class="checkbox-label">
-              <input class="checkbox" type="checkbox" th:field="*{acceptTerms}" required/>
-              <span th:text="#{captive.terms.label}">I agree to the terms and conditions.</span>
-            </label>
-            <div class="text-xs text-red-600" th:if="${#fields.hasErrors('acceptTerms')}"
-                 th:text="${#fields.errors('acceptTerms')[0]}">
-              You must accept the terms.
-            </div>
-          </div>
-          <input th:if="${requireUserNameStep == true}" type="hidden" th:field="*{acceptTerms}"/>
-
-          <button class="btn btn-primary w-full" type="submit">
-            <span class="btn-text" th:text="${requireUserNameStep == true} ? #{captive.action.authorize} : #{captive.action.continue}">Continue</span>
-            <span class="spinner"></span>
-          </button>
-          </form>
         </div>
 
-        <div class="text-center text-sm" th:if="${accountAuthorized != true}">
+        <!-- Default / entry state -->
+        <div class="captive-card captive-card-hero" th:if="${deviceLoggedIn != true && deviceKicked != true}">
+          <div class="captive-icon-ring">
+            <img th:src="@{/assets/shared/icons/outline/wifi.svg}" alt="" class="captive-icon" />
+          </div>
+          <h1 class="captive-title"
+              th:text="${requireUserNameStep == true} ? #{captive.page.name.heading} : #{captive.page.heading}">
+            Connect with access code
+          </h1>
+          <p class="captive-subtitle"
+             th:text="${requireUserNameStep == true} ? #{captive.page.name.subtitle} : #{captive.page.subtitle}">
+            Enter the access code or scan the barcode on your ticket.
+          </p>
+        </div>
+
+        <!-- Access code form -->
+        <form class="captive-card space-y-5"
+            th:action="@{/captive}"
+            th:object="${form}"
+            method="post"
+            th:attr="hx-post=@{/captive},hx-target='#captive-content',hx-swap='outerHTML',data-ends-at=${deviceKicked == true ? @DateFormatter.toTimestamp(usedTicketValidUntil) : null}"
+            th:if="${deviceLoggedIn != true && accountAuthorized != true}"
+            th:classappend="${deviceKicked == true} ? ' hidden' : ''"
+            data-script="on load
+                           if @data-ends-at is not empty
+                             set delay to ((@data-ends-at * 1000) - Date.now())
+                             if delay is less than 0
+                               remove .hidden from me
+                             else if delay is less than 2147483647
+                               wait delay then remove .hidden from me
+                             end
+                           end">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="alert alert-success" th:if="${codeSubmitted}" role="status"
+             th:text="#{captive.success.message}">
+          Access granted. You are now connected.
+        </div>
+
+        <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}" role="alert">
+          <div th:each="err : ${#fields.globalErrors()}" th:text="${err}">Invalid access code.</div>
+        </div>
+
+        <div class="flex flex-col gap-2" th:if="${requireUserNameStep != true}">
+          <label class="text-sm font-medium" for="access-code" th:text="#{captive.access.label}">
+            Access code
+          </label>
+          <input
+            id="access-code"
+            type="text"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+            class="input w-full captive-code-input"
+            th:field="*{accessCode}"
+            th:placeholder="#{captive.access.placeholder}"
+            required
+          />
+          <div class="text-xs text-red-600" th:if="${#fields.hasErrors('accessCode')}"
+               th:text="${#fields.errors('accessCode')[0]}">
+            Access code is required.
+          </div>
+        </div>
+        <input th:if="${requireUserNameStep == true}" id="access-code" type="hidden" th:field="*{accessCode}"/>
+
+        <div class="flex flex-col gap-2" th:if="${requireUserNameStep == true}">
+          <label class="text-sm font-medium" for="required-name" th:text="#{captive.name.label}">
+            Your name
+          </label>
+          <input
+            id="required-name"
+            type="text"
+            class="input w-full"
+            th:field="*{name}"
+            th:placeholder="#{captive.name.placeholder}"
+            required
+          />
+          <div class="text-xs text-red-600" th:if="${#fields.hasErrors('name')}"
+               th:text="${#fields.errors('name')[0]}">
+            Please enter at least 3 characters.
+          </div>
+        </div>
+
+        <!-- Scanner section -->
+        <div class="captive-scanner-section" th:classappend="${requireUserNameStep == true} ? ' hidden' : ''">
+          <div class="captive-scanner-header">
+            <div>
+              <div class="text-sm font-medium" th:text="#{captive.scan.title}">Scan barcode</div>
+              <div class="text-xs text-text-muted" th:text="#{captive.scan.subtitle}">
+                Use your camera to scan the code.
+              </div>
+            </div>
+            <button
+              id="scanner-toggle"
+              class="btn btn-secondary"
+              type="button"
+              th:text="#{captive.scan.start}"
+              th:attr="data-start-text=#{captive.scan.start},data-stop-text=#{captive.scan.stop}"
+            >
+              Start scanner
+            </button>
+          </div>
+
+          <div
+            id="scanner-alert"
+            class="alert alert-warning hidden"
+            role="alert"
+            th:text="#{captive.scan.unavailable}"
+          >
+            Scanner is not available.
+          </div>
+
+          <div id="scanner-panel" class="hidden captive-scanner-viewport">
+            <div id="scanner" class="relative flex justify-center w-full bg-black"
+                 role="region" aria-label="Barcode scanner"></div>
+            <div class="captive-scanner-hint" th:text="#{captive.scan.hint}">
+              Point the camera at the barcode. The scanner will fill the code automatically.
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2" th:if="${requireUserNameStep != true}">
+          <label class="checkbox-label">
+            <input class="checkbox" type="checkbox" th:field="*{acceptTerms}" required/>
+            <span th:text="#{captive.terms.label}">I agree to the terms and conditions.</span>
+          </label>
+          <div class="text-xs text-red-600" th:if="${#fields.hasErrors('acceptTerms')}"
+               th:text="${#fields.errors('acceptTerms')[0]}">
+            You must accept the terms.
+          </div>
+        </div>
+        <input th:if="${requireUserNameStep == true}" type="hidden" th:field="*{acceptTerms}"/>
+
+        <button class="btn btn-primary w-full" type="submit">
+          <span class="btn-text" th:text="${requireUserNameStep == true} ? #{captive.action.authorize} : #{captive.action.continue}">Continue</span>
+          <span class="spinner"></span>
+        </button>
+        </form>
+
+        <div class="captive-footer-link" th:if="${accountAuthorized != true}">
           <a class="text-primary underline" th:href="@{/captive/login}" th:text="#{captive.account.login.link}">
-            Staff sign-in
+            Login with an account
           </a>
         </div>
       </div>

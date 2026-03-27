@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head th:replace="~{captive/fragments/head :: head(#{captive.login.title})}"></head>
-  <body class="bg-surface-muted">
+  <body class="bg-surface captive-body">
     <div th:replace="~{captive/fragments/header :: header(#{captive.login.title})}"></div>
-    <main class="container-page py-8">
-      <div class="card space-y-5">
-        <div class="space-y-2">
-          <h1 class="text-xl font-semibold" th:text="#{captive.login.title}">Captive login</h1>
-          <p class="text-sm text-text-muted" th:text="#{captive.login.subtitle}">
+    <main class="captive-main">
+      <div class="captive-content">
+        <div class="captive-card captive-card-hero">
+          <div class="captive-icon-ring">
+            <img th:src="@{/assets/shared/icons/outline/shield-lock.svg}" alt="" class="captive-icon" />
+          </div>
+          <h1 class="captive-title" th:text="#{captive.login.title}">Captive login</h1>
+          <p class="captive-subtitle" th:text="#{captive.login.subtitle}">
             Use your directory credentials to sign in.
           </p>
         </div>
 
-        <form class="flex flex-col gap-4" th:action="@{/captive/login}" th:object="${form}" method="post" hx-boost="true">
+        <form class="captive-card space-y-5" th:action="@{/captive/login}" th:object="${form}" method="post" hx-boost="true">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
           <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}" role="alert">
@@ -59,7 +62,7 @@
           </button>
         </form>
 
-        <div class="text-center text-sm">
+        <div class="captive-footer-link">
           <a class="text-primary underline" th:href="@{/captive}" th:text="#{captive.login.back}">
             Use an access code instead
           </a>
