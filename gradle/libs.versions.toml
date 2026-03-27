@@ -3,7 +3,7 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-kotlin = "2.2.20"
+kotlin = "2.3.0"
 kotlinLogging = "7.0.13"
 mockito = "5.20.0"
 mockitoKotlin = "6.1.0"
