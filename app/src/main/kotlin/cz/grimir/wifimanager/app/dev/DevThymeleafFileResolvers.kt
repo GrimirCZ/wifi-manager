@@ -27,6 +27,15 @@ class DevThymeleafFileResolvers {
             order = 0,
         )
 
+    @Bean
+    fun sharedFileResolver(): SpringResourceTemplateResolver =
+        resolver(
+            name = "sharedFile",
+            prefixRelToRoot = "shared/ui/src/main/resources/templates/",
+            patterns = setOf("shared/**"),
+            order = 0,
+        )
+
     private fun resolver(
         name: String,
         prefixRelToRoot: String,

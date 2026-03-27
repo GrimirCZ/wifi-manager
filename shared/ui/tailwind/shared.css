@@ -198,7 +198,7 @@
   }
 
   .app-topbar-inner {
-    @apply mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-5 md:px-6;
+    @apply mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-5 md:px-6;
   }
 
   .app-brand {

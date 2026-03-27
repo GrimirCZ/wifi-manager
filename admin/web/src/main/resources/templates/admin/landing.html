@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments/head :: head('WiFi Manager')}"></head>
+<body class="app-shell">
+<div th:replace="~{admin/fragments/header :: header('WiFi Manager')}"></div>
+<main class="app-main">
+
+  <div class="landing-hero">
+    <div class="hero-kicker" th:text="#{admin.login.kicker}">Wi-Fi for your classroom</div>
+    <h1 class="landing-hero-title" th:text="#{admin.login.title}">Get your pupils online in seconds</h1>
+    <p class="landing-hero-copy" th:text="#{admin.login.subtitle}">
+      Create a one-time access code, show it to the class, and everyone connects — no passwords, no IT call needed.
+    </p>
+    <a class="btn btn-primary login-cta"
+       th:href="@{'/oauth2/authorization/' + ${oidcRegistrationId}}"
+       th:text="#{admin.login.signin}">Sign in with your school account</a>
+  </div>
+
+  <div class="landing-highlights">
+    <div class="landing-highlight">
+      <div class="landing-highlight-icon">
+        <img th:src="@{/assets/shared/icons/outline/qrcode.svg}" alt="" class="h-5 w-5" />
+      </div>
+      <div>
+        <div class="landing-highlight-title" th:text="#{admin.landing.h1.title}">One code, whole class</div>
+        <p class="landing-highlight-body" th:text="#{admin.landing.h1.body}">
+          Create a ticket, display the code or barcode, and every pupil connects in seconds.
+        </p>
+      </div>
+    </div>
+
+    <div class="landing-highlight">
+      <div class="landing-highlight-icon">
+        <img th:src="@{/assets/shared/icons/outline/clock.svg}" alt="" class="h-5 w-5" />
+      </div>
+      <div>
+        <div class="landing-highlight-title" th:text="#{admin.landing.h2.title}">Access expires on its own</div>
+        <p class="landing-highlight-body" th:text="#{admin.landing.h2.body}">
+          Set how long the ticket lasts. It stops working automatically — nothing to clean up afterwards.
+        </p>
+      </div>
+    </div>
+
+    <div class="landing-highlight">
+      <div class="landing-highlight-icon">
+        <img th:src="@{/assets/shared/icons/outline/shield-check.svg}" alt="" class="h-5 w-5" />
+      </div>
+      <div>
+        <div class="landing-highlight-title" th:text="#{admin.landing.h3.title}">See who is connected</div>
+        <p class="landing-highlight-body" th:text="#{admin.landing.h3.body}">
+          Check connected devices at any time and disconnect anyone who should not be there.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</main>
+</body>
+</html>

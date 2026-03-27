@@ -1,19 +1,35 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head th:replace="~{admin/fragments/head :: head('Admin login')}"></head>
-  <body class="bg-surface-muted">
-    <main class="container-page">
-      <div class="card">
-        <h1 class="text-xl font-semibold">Admin login</h1>
+  <head th:replace="~{admin/fragments/head :: head('WiFi Manager')}"></head>
+  <body class="login-page">
 
-        <div class="mt-6">
-          <a
-            class="btn btn-primary w-full block text-center"
-            th:href="@{'/oauth2/authorization/' + ${oidcRegistrationId}}"
-            >Sign in with SSO</a
-          >
+    <!-- Minimal top bar: logo + language switcher only -->
+    <header class="login-topbar">
+      <div class="login-topbar-inner">
+        <div class="flex items-center gap-2">
+          <img th:src="@{/assets/shared/icons/outline/wifi.svg}" alt="" class="h-5 w-5" />
+          <span class="text-sm font-semibold text-text">WiFi Manager</span>
         </div>
+
+        <div th:replace="~{shared/fragments/language-switcher :: languageSwitcher(#{admin.language.label}, #{admin.language.en}, #{admin.language.cs})}"></div>
+      </div>
+    </header>
+
+    <!-- Centered content -->
+    <main class="login-main">
+      <div class="login-card">
+        <div class="hero-kicker" th:text="#{admin.login.kicker}">Wi-Fi access made simple</div>
+        <h1 class="login-hero-title" th:text="#{admin.login.title}">Share Wi-Fi without sharing the password</h1>
+        <p class="login-hero-copy" th:text="#{admin.login.subtitle}">
+          Create time-limited access tickets, hand them to guests, and let them connect in seconds.
+        </p>
+        <a
+          class="btn btn-primary login-cta"
+          th:href="@{'/oauth2/authorization/' + ${oidcRegistrationId}}"
+          th:text="#{admin.login.signin}"
+        >Sign in with your account</a>
       </div>
     </main>
+
   </body>
 </html>

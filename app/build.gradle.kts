@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.springBootStarterThymeleaf)
     implementation(libs.springBootStarterWeb)
     implementation(libs.springBootStarterFlyway)
+    implementation(libs.springBootStarterSecurity)
     implementation(libs.flywayCore)
     implementation(libs.flywayDbPostgresql)
 

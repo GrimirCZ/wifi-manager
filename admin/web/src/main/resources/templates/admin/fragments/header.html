@@ -90,27 +90,6 @@
                             </a>
                         </div>
 
-                        <div class="mobile-menu-section mobile-menu-section-tertiary">
-                            <div class="px-1 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
-                                 th:text="#{admin.language.label}">
-                                Language
-                            </div>
-                            <a class="mobile-menu-link flex items-center gap-2"
-                               th:classappend="${#locale.language == 'en'} ? ' mobile-menu-link-active'"
-                               href="?lang=en"
-                               role="menuitem">
-                                <img th:src="@{/assets/shared/flags/gb.svg}" alt="" class="h-4 w-4 rounded-sm"/>
-                                <span th:text="#{admin.language.en}">English</span>
-                            </a>
-                            <a class="mobile-menu-link flex items-center gap-2"
-                               th:classappend="${#locale.language == 'cs'} ? ' mobile-menu-link-active'"
-                               href="?lang=cs"
-                               role="menuitem">
-                                <img th:src="@{/assets/shared/flags/cz.svg}" alt="" class="h-4 w-4 rounded-sm"/>
-                                <span th:text="#{admin.language.cs}">Czech</span>
-                            </a>
-                        </div>
-
                         <form th:action="@{/admin/logout}" method="post" class="mobile-menu-logout">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                             <button class="btn btn-secondary w-full justify-center" type="submit" role="menuitem"
@@ -121,6 +100,8 @@
                     </div>
                 </div>
             </details>
+
+            <div th:replace="~{shared/fragments/language-switcher :: languageSwitcher(#{admin.language.label}, #{admin.language.en}, #{admin.language.cs})}"></div>
 
             <div class="group relative hidden md:block">
                 <button
@@ -181,27 +162,6 @@
                                role="menuitem"
                                th:text="#{admin.account.help}">
                                 Help
-                            </a>
-                        </div>
-
-                        <div class="mt-3 rounded-[1.5rem] bg-surface-muted p-2">
-                            <div class="px-3 pb-1 pt-1 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
-                                 th:text="#{admin.language.label}">
-                                Language
-                            </div>
-                            <a class="flex items-center gap-2 rounded-full px-3 py-2 text-sm no-underline hover:bg-white"
-                               th:classappend="${#locale.language == 'en'} ? ' font-semibold text-brand-700'"
-                               href="?lang=en"
-                               role="menuitem">
-                                <img th:src="@{/assets/shared/flags/gb.svg}" alt="" class="h-4 w-4 rounded-sm"/>
-                                <span th:text="#{admin.language.en}">English</span>
-                            </a>
-                            <a class="flex items-center gap-2 rounded-full px-3 py-2 text-sm no-underline hover:bg-white"
-                               th:classappend="${#locale.language == 'cs'} ? ' font-semibold text-brand-700'"
-                               href="?lang=cs"
-                               role="menuitem">
-                                <img th:src="@{/assets/shared/flags/cz.svg}" alt="" class="h-4 w-4 rounded-sm"/>
-                                <span th:text="#{admin.language.cs}">Czech</span>
                             </a>
                         </div>
 

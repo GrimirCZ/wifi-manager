@@ -41,7 +41,7 @@ class UiSecurityConfig(
                     .permitAll()
                     .requestMatchers("/oauth2/**", "/login/oauth2/**")
                     .permitAll()
-                    .requestMatchers("/admin/login", "/captive/login")
+                    .requestMatchers("/", "/admin/login", "/captive/login")
                     .permitAll()
 
                 moduleAuthorizationRules.forEach { it.configure(auth) }
