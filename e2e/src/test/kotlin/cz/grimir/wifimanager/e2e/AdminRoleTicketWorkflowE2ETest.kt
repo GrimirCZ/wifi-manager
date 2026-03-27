@@ -11,14 +11,14 @@ class AdminRoleTicketWorkflowE2ETest : BaseWorkflowE2ETest() {
         openTicketsFromAccountMenu()
 
         createTicketAndReturnCsrfToken(validityMinutes = "45")
-        assertThat(page.getByRole(com.microsoft.playwright.options.AriaRole.HEADING, com.microsoft.playwright.Page.GetByRoleOptions().setName("Active ticket"))).isVisible()
+        assertThat(page.getByText("Active ticket")).isVisible()
 
         createTicketAndReturnCsrfToken(validityMinutes = "60")
 
         val deadline = System.currentTimeMillis() + 5_000
         while (System.currentTimeMillis() < deadline) {
             if (page.locator("#ticket-panel .ticket-card").count() == 2) {
-                assertEquals(2, page.getByText("Verification code:").count())
+                assertEquals(2, page.getByText("Access code:").count())
                 return
             }
             page.waitForTimeout(200.0)

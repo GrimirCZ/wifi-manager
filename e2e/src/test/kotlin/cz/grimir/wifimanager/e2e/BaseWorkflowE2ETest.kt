@@ -199,38 +199,35 @@ abstract class BaseWorkflowE2ETest {
     }
 
     protected fun openTicketsFromAccountMenu() {
-        openAccountMenu()
-        page.getByRole(AriaRole.MENUITEM, Page.GetByRoleOptions().setName("Tickets")).click()
+        page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("Tickets")).click()
         page.waitForURL("**/admin")
         assertThat(page.getByRole(AriaRole.HEADING, Page.GetByRoleOptions().setName("Create ticket"))).isVisible()
     }
 
     protected fun openDevicesFromAccountMenu() {
-        openAccountMenu()
-        page.getByRole(AriaRole.MENUITEM, Page.GetByRoleOptions().setName("Devices")).click()
+        page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("Devices")).click()
         page.waitForURL("**/admin/devices**")
         assertThat(page.getByRole(AriaRole.HEADING, Page.GetByRoleOptions().setName("My devices"))).isVisible()
     }
 
     protected fun openAllowedMacFromAccountMenu() {
-        openAccountMenu()
-        page.getByRole(AriaRole.MENUITEM, Page.GetByRoleOptions().setName("Network clients")).click()
+        page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("Admin")).click()
         page.waitForURL("**/admin/allowed-mac**")
         assertThat(
             page.getByRole(
                 AriaRole.HEADING,
-                Page.GetByRoleOptions().setName("Allowed MAC addresses")
+                Page.GetByRoleOptions().setName("Network operations")
             )
         ).isVisible()
+        assertThat(page.getByRole(AriaRole.HEADING, Page.GetByRoleOptions().setName("Allowed MAC addresses"))).isVisible()
         assertThat(page.getByRole(AriaRole.HEADING, Page.GetByRoleOptions().setName("Network clients"))).isVisible()
     }
 
-    protected fun assertAccountMenuItemVisible(
+    protected fun assertTopNavItemVisible(
         label: String,
         shouldBeVisible: Boolean,
     ) {
-        openAccountMenu()
-        val item = page.getByRole(AriaRole.MENUITEM, Page.GetByRoleOptions().setName(label))
+        val item = page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName(label))
         if (shouldBeVisible) {
             assertThat(item).isVisible()
         } else {
@@ -448,12 +445,12 @@ abstract class BaseWorkflowE2ETest {
     }
 
     private fun openAccountMenu() {
-        page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("User menu")).click()
+        page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Profile")).click()
         assertThat(page.locator("[role='menu']")).isVisible()
     }
 
     private fun assertAccountIdentityVisible(email: String) {
         openAccountMenu()
-        assertThat(page.getByText(email)).isVisible()
+        assertThat(page.getByRole(AriaRole.MENU).getByText(email)).isVisible()
     }
 }

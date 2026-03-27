@@ -12,7 +12,7 @@ class AdminAllowedMacRoleWorkflowE2ETest : BaseWorkflowE2ETest() {
     @Test
     fun `staff is blocked from allowed mac management`() {
         loginAsStaff()
-        assertAccountMenuItemVisible("Network clients", shouldBeVisible = false)
+        assertTopNavItemVisible("Admin", shouldBeVisible = false)
 
         val forbiddenResponse = page.request().get("$baseUrl/admin/allowed-mac")
         assertEquals(403, forbiddenResponse.status())
@@ -24,7 +24,7 @@ class AdminAllowedMacRoleWorkflowE2ETest : BaseWorkflowE2ETest() {
         val note = "E2E allowlist device"
 
         loginAsAdmin()
-        assertAccountMenuItemVisible("Network clients", shouldBeVisible = true)
+        assertTopNavItemVisible("Admin", shouldBeVisible = true)
         openAllowedMacFromAccountMenu()
 
         page.locator("#allowed-mac-form-details summary").click()
