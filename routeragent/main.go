@@ -3,19 +3,21 @@ package main
 import (
 	"context"
 	"log"
-	"net"
 	"os"
 	"os/signal"
 	"slices"
+	"strings"
 	"syscall"
 
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/agent"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/allowedip"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/config"
+	"github.com/GrimirCZ/wifi-manager/routeragent/internal/dhcpfingerprint"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/firewall"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/grpcclient"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/hostname"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/ipmapping"
+	"github.com/GrimirCZ/wifi-manager/routeragent/internal/macutil"
 )
 
 var grpcRun func(context.Context, config.Config, grpcclient.CommandHandler) error = grpcclient.Run
@@ -43,10 +45,11 @@ func run(ctx context.Context, cfg config.Config, firewallBackend firewall.Backen
 	logger.Printf("firewall backend: %s", firewallBackend)
 
 	ipProvider := ipmapping.New(ctx, cfg)
-	hostnameProvider := hostname.NewDnsmasqProvider(ctx, cfg.DnsmasqLeasesPath, cfg.DnsmasqPollInterval)
+	hostnameProvider := hostname.NewDnsmasqProvider(ctx, cfg.DnsmasqLeasesPath)
+	dhcpFingerprintProvider := dhcpfingerprint.NewDnsmasqProvider(ctx, cfg.DnsmasqDHCPLogPath)
 	allowedIPs := allowedip.NewMemoryRepository()
-	routerAgent := agent.New(firewallBackend, ipProvider, hostnameProvider, allowedIPs, cfg.ActionTimeout)
-	startObservedStateDumpOnSignal(ctx, ipProvider, hostnameProvider)
+	routerAgent := agent.New(firewallBackend, ipProvider, hostnameProvider, allowedIPs, dhcpFingerprintProvider, cfg.ActionTimeout)
+	startObservedStateDumpOnSignal(ctx, ipProvider, hostnameProvider, dhcpFingerprintProvider)
 
 	// Start consuming provider updates before ipProvider.Start so replayed
 	// bootstrap deltas are not missed while the initial snapshot goes live.
@@ -76,6 +79,10 @@ func run(ctx context.Context, cfg config.Config, firewallBackend firewall.Backen
 		return errRuntime("hostname provider", err)
 	}
 
+	if err := dhcpFingerprintProvider.Start(); err != nil {
+		return errRuntime("dhcp fingerprint provider", err)
+	}
+
 	if cfg.ObserveMode {
 		logger.Print("observe mode enabled; gRPC client disabled")
 		<-ctx.Done()
@@ -95,7 +102,12 @@ func errRuntime(component string, err error) error {
 	return &runtimeError{component: component, err: err}
 }
 
-func startObservedStateDumpOnSignal(ctx context.Context, ipProvider ipmapping.Provider, hostnameProvider hostname.Provider) {
+func startObservedStateDumpOnSignal(
+	ctx context.Context,
+	ipProvider ipmapping.Provider,
+	hostnameProvider hostname.Provider,
+	dhcpFingerprintProvider dhcpfingerprint.Provider,
+) {
 	dumpSignals := make(chan os.Signal, 1)
 	signal.Notify(dumpSignals, syscall.SIGUSR1)
 
@@ -106,19 +118,28 @@ func startObservedStateDumpOnSignal(ctx context.Context, ipProvider ipmapping.Pr
 			case <-ctx.Done():
 				return
 			case <-dumpSignals:
-				dumpObservedNetworkState(log.Default(), ipProvider, hostnameProvider)
+				dumpObservedNetworkState(log.Default(), ipProvider, hostnameProvider, dhcpFingerprintProvider)
 			}
 		}
 	}()
 }
 
-func dumpObservedNetworkState(logger *log.Logger, ipProvider ipmapping.Provider, hostnameProvider hostname.Provider) {
-	for _, line := range observedNetworkStateLogLines(ipProvider, hostnameProvider) {
+func dumpObservedNetworkState(
+	logger *log.Logger,
+	ipProvider ipmapping.Provider,
+	hostnameProvider hostname.Provider,
+	dhcpFingerprintProvider dhcpfingerprint.Provider,
+) {
+	for _, line := range observedNetworkStateLogLines(ipProvider, hostnameProvider, dhcpFingerprintProvider) {
 		logger.Print(line)
 	}
 }
 
-func observedNetworkStateLogLines(ipProvider ipmapping.Provider, hostnameProvider hostname.Provider) []string {
+func observedNetworkStateLogLines(
+	ipProvider ipmapping.Provider,
+	hostnameProvider hostname.Provider,
+	dhcpFingerprintProvider dhcpfingerprint.Provider,
+) []string {
 	clients := ipProvider.ListClients()
 	if len(clients) == 0 {
 		return []string{"observed network state dump (signal=SIGUSR1): no clients observed"}
@@ -128,12 +149,21 @@ func observedNetworkStateLogLines(ipProvider ipmapping.Provider, hostnameProvide
 	lines = append(lines, "observed network state dump (signal=SIGUSR1): current clients")
 	for _, client := range clients {
 		hostnames := observedHostnamesForIPs(hostnameProvider, client.IPs)
-		macDetails := "mac=" + client.MAC + " randomized=" + formatBool(isRandomizedMAC(client.MAC))
+		dhcpDetails := observedDHCPFingerprintDetails(dhcpFingerprintProvider, client.MAC)
+		macDetails := "mac=" + client.MAC + " randomized=" + formatBool(macutil.IsRandomizedMAC(client.MAC))
 		if len(hostnames) == 0 {
-			lines = append(lines, "observed client "+macDetails+" ips="+formatList(client.IPs))
+			line := "observed client " + macDetails + " ips=" + formatList(client.IPs)
+			if dhcpDetails != "" {
+				line += " " + dhcpDetails
+			}
+			lines = append(lines, line)
 			continue
 		}
-		lines = append(lines, "observed client "+macDetails+" ips="+formatList(client.IPs)+" hostnames="+formatList(hostnames))
+		line := "observed client " + macDetails + " ips=" + formatList(client.IPs) + " hostnames=" + formatList(hostnames)
+		if dhcpDetails != "" {
+			line += " " + dhcpDetails
+		}
+		lines = append(lines, line)
 	}
 	return lines
 }
@@ -159,6 +189,33 @@ func observedHostnamesForIPs(hostnameProvider hostname.Provider, ips []string) [
 	return slices.Compact(hostnames)
 }
 
+func observedDHCPFingerprintDetails(dhcpFingerprintProvider dhcpfingerprint.Provider, mac string) string {
+	if dhcpFingerprintProvider == nil || mac == "" {
+		return ""
+	}
+
+	observation, ok := dhcpFingerprintProvider.LookupByMAC(mac)
+	if !ok {
+		return ""
+	}
+
+	parts := make([]string, 0, 3)
+	if observation.VendorClass != "" {
+		parts = append(parts, "dhcp_vendor_class="+observation.VendorClass)
+	}
+	if observation.PRLHash != "" {
+		parts = append(parts, "dhcp_prl_hash="+observation.PRLHash)
+	}
+	if observation.Hostname != "" {
+		parts = append(parts, "dhcp_hostname="+observation.Hostname)
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+
+	return strings.Join(parts, " ")
+}
+
 func formatList(values []string) string {
 	if len(values) == 0 {
 		return "[]"
@@ -178,14 +235,6 @@ func formatBool(value bool) string {
 		return "true"
 	}
 	return "false"
-}
-
-func isRandomizedMAC(value string) bool {
-	parsed, err := net.ParseMAC(value)
-	if err != nil || len(parsed) == 0 {
-		return false
-	}
-	return parsed[0]&0x02 != 0
 }
 
 type runtimeError struct {

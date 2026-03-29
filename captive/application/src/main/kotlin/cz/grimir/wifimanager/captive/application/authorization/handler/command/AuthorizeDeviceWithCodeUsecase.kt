@@ -1,9 +1,10 @@
 package cz.grimir.wifimanager.captive.application.authorization.handler.command
 
 import cz.grimir.wifimanager.captive.application.authorization.command.AuthorizeDeviceWithCodeCommand
-import cz.grimir.wifimanager.captive.application.shared.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.authorization.port.ModifyAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
+import cz.grimir.wifimanager.captive.application.shared.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.core.exceptions.InvalidAccessCodeException
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.events.DeviceAuthorizedEvent
@@ -18,13 +19,21 @@ class AuthorizeDeviceWithCodeUsecase(
     private val modifyAuthorizationTokenPort: ModifyAuthorizationTokenPort,
     private val eventPublisher: CaptiveEventPublisher,
     private val timeProvider: TimeProvider,
+    private val deviceFingerprintService: DeviceFingerprintService,
 ) {
     fun authorize(command: AuthorizeDeviceWithCodeCommand) {
+        val now = timeProvider.get()
         val token =
             findAuthorizationTokenPort.findByAccessCode(command.accessCode)
                 ?: throw InvalidAccessCodeException(command.accessCode, command.device.mac)
 
-        token.authorizeDevice(command.device)
+        val acceptedDevice =
+            command.device.copy(
+                fingerprintStatus = deviceFingerprintService.status(command.device.fingerprintProfile),
+                fingerprintVerifiedAt = now,
+                reauthRequiredAt = null,
+            )
+        token.authorizeDevice(acceptedDevice)
         modifyAuthorizationTokenPort.save(token)
 
         eventPublisher.publish(
@@ -32,16 +41,16 @@ class AuthorizeDeviceWithCodeUsecase(
                 ticketId = token.id,
                 device =
                     DeviceAuthorizedEvent.Device(
-                        macAddress = command.device.mac,
-                        displayName = command.device.displayName,
-                        deviceName = command.device.deviceName,
+                        macAddress = acceptedDevice.mac,
+                        displayName = acceptedDevice.displayName,
+                        deviceName = acceptedDevice.deviceName,
                     ),
-                authorizedAt = timeProvider.get(),
+                authorizedAt = now,
             ),
         )
 
         logger.info {
-            "Device authorized ticketId=${token.id} mac=${command.device.mac} displayName=${command.device.displayName ?: "unknown"} deviceName=${command.device.deviceName ?: "unknown"} validUntil=${token.validUntil}"
+            "Device authorized ticketId=${token.id} mac=${acceptedDevice.mac} displayName=${acceptedDevice.displayName ?: "unknown"} deviceName=${acceptedDevice.deviceName ?: "unknown"} validUntil=${token.validUntil}"
         }
     }
 }

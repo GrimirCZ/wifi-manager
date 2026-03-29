@@ -2,6 +2,8 @@ package cz.grimir.wifimanager.captive.core.aggregates
 
 import cz.grimir.wifimanager.captive.core.exceptions.KickedAddressAttemptedLoginException
 import cz.grimir.wifimanager.captive.core.value.Device
+import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintProfile
+import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintStatus
 import cz.grimir.wifimanager.shared.core.TicketId
 import java.time.Instant
 
@@ -30,6 +32,53 @@ class AuthorizationToken(
             throw KickedAddressAttemptedLoginException(device.mac)
         }
 
+        val existingIndex = authorizedDevices.indexOfFirst { it.mac == device.mac }
+        if (existingIndex >= 0) {
+            authorizedDevices[existingIndex] = device
+            return
+        }
+
         authorizedDevices.add(device)
+    }
+
+    fun updateAuthorizedDevice(device: Device) {
+        val existingIndex = authorizedDevices.indexOfFirst { it.mac == device.mac }
+        if (existingIndex >= 0) {
+            authorizedDevices[existingIndex] = device
+            return
+        }
+
+        authorizedDevices.add(device)
+    }
+
+    fun requireReauthForAuthorizedDevice(
+        mac: String,
+        at: Instant,
+    ): Device {
+        val existingIndex = authorizedDevices.indexOfFirst { it.mac == mac }
+        require(existingIndex >= 0) { "authorized device not found for mac=$mac" }
+
+        val updated = authorizedDevices[existingIndex].copy(reauthRequiredAt = at)
+        authorizedDevices[existingIndex] = updated
+        return updated
+    }
+
+    fun updateAuthorizedDeviceFingerprint(
+        mac: String,
+        fingerprintProfile: DeviceFingerprintProfile?,
+        fingerprintStatus: DeviceFingerprintStatus,
+        fingerprintVerifiedAt: Instant,
+    ): Device {
+        val existingIndex = authorizedDevices.indexOfFirst { it.mac == mac }
+        require(existingIndex >= 0) { "authorized device not found for mac=$mac" }
+
+        val updated =
+            authorizedDevices[existingIndex].copy(
+                fingerprintProfile = fingerprintProfile,
+                fingerprintStatus = fingerprintStatus,
+                fingerprintVerifiedAt = fingerprintVerifiedAt,
+            )
+        authorizedDevices[existingIndex] = updated
+        return updated
     }
 }

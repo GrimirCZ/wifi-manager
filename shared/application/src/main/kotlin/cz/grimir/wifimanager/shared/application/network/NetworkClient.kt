@@ -5,4 +5,7 @@ data class NetworkClient(
     val ipAddresses: List<String>,
     val hostname: String?,
     val allowed: Boolean,
+    val dhcpVendorClass: String? = null,
+    val dhcpPrlHash: String? = null,
+    val dhcpHostname: String? = null,
 )

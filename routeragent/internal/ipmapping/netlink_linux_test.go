@@ -61,11 +61,11 @@ func TestNormalizeNeighborAcceptsIPv4AndIPv6WithLinkIndexPreservedExternally(t *
 		State:        netlink.NUD_REACHABLE,
 		IP:           []byte{192, 0, 2, 10},
 		HardwareAddr: []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
-	})
+	}, map[int]string{3: "br-lan"})
 	if !ok {
 		t.Fatal("expected ipv4 neighbor to normalize")
 	}
-	if !reflect.DeepEqual(ipv4, rawEvent{IP: "192.0.2.10", MAC: "aa:bb:cc:dd:ee:ff"}) {
+	if !reflect.DeepEqual(ipv4, rawEvent{IP: "192.0.2.10", MAC: "aa:bb:cc:dd:ee:ff", InterfaceName: "br-lan"}) {
 		t.Fatalf("unexpected ipv4 event: %#v", ipv4)
 	}
 
@@ -77,11 +77,11 @@ func TestNormalizeNeighborAcceptsIPv4AndIPv6WithLinkIndexPreservedExternally(t *
 			IP:           []byte{0xfe, 0x80, 0, 0, 0, 0, 0, 0, 0x02, 0x11, 0x22, 0xff, 0xfe, 0x33, 0x44, 0x55},
 			HardwareAddr: []byte{0x02, 0x11, 0x22, 0x33, 0x44, 0x55},
 		},
-	})
+	}, map[int]string{7: "wlan0"})
 	if !ok {
 		t.Fatal("expected ipv6 update to normalize")
 	}
-	if !reflect.DeepEqual(ipv6, rawEvent{IP: "fe80::11:22ff:fe33:4455", MAC: "02:11:22:33:44:55"}) {
+	if !reflect.DeepEqual(ipv6, rawEvent{IP: "fe80::11:22ff:fe33:4455", MAC: "02:11:22:33:44:55", InterfaceName: "wlan0"}) {
 		t.Fatalf("unexpected ipv6 event: %#v", ipv6)
 	}
 }
@@ -101,7 +101,7 @@ func TestNormalizeNeighborRejectsNonLiveBootstrapStates(t *testing.T) {
 				State:        tc.state,
 				IP:           []byte{192, 0, 2, 10},
 				HardwareAddr: []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
-			})
+			}, map[int]string{3: "br-lan"})
 			if ok {
 				t.Fatalf("expected %s neighbor to be excluded from bootstrap", tc.name)
 			}
@@ -127,11 +127,11 @@ func TestNormalizeRawUpdateDeletesNonLiveStates(t *testing.T) {
 					IP:           []byte{192, 0, 2, 10},
 					HardwareAddr: []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
 				},
-			})
+			}, map[int]string{3: "br-lan"})
 			if !ok {
 				t.Fatalf("expected %s update to normalize into delete", tc.name)
 			}
-			want := rawEvent{IP: "192.0.2.10", Deleted: true}
+			want := rawEvent{IP: "192.0.2.10", InterfaceName: "br-lan", Deleted: true}
 			if !reflect.DeepEqual(event, want) {
 				t.Fatalf("unexpected delete event: %#v", event)
 			}
@@ -154,11 +154,11 @@ func TestNormalizeNeighborAcceptsStaticLiveStates(t *testing.T) {
 				State:        tc.state,
 				IP:           []byte{192, 0, 2, 10},
 				HardwareAddr: []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
-			})
+			}, map[int]string{3: "br-lan"})
 			if !ok {
 				t.Fatalf("expected %s neighbor to be kept", tc.name)
 			}
-			want := rawEvent{IP: "192.0.2.10", MAC: "aa:bb:cc:dd:ee:ff"}
+			want := rawEvent{IP: "192.0.2.10", MAC: "aa:bb:cc:dd:ee:ff", InterfaceName: "br-lan"}
 			if !reflect.DeepEqual(event, want) {
 				t.Fatalf("unexpected event: %#v", event)
 			}
@@ -181,7 +181,7 @@ func TestLiveStateTransitionRemovesAndReaddsEntry(t *testing.T) {
 			IP:           []byte{192, 0, 2, 10},
 			HardwareAddr: []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
 		},
-	})
+	}, map[int]string{3: "br-lan"})
 	if !ok {
 		t.Fatal("expected live neighbor to normalize")
 	}
@@ -199,7 +199,7 @@ func TestLiveStateTransitionRemovesAndReaddsEntry(t *testing.T) {
 			IP:           []byte{192, 0, 2, 10},
 			HardwareAddr: []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
 		},
-	})
+	}, map[int]string{3: "br-lan"})
 	if !ok {
 		t.Fatal("expected stale update to normalize")
 	}
@@ -217,7 +217,7 @@ func TestLiveStateTransitionRemovesAndReaddsEntry(t *testing.T) {
 			IP:           []byte{192, 0, 2, 10},
 			HardwareAddr: []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
 		},
-	})
+	}, map[int]string{3: "br-lan"})
 	if !ok {
 		t.Fatal("expected probe update to normalize")
 	}

@@ -15,6 +15,7 @@ message RouterAgentMessage {
   oneof message {
     Synchronize synchronize = 1;
     CommandAck ack = 2;
+    AuthorizedClientObserved authorized_client_observed = 3;
   }
 }
 
@@ -62,6 +63,21 @@ message NetworkClient {
   repeated string ip_addresses = 2;
   optional string hostname = 3;
   bool allowed = 4;
+  optional string dhcp_vendor_class = 5;
+  optional string dhcp_prl_hash = 6;
+  optional string dhcp_hostname = 7;
+}
+
+message AuthorizedClientObserved {
+  string mac_address = 1;
+  repeated string ip_addresses = 2;
+  optional string hostname = 3;
+  string observed_at = 4;
+  optional string interface_name = 5;
+  bool is_randomized = 6;
+  optional string dhcp_vendor_class = 7;
+  optional string dhcp_prl_hash = 8;
+  optional string dhcp_hostname = 9;
 }
 
 message CommandAck {
@@ -73,4 +89,7 @@ message CommandAck {
   optional string mac_address = 4;
   optional string hostname = 5;
   repeated NetworkClient clients = 6;
+  optional string dhcp_vendor_class = 7;
+  optional string dhcp_prl_hash = 8;
+  optional string dhcp_hostname = 9;
 }

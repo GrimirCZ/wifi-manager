@@ -9,9 +9,10 @@ import (
 )
 
 type Update struct {
-	IP      string
-	MAC     string
-	Deleted bool
+	IP            string
+	MAC           string
+	InterfaceName string
+	Deleted       bool
 }
 
 type ClientView struct {
@@ -46,9 +47,10 @@ type macToClient struct {
 // rawEvent is the normalized event shape before it is applied to the store.
 // The same form is used for bootstrap replay and live netlink updates.
 type rawEvent struct {
-	IP      string
-	MAC     string
-	Deleted bool
+	IP            string
+	MAC           string
+	InterfaceName string
+	Deleted       bool
 }
 
 // snapshot is one immutable observed-state version.
@@ -141,12 +143,12 @@ func (s *store) enqueue(fn func(*writerState)) {
 	s.writeCh <- fn
 }
 
-func (s *store) update(ipStr, macStr string) (string, string, bool) {
+func (s *store) update(ipStr, macStr, interfaceName string) (string, string, bool) {
 	var ip string
 	var mac string
 	var changed bool
 	s.applySync(func(state *writerState) {
-		ip, mac, changed = state.applyUpsert(ipStr, macStr)
+		ip, mac, changed = state.applyUpsert(ipStr, macStr, interfaceName)
 	})
 	return ip, mac, changed
 }
@@ -220,7 +222,7 @@ func (s *snapshot) listClients() []ClientView {
 
 // withUpsert applies one observed IP -> MAC mapping as a path-copy CoW update
 // across both indices and returns a new immutable snapshot only when state changes.
-func (s *snapshot) withUpsert(ipStr, macStr string) (*snapshot, Update, bool) {
+func (s *snapshot) withUpsert(ipStr, macStr, interfaceName string) (*snapshot, Update, bool) {
 	if ipStr == "" || macStr == "" {
 		return s, Update{}, false
 	}
@@ -242,7 +244,7 @@ func (s *snapshot) withUpsert(ipStr, macStr string) (*snapshot, Update, bool) {
 	next.byIP.Set(ipToMAC{IP: ipStr, MAC: macStr})
 	upsertIPIntoClientTree(next.byMAC, macStr, ipStr)
 
-	return next, Update{IP: ipStr, MAC: macStr}, true
+	return next, Update{IP: ipStr, MAC: macStr, InterfaceName: interfaceName}, true
 }
 
 // withDelete removes one observed IP as a path-copy CoW update across both
@@ -321,8 +323,8 @@ func (w *writerState) emit(update Update) {
 	}
 }
 
-func (w *writerState) applyUpsert(ipStr, macStr string) (string, string, bool) {
-	next, update, changed := w.current.withUpsert(ipStr, macStr)
+func (w *writerState) applyUpsert(ipStr, macStr, interfaceName string) (string, string, bool) {
+	next, update, changed := w.current.withUpsert(ipStr, macStr, interfaceName)
 	if !changed {
 		return "", "", false
 	}
@@ -349,7 +351,7 @@ func (w *writerState) bootstrap(initial []rawEvent, replay []rawEvent) {
 		if event.Deleted {
 			continue
 		}
-		next, _, _ = next.withUpsert(event.IP, event.MAC)
+		next, _, _ = next.withUpsert(event.IP, event.MAC, event.InterfaceName)
 	}
 
 	replayed := make([]Update, 0, len(replay))
@@ -361,7 +363,7 @@ func (w *writerState) bootstrap(initial []rawEvent, replay []rawEvent) {
 		if event.Deleted {
 			next, update, changed = next.withDelete(event.IP)
 		} else {
-			next, update, changed = next.withUpsert(event.IP, event.MAC)
+			next, update, changed = next.withUpsert(event.IP, event.MAC, event.InterfaceName)
 		}
 		if changed {
 			replayed = append(replayed, update)

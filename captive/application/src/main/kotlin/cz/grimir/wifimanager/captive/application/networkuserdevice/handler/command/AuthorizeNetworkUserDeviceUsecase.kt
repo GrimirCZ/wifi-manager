@@ -1,5 +1,7 @@
 package cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command
 
+import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
+import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintProfile
 import cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.application.shared.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.application.networkuserdevice.port.NetworkUserDeviceReadPort
@@ -15,6 +17,7 @@ class AuthorizeNetworkUserDeviceUsecase(
     private val networkUserDeviceWritePort: NetworkUserDeviceWritePort,
     private val captiveEventPublisher: CaptiveEventPublisher,
     private val timeProvider: TimeProvider,
+    private val deviceFingerprintService: DeviceFingerprintService,
 ) {
     fun authorize(
         userId: UserId,
@@ -22,8 +25,10 @@ class AuthorizeNetworkUserDeviceUsecase(
         name: String?,
         hostname: String?,
         isRandomized: Boolean,
+        fingerprintProfile: DeviceFingerprintProfile?,
     ) {
         val now = timeProvider.get()
+        val fingerprintStatus = deviceFingerprintService.status(fingerprintProfile)
         val existing = networkUserDeviceReadPort.findByMac(mac)
         if (existing != null && existing.userId != userId) {
             throw DeviceOwnershipException("Device $mac is already authorized for another user.")
@@ -35,6 +40,10 @@ class AuthorizeNetworkUserDeviceUsecase(
                 hostname = hostname,
                 isRandomized = isRandomized,
                 lastSeenAt = now,
+                fingerprintProfile = deviceFingerprintService.enrichMissingSignals(existing.fingerprintProfile, fingerprintProfile),
+                fingerprintStatus = fingerprintStatus,
+                fingerprintVerifiedAt = now,
+                reauthRequiredAt = null,
             ) ?: NetworkUserDevice(
                 userId = userId,
                 mac = mac,
@@ -43,6 +52,10 @@ class AuthorizeNetworkUserDeviceUsecase(
                 isRandomized = isRandomized,
                 authorizedAt = now,
                 lastSeenAt = now,
+                fingerprintProfile = fingerprintProfile,
+                fingerprintStatus = fingerprintStatus,
+                fingerprintVerifiedAt = now,
+                reauthRequiredAt = null,
             )
         networkUserDeviceWritePort.save(device)
         captiveEventPublisher.publish(

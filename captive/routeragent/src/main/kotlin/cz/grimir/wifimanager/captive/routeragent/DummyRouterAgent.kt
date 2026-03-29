@@ -18,7 +18,13 @@ class DummyRouterAgent(
         val macAddress = properties.clientMacAddressByIp[ipAddress] ?: properties.defaultClientMacAddress
         val hostname = properties.clientHostnameByIp[ipAddress] ?: properties.defaultClientHostname
         logger.info { "Dummy router agent getClientInfo ip=$ipAddress mac=$macAddress hostname=$hostname" }
-        return ClientInfo(macAddress = macAddress, hostname = hostname)
+        return ClientInfo(
+            macAddress = macAddress,
+            hostname = hostname,
+            dhcpVendorClass = properties.defaultDhcpVendorClass,
+            dhcpPrlHash = properties.defaultDhcpPrlHash,
+            dhcpHostname = properties.defaultDhcpHostname,
+        )
     }
 
     override fun allowClientAccess(macAddresses: List<String>) {

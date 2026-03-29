@@ -116,6 +116,9 @@ abstract class BaseWorkflowE2ETest {
             registry.add("wifimanager.captive.router-agent.type") { "dummy" }
             registry.add("wifimanager.captive.router-agent.dummy.default-client-mac-address") { DEFAULT_DEVICE_MAC }
             registry.add("wifimanager.captive.router-agent.dummy.default-client-hostname") { "e2e-device" }
+            registry.add("wifimanager.captive.router-agent.dummy.default-dhcp-vendor-class") { "android-dhcp-14" }
+            registry.add("wifimanager.captive.router-agent.dummy.default-dhcp-prl-hash") { "hash-a" }
+            registry.add("wifimanager.captive.router-agent.dummy.default-dhcp-hostname") { "e2e-device.local" }
         }
 
         private fun realmImportPath(): String {
@@ -165,7 +168,7 @@ abstract class BaseWorkflowE2ETest {
         password: String,
     ) {
         page.navigate("$baseUrl/admin/login")
-        page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("Sign in with SSO")).click()
+        page.locator("a[href^='/oauth2/authorization/']").first().click()
 
         val usernameInput = page.locator("#username, input[name='username']").first()
         val passwordInput = page.locator("#password, input[name='password']").first()
@@ -445,12 +448,16 @@ abstract class BaseWorkflowE2ETest {
     }
 
     private fun openAccountMenu() {
-        page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Profile")).click()
-        assertThat(page.locator("[role='menu']")).isVisible()
+        val profileButton = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Profile")).first()
+        profileButton.click()
+        val accountMenu = profileButton.locator("xpath=following-sibling::*[@role='menu'][1]")
+        assertThat(accountMenu).isVisible()
     }
 
     private fun assertAccountIdentityVisible(email: String) {
+        val profileButton = page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Profile")).first()
         openAccountMenu()
-        assertThat(page.getByRole(AriaRole.MENU).getByText(email)).isVisible()
+        val accountMenu = profileButton.locator("xpath=following-sibling::*[@role='menu'][1]")
+        assertThat(accountMenu.getByText(email)).isVisible()
     }
 }

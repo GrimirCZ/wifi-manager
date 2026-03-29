@@ -2,6 +2,7 @@ package routeragentgrpc
 
 import (
 	"context"
+	"sync"
 
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/routeragentpb"
 	"google.golang.org/grpc"
@@ -50,6 +51,7 @@ func (c *Client) Connect(ctx context.Context, opts ...grpc.CallOption) (*Stream,
 // Stream wraps the bidirectional stream for sending agent messages and receiving commands.
 type Stream struct {
 	stream routeragentpb.RouterAgentService_ConnectClient
+	sendMu sync.Mutex
 }
 
 // Recv waits for the next command from the server.
@@ -59,6 +61,8 @@ func (s *Stream) Recv() (*routeragentpb.RouterAgentCommand, error) {
 
 // SendSynchronize publishes a Synchronize message on the stream.
 func (s *Stream) SendSynchronize(reason string) error {
+	s.sendMu.Lock()
+	defer s.sendMu.Unlock()
 	return s.stream.Send(&routeragentpb.RouterAgentMessage{
 		Message: &routeragentpb.RouterAgentMessage_Synchronize{
 			Synchronize: &routeragentpb.Synchronize{Reason: reason},
@@ -68,8 +72,20 @@ func (s *Stream) SendSynchronize(reason string) error {
 
 // SendAck publishes a CommandAck message on the stream.
 func (s *Stream) SendAck(ack *routeragentpb.CommandAck) error {
+	s.sendMu.Lock()
+	defer s.sendMu.Unlock()
 	return s.stream.Send(&routeragentpb.RouterAgentMessage{
 		Message: &routeragentpb.RouterAgentMessage_Ack{Ack: ack},
+	})
+}
+
+func (s *Stream) SendAuthorizedClientObserved(observed *routeragentpb.AuthorizedClientObserved) error {
+	s.sendMu.Lock()
+	defer s.sendMu.Unlock()
+	return s.stream.Send(&routeragentpb.RouterAgentMessage{
+		Message: &routeragentpb.RouterAgentMessage_AuthorizedClientObserved{
+			AuthorizedClientObserved: observed,
+		},
 	})
 }
 

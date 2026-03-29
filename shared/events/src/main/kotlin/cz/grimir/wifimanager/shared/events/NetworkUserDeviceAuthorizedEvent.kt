@@ -11,4 +11,6 @@ data class NetworkUserDeviceAuthorizedEvent(
     val isRandomized: Boolean,
     val authorizedAt: Instant,
     val lastSeenAt: Instant,
+    val fingerprintSummaryHash: String? = null,
+    val fingerprintVerifiedAt: Instant? = null,
 )

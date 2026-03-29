@@ -14,6 +14,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     implementation(libs.bundles.springDataJpa)
+    implementation(libs.bundles.jackson)
 
     testImplementation(platform(libs.junitBom))
     testImplementation(libs.bundles.testBase)

@@ -9,9 +9,11 @@ import (
 	"time"
 
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/allowedip"
+	"github.com/GrimirCZ/wifi-manager/routeragent/internal/dhcpfingerprint"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/firewall"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/hostname"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/ipmapping"
+	"github.com/GrimirCZ/wifi-manager/routeragent/internal/macutil"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/normalize"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/routeragentgrpc"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/routeragentpb"
@@ -21,18 +23,35 @@ import (
 // allowed-MAC policy state held in memory, and firewall state that is gated
 // separately so reconciliation can compare and repair backend reality.
 type Agent struct {
-	firewall      firewall.Backend
-	ipMapping     ipmapping.Provider
-	hostname      hostname.Provider
-	allowedIPs    allowedip.Repository
-	allowedMACs   map[string]struct{}
-	mu            sync.RWMutex
-	firewallMu    sync.RWMutex
-	actionTimeout time.Duration
+	firewall          firewall.Backend
+	ipMapping         ipmapping.Provider
+	hostname          hostname.Provider
+	allowedIPs        allowedip.Repository
+	dhcpFingerprint   dhcpfingerprint.Provider
+	allowedMACs       map[string]struct{}
+	mu                sync.RWMutex
+	firewallMu        sync.RWMutex
+	senderMu          sync.RWMutex
+	pendingMu         sync.Mutex
+	pendingObserved   map[string]*pendingObservation
+	observationSender observationSender
+	actionTimeout     time.Duration
+	observationDelay  time.Duration
+}
+
+type pendingObservation struct {
+	cancel        context.CancelFunc
+	interfaceName string
+	ready         bool
+	sending       bool
 }
 
 type ackSender interface {
 	SendAck(ack *routeragentpb.CommandAck) error
+}
+
+type observationSender interface {
+	SendAuthorizedClientObserved(observed *routeragentpb.AuthorizedClientObserved) error
 }
 
 func New(
@@ -40,15 +59,19 @@ func New(
 	ipMapping ipmapping.Provider,
 	hostname hostname.Provider,
 	allowedIPs allowedip.Repository,
+	dhcpFingerprint dhcpfingerprint.Provider,
 	actionTimeout time.Duration,
 ) *Agent {
 	return &Agent{
-		firewall:      firewall,
-		ipMapping:     ipMapping,
-		hostname:      hostname,
-		allowedIPs:    allowedIPs,
-		allowedMACs:   make(map[string]struct{}),
-		actionTimeout: actionTimeout,
+		firewall:         firewall,
+		ipMapping:        ipMapping,
+		hostname:         hostname,
+		allowedIPs:       allowedIPs,
+		dhcpFingerprint:  dhcpFingerprint,
+		allowedMACs:      make(map[string]struct{}),
+		pendingObserved:  make(map[string]*pendingObservation),
+		actionTimeout:    actionTimeout,
+		observationDelay: 30 * time.Second,
 	}
 }
 
@@ -63,6 +86,9 @@ func (a *Agent) OnIPMappingUpdate(ctx context.Context, update ipmapping.Update) 
 	}
 	if update.Deleted {
 		a.removeAllowedIP(ctx, update.IP)
+		if len(a.ipMapping.IPsForMAC(update.MAC)) == 0 {
+			a.cancelPendingObservation(update.MAC)
+		}
 		return
 	}
 	if !a.isMACAllowed(update.MAC) {
@@ -77,6 +103,11 @@ func (a *Agent) OnIPMappingUpdate(ctx context.Context, update ipmapping.Update) 
 	}); err != nil {
 		log.Printf("failed to allow ip=%s for mac=%s: %v", update.IP, update.MAC, err)
 	}
+	if len(a.ipMapping.IPsForMAC(update.MAC)) == 1 {
+		a.schedulePendingObservation(update.MAC, update.InterfaceName)
+		return
+	}
+	a.refreshPendingObservation(update.MAC, update.InterfaceName)
 }
 
 func (a *Agent) removeAllowedIP(ctx context.Context, ip string) {
@@ -123,17 +154,24 @@ func (a *Agent) handleGetClientInfo(stream ackSender, cmd *routeragentpb.GetClie
 	}
 
 	mac, ok := a.ipMapping.LookupMAC(ip)
+	if ok {
+		a.cancelPendingObservation(mac)
+	}
 	hostname, _ := a.hostname.LookupHostname(ip)
+	dhcpObservation, dhcpOK := a.dhcpLookup(mac)
 
 	ack := &routeragentpb.CommandAck{
 		Id:      cmd.Id,
 		Success: true,
 	}
 	if ok {
-		ack.MacAddress = stringPtr(mac)
+		ack.MacAddress = optionalStringPtr(mac)
 	}
-	if hostname != "" {
-		ack.Hostname = stringPtr(hostname)
+	ack.Hostname = optionalStringPtr(hostname)
+	if dhcpOK {
+		ack.DhcpVendorClass = optionalStringPtr(dhcpObservation.VendorClass)
+		ack.DhcpPrlHash = optionalStringPtr(dhcpObservation.PRLHash)
+		ack.DhcpHostname = optionalStringPtr(dhcpObservation.Hostname)
 	}
 	return stream.SendAck(ack)
 }
@@ -190,12 +228,14 @@ func (a *Agent) handleListNetworkClients(stream ackSender, cmd *routeragentpb.Li
 // setAllowedMACs replaces the policy set and derives the full expected IP
 // whitelist from the current observed snapshot before rebuilding the firewall.
 func (a *Agent) setAllowedMACs(ctx context.Context, macs []string) error {
+	removed := a.removedAllowedMACs(macs)
 	a.mu.Lock()
 	a.allowedMACs = make(map[string]struct{}, len(macs))
 	for _, mac := range macs {
 		a.allowedMACs[mac] = struct{}{}
 	}
 	a.mu.Unlock()
+	a.cancelPendingObservations(removed)
 
 	allIPs := a.collectIPsForMACs(macs)
 	a.allowedIPs.SetAll(allIPs)
@@ -234,6 +274,7 @@ func (a *Agent) revokeMACs(ctx context.Context, macs []string) error {
 		delete(a.allowedMACs, mac)
 	}
 	a.mu.Unlock()
+	a.cancelPendingObservations(macs)
 
 	allIPs := a.collectIPsForMACs(macs)
 	removed := a.allowedIPs.Remove(allIPs)
@@ -257,12 +298,16 @@ func (a *Agent) buildListNetworkClientsAck(id string) *routeragentpb.CommandAck 
 
 	clients := make([]*routeragentpb.NetworkClient, 0, len(views))
 	for _, view := range views {
+		dhcpObservation, _ := a.dhcpLookup(view.MAC)
 		hostnames := a.hostnamesForIPs(view.IPs)
 		clients = append(clients, &routeragentpb.NetworkClient{
-			MacAddress:  view.MAC,
-			IpAddresses: slices.Clone(view.IPs),
-			Hostname:    firstStringPtr(hostnames),
-			Allowed:     allowed[view.MAC],
+			MacAddress:      view.MAC,
+			IpAddresses:     slices.Clone(view.IPs),
+			Hostname:        firstStringPtr(hostnames),
+			Allowed:         allowed[view.MAC],
+			DhcpVendorClass: optionalStringPtr(dhcpObservation.VendorClass),
+			DhcpPrlHash:     optionalStringPtr(dhcpObservation.PRLHash),
+			DhcpHostname:    optionalStringPtr(dhcpObservation.Hostname),
 		})
 	}
 
@@ -271,6 +316,205 @@ func (a *Agent) buildListNetworkClientsAck(id string) *routeragentpb.CommandAck 
 		Success: true,
 		Clients: clients,
 	}
+}
+
+func (a *Agent) OnStreamConnected(sender observationSender) {
+	a.senderMu.Lock()
+	defer a.senderMu.Unlock()
+	a.observationSender = sender
+	go a.flushReadyPendingObservations()
+}
+
+func (a *Agent) OnStreamDisconnected(sender observationSender) {
+	a.senderMu.Lock()
+	defer a.senderMu.Unlock()
+	if a.observationSender == sender {
+		a.observationSender = nil
+	}
+}
+
+func (a *Agent) emitAuthorizedClientObserved(
+	mac string,
+	interfaceName string,
+) bool {
+	sender := a.currentObservationSender()
+	if sender == nil {
+		return false
+	}
+	if !a.isMACAllowed(mac) {
+		return false
+	}
+
+	ips := ipv4Addresses(a.ipMapping.IPsForMAC(mac))
+	if len(ips) == 0 {
+		return false
+	}
+	dhcpObservation, _ := a.dhcpLookup(mac)
+	hostnames := a.hostnamesForIPs(ips)
+	observed := &routeragentpb.AuthorizedClientObserved{
+		MacAddress:      mac,
+		IpAddresses:     slices.Clone(ips),
+		Hostname:        firstStringPtr(hostnames),
+		ObservedAt:      time.Now().UTC().Format(time.RFC3339),
+		InterfaceName:   optionalStringPtr(interfaceName),
+		IsRandomized:    macutil.IsRandomizedMAC(mac),
+		DhcpVendorClass: optionalStringPtr(dhcpObservation.VendorClass),
+		DhcpPrlHash:     optionalStringPtr(dhcpObservation.PRLHash),
+		DhcpHostname:    optionalStringPtr(dhcpObservation.Hostname),
+	}
+	if err := sender.SendAuthorizedClientObserved(observed); err != nil {
+		log.Printf("failed to send authorized client observed mac=%s: %v", mac, err)
+		return false
+	}
+	return true
+}
+
+func (a *Agent) schedulePendingObservation(mac, interfaceName string) {
+	if mac == "" {
+		return
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	pending := &pendingObservation{
+		cancel:        cancel,
+		interfaceName: interfaceName,
+	}
+
+	a.pendingMu.Lock()
+	if existing, ok := a.pendingObserved[mac]; ok {
+		if interfaceName != "" {
+			existing.interfaceName = interfaceName
+		}
+		a.pendingMu.Unlock()
+		cancel()
+		return
+	}
+	a.pendingObserved[mac] = pending
+	a.pendingMu.Unlock()
+
+	go func() {
+		timer := time.NewTimer(a.observationDelay)
+		defer timer.Stop()
+
+		select {
+		case <-ctx.Done():
+			return
+		case <-timer.C:
+		}
+
+		if !a.markPendingObservationReady(mac, pending) {
+			return
+		}
+		a.flushPendingObservation(mac)
+	}()
+}
+
+func (a *Agent) refreshPendingObservation(mac, interfaceName string) {
+	if mac == "" || interfaceName == "" {
+		return
+	}
+	a.pendingMu.Lock()
+	defer a.pendingMu.Unlock()
+	if pending, ok := a.pendingObserved[mac]; ok {
+		pending.interfaceName = interfaceName
+	}
+	go a.flushPendingObservation(mac)
+}
+
+func (a *Agent) cancelPendingObservation(mac string) {
+	if mac == "" {
+		return
+	}
+	var cancel context.CancelFunc
+	a.pendingMu.Lock()
+	if pending, ok := a.pendingObserved[mac]; ok {
+		delete(a.pendingObserved, mac)
+		cancel = pending.cancel
+	}
+	a.pendingMu.Unlock()
+	if cancel != nil {
+		cancel()
+	}
+}
+
+func (a *Agent) cancelPendingObservations(macs []string) {
+	for _, mac := range macs {
+		a.cancelPendingObservation(mac)
+	}
+}
+
+func (a *Agent) markPendingObservationReady(mac string, pending *pendingObservation) bool {
+	a.pendingMu.Lock()
+	defer a.pendingMu.Unlock()
+	current, ok := a.pendingObserved[mac]
+	if !ok || current != pending {
+		return false
+	}
+	current.ready = true
+	return true
+}
+
+func (a *Agent) flushPendingObservation(mac string) {
+	if mac == "" {
+		return
+	}
+
+	var (
+		pending       *pendingObservation
+		interfaceName string
+	)
+	a.pendingMu.Lock()
+	current, ok := a.pendingObserved[mac]
+	if !ok || !current.ready || current.sending {
+		a.pendingMu.Unlock()
+		return
+	}
+	current.sending = true
+	pending = current
+	interfaceName = current.interfaceName
+	a.pendingMu.Unlock()
+
+	sent := a.emitAuthorizedClientObserved(mac, interfaceName)
+
+	a.pendingMu.Lock()
+	defer a.pendingMu.Unlock()
+	current, ok = a.pendingObserved[mac]
+	if !ok || current != pending {
+		return
+	}
+	if sent {
+		delete(a.pendingObserved, mac)
+		return
+	}
+	current.sending = false
+}
+
+func (a *Agent) flushReadyPendingObservations() {
+	a.pendingMu.Lock()
+	macs := make([]string, 0, len(a.pendingObserved))
+	for mac, pending := range a.pendingObserved {
+		if pending.ready {
+			macs = append(macs, mac)
+		}
+	}
+	a.pendingMu.Unlock()
+
+	for _, mac := range macs {
+		a.flushPendingObservation(mac)
+	}
+}
+
+func (a *Agent) currentObservationSender() observationSender {
+	a.senderMu.RLock()
+	defer a.senderMu.RUnlock()
+	return a.observationSender
+}
+
+func (a *Agent) dhcpLookup(mac string) (dhcpfingerprint.Observation, bool) {
+	if a.dhcpFingerprint == nil {
+		return dhcpfingerprint.Observation{}, false
+	}
+	return a.dhcpFingerprint.LookupByMAC(mac)
 }
 
 func (a *Agent) hostnamesForIPs(ips []string) []string {
@@ -308,6 +552,25 @@ func (a *Agent) allowedMACSnapshot() map[string]bool {
 		allowed[mac] = true
 	}
 	return allowed
+}
+
+func (a *Agent) removedAllowedMACs(nextAllowed []string) []string {
+	next := make(map[string]struct{}, len(nextAllowed))
+	for _, mac := range nextAllowed {
+		next[mac] = struct{}{}
+	}
+
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+
+	removed := make([]string, 0)
+	for mac := range a.allowedMACs {
+		if _, ok := next[mac]; ok {
+			continue
+		}
+		removed = append(removed, mac)
+	}
+	return removed
 }
 
 func (a *Agent) withTimeout(ctx context.Context, fn func(context.Context) error) error {
@@ -471,11 +734,36 @@ func stringPtr(value string) *string {
 	return &value
 }
 
+func optionalStringPtr(value string) *string {
+	if value == "" {
+		return nil
+	}
+	return stringPtr(value)
+}
+
 func firstStringPtr(values []string) *string {
 	if len(values) == 0 {
 		return nil
 	}
 	return stringPtr(values[0])
+}
+
+func ipv4Addresses(values []string) []string {
+	if len(values) == 0 {
+		return nil
+	}
+	filtered := make([]string, 0, len(values))
+	for _, value := range values {
+		ip := net.ParseIP(value)
+		if ip == nil || ip.To4() == nil {
+			continue
+		}
+		filtered = append(filtered, value)
+	}
+	if len(filtered) == 0 {
+		return nil
+	}
+	return filtered
 }
 
 func errInvalidMAC(value string) error {

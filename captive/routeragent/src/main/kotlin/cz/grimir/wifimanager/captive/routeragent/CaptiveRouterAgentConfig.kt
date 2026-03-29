@@ -2,6 +2,8 @@ package cz.grimir.wifimanager.captive.routeragent
 
 import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedClientFingerprintGuard
+import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
 import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
 import cz.grimir.wifimanager.captive.routeragent.grpc.GrpcServerRouterAgent
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -32,6 +34,15 @@ class CaptiveRouterAgentConfig {
         properties: RouterAgentProperties,
         findAuthorizationTokenPort: FindAuthorizationTokenPort,
         allowedMacReadPort: AllowedMacReadPort,
+        authorizedClientFingerprintGuard: AuthorizedClientFingerprintGuard,
+        deviceFingerprintService: DeviceFingerprintService,
         applicationTaskExecutor: TaskExecutor,
-    ) = GrpcServerRouterAgent(properties.grpc, findAuthorizationTokenPort, allowedMacReadPort, applicationTaskExecutor)
+    ) = GrpcServerRouterAgent(
+        properties.grpc,
+        findAuthorizationTokenPort,
+        allowedMacReadPort,
+        authorizedClientFingerprintGuard,
+        deviceFingerprintService,
+        applicationTaskExecutor,
+    )
 }

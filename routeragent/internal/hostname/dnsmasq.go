@@ -6,24 +6,22 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
 
+	"github.com/GrimirCZ/wifi-manager/routeragent/internal/dnsmasqfile"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/normalize"
 )
 
 type DnsmasqProvider struct {
-	ctx          context.Context
-	leasesPath   string
-	pollInterval time.Duration
-	store        *store
+	ctx        context.Context
+	leasesPath string
+	store      *store
 }
 
-func NewDnsmasqProvider(ctx context.Context, leasesPath string, pollInterval time.Duration) *DnsmasqProvider {
+func NewDnsmasqProvider(ctx context.Context, leasesPath string) *DnsmasqProvider {
 	return &DnsmasqProvider{
-		ctx:          ctx,
-		leasesPath:   leasesPath,
-		pollInterval: pollInterval,
-		store:        newStore(),
+		ctx:        ctx,
+		leasesPath: leasesPath,
+		store:      newStore(),
 	}
 }
 
@@ -32,31 +30,19 @@ func (d *DnsmasqProvider) Start() error {
 		return nil
 	}
 
-	if entries, err := readDnsmasqLeases(d.leasesPath); err != nil {
-		log.Printf("dnsmasq leases read error: %v", err)
-	} else {
-		d.store.update(entries)
-	}
-
-	ticker := time.NewTicker(d.pollInterval)
-	go func() {
-		defer ticker.Stop()
-		for {
-			select {
-			case <-d.ctx.Done():
-				return
-			case <-ticker.C:
-				entries, err := readDnsmasqLeases(d.leasesPath)
-				if err != nil {
-					log.Printf("dnsmasq leases read error: %v", err)
-					continue
-				}
-				d.store.update(entries)
+	return dnsmasqfile.WatchFile(d.ctx, d.leasesPath, func() error {
+		entries, err := readDnsmasqLeases(d.leasesPath)
+		if err != nil {
+			if os.IsNotExist(err) {
+				d.store.replace(make(map[string]string))
+				return nil
 			}
+			log.Printf("dnsmasq leases read error: %v", err)
+			return nil
 		}
-	}()
-
-	return nil
+		d.store.replace(entries)
+		return nil
+	})
 }
 
 func (d *DnsmasqProvider) LookupHostname(ip string) (string, bool) {

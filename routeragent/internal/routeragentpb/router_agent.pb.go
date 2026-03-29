@@ -27,6 +27,7 @@ type RouterAgentMessage struct {
 	//
 	//	*RouterAgentMessage_Synchronize
 	//	*RouterAgentMessage_Ack
+	//	*RouterAgentMessage_AuthorizedClientObserved
 	Message       isRouterAgentMessage_Message `protobuf_oneof:"message"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -87,6 +88,15 @@ func (x *RouterAgentMessage) GetAck() *CommandAck {
 	return nil
 }
 
+func (x *RouterAgentMessage) GetAuthorizedClientObserved() *AuthorizedClientObserved {
+	if x != nil {
+		if x, ok := x.Message.(*RouterAgentMessage_AuthorizedClientObserved); ok {
+			return x.AuthorizedClientObserved
+		}
+	}
+	return nil
+}
+
 type isRouterAgentMessage_Message interface {
 	isRouterAgentMessage_Message()
 }
@@ -99,9 +109,15 @@ type RouterAgentMessage_Ack struct {
 	Ack *CommandAck `protobuf:"bytes,2,opt,name=ack,proto3,oneof"`
 }
 
+type RouterAgentMessage_AuthorizedClientObserved struct {
+	AuthorizedClientObserved *AuthorizedClientObserved `protobuf:"bytes,3,opt,name=authorized_client_observed,json=authorizedClientObserved,proto3,oneof"`
+}
+
 func (*RouterAgentMessage_Synchronize) isRouterAgentMessage_Message() {}
 
 func (*RouterAgentMessage_Ack) isRouterAgentMessage_Message() {}
+
+func (*RouterAgentMessage_AuthorizedClientObserved) isRouterAgentMessage_Message() {}
 
 type RouterAgentCommand struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -531,13 +547,16 @@ func (x *ListNetworkClients) GetId() string {
 }
 
 type NetworkClient struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	MacAddress    string                 `protobuf:"bytes,1,opt,name=mac_address,json=macAddress,proto3" json:"mac_address,omitempty"`
-	IpAddresses   []string               `protobuf:"bytes,2,rep,name=ip_addresses,json=ipAddresses,proto3" json:"ip_addresses,omitempty"`
-	Hostname      *string                `protobuf:"bytes,3,opt,name=hostname,proto3,oneof" json:"hostname,omitempty"`
-	Allowed       bool                   `protobuf:"varint,4,opt,name=allowed,proto3" json:"allowed,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	MacAddress      string                 `protobuf:"bytes,1,opt,name=mac_address,json=macAddress,proto3" json:"mac_address,omitempty"`
+	IpAddresses     []string               `protobuf:"bytes,2,rep,name=ip_addresses,json=ipAddresses,proto3" json:"ip_addresses,omitempty"`
+	Hostname        *string                `protobuf:"bytes,3,opt,name=hostname,proto3,oneof" json:"hostname,omitempty"`
+	Allowed         bool                   `protobuf:"varint,4,opt,name=allowed,proto3" json:"allowed,omitempty"`
+	DhcpVendorClass *string                `protobuf:"bytes,5,opt,name=dhcp_vendor_class,json=dhcpVendorClass,proto3,oneof" json:"dhcp_vendor_class,omitempty"`
+	DhcpPrlHash     *string                `protobuf:"bytes,6,opt,name=dhcp_prl_hash,json=dhcpPrlHash,proto3,oneof" json:"dhcp_prl_hash,omitempty"`
+	DhcpHostname    *string                `protobuf:"bytes,7,opt,name=dhcp_hostname,json=dhcpHostname,proto3,oneof" json:"dhcp_hostname,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *NetworkClient) Reset() {
@@ -598,6 +617,135 @@ func (x *NetworkClient) GetAllowed() bool {
 	return false
 }
 
+func (x *NetworkClient) GetDhcpVendorClass() string {
+	if x != nil && x.DhcpVendorClass != nil {
+		return *x.DhcpVendorClass
+	}
+	return ""
+}
+
+func (x *NetworkClient) GetDhcpPrlHash() string {
+	if x != nil && x.DhcpPrlHash != nil {
+		return *x.DhcpPrlHash
+	}
+	return ""
+}
+
+func (x *NetworkClient) GetDhcpHostname() string {
+	if x != nil && x.DhcpHostname != nil {
+		return *x.DhcpHostname
+	}
+	return ""
+}
+
+type AuthorizedClientObserved struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	MacAddress      string                 `protobuf:"bytes,1,opt,name=mac_address,json=macAddress,proto3" json:"mac_address,omitempty"`
+	IpAddresses     []string               `protobuf:"bytes,2,rep,name=ip_addresses,json=ipAddresses,proto3" json:"ip_addresses,omitempty"`
+	Hostname        *string                `protobuf:"bytes,3,opt,name=hostname,proto3,oneof" json:"hostname,omitempty"`
+	ObservedAt      string                 `protobuf:"bytes,4,opt,name=observed_at,json=observedAt,proto3" json:"observed_at,omitempty"`
+	InterfaceName   *string                `protobuf:"bytes,5,opt,name=interface_name,json=interfaceName,proto3,oneof" json:"interface_name,omitempty"`
+	IsRandomized    bool                   `protobuf:"varint,6,opt,name=is_randomized,json=isRandomized,proto3" json:"is_randomized,omitempty"`
+	DhcpVendorClass *string                `protobuf:"bytes,7,opt,name=dhcp_vendor_class,json=dhcpVendorClass,proto3,oneof" json:"dhcp_vendor_class,omitempty"`
+	DhcpPrlHash     *string                `protobuf:"bytes,8,opt,name=dhcp_prl_hash,json=dhcpPrlHash,proto3,oneof" json:"dhcp_prl_hash,omitempty"`
+	DhcpHostname    *string                `protobuf:"bytes,9,opt,name=dhcp_hostname,json=dhcpHostname,proto3,oneof" json:"dhcp_hostname,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *AuthorizedClientObserved) Reset() {
+	*x = AuthorizedClientObserved{}
+	mi := &file_router_agent_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AuthorizedClientObserved) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuthorizedClientObserved) ProtoMessage() {}
+
+func (x *AuthorizedClientObserved) ProtoReflect() protoreflect.Message {
+	mi := &file_router_agent_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuthorizedClientObserved.ProtoReflect.Descriptor instead.
+func (*AuthorizedClientObserved) Descriptor() ([]byte, []int) {
+	return file_router_agent_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *AuthorizedClientObserved) GetMacAddress() string {
+	if x != nil {
+		return x.MacAddress
+	}
+	return ""
+}
+
+func (x *AuthorizedClientObserved) GetIpAddresses() []string {
+	if x != nil {
+		return x.IpAddresses
+	}
+	return nil
+}
+
+func (x *AuthorizedClientObserved) GetHostname() string {
+	if x != nil && x.Hostname != nil {
+		return *x.Hostname
+	}
+	return ""
+}
+
+func (x *AuthorizedClientObserved) GetObservedAt() string {
+	if x != nil {
+		return x.ObservedAt
+	}
+	return ""
+}
+
+func (x *AuthorizedClientObserved) GetInterfaceName() string {
+	if x != nil && x.InterfaceName != nil {
+		return *x.InterfaceName
+	}
+	return ""
+}
+
+func (x *AuthorizedClientObserved) GetIsRandomized() bool {
+	if x != nil {
+		return x.IsRandomized
+	}
+	return false
+}
+
+func (x *AuthorizedClientObserved) GetDhcpVendorClass() string {
+	if x != nil && x.DhcpVendorClass != nil {
+		return *x.DhcpVendorClass
+	}
+	return ""
+}
+
+func (x *AuthorizedClientObserved) GetDhcpPrlHash() string {
+	if x != nil && x.DhcpPrlHash != nil {
+		return *x.DhcpPrlHash
+	}
+	return ""
+}
+
+func (x *AuthorizedClientObserved) GetDhcpHostname() string {
+	if x != nil && x.DhcpHostname != nil {
+		return *x.DhcpHostname
+	}
+	return ""
+}
+
 type CommandAck struct {
 	state   protoimpl.MessageState `protogen:"open.v1"`
 	Id      string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -605,16 +753,19 @@ type CommandAck struct {
 	// Present only when success=false.
 	ErrorMessage *string `protobuf:"bytes,3,opt,name=error_message,json=errorMessage,proto3,oneof" json:"error_message,omitempty"`
 	// success=true with mac_address and hostname unset indicates client not found
-	MacAddress    *string          `protobuf:"bytes,4,opt,name=mac_address,json=macAddress,proto3,oneof" json:"mac_address,omitempty"`
-	Hostname      *string          `protobuf:"bytes,5,opt,name=hostname,proto3,oneof" json:"hostname,omitempty"`
-	Clients       []*NetworkClient `protobuf:"bytes,6,rep,name=clients,proto3" json:"clients,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	MacAddress      *string          `protobuf:"bytes,4,opt,name=mac_address,json=macAddress,proto3,oneof" json:"mac_address,omitempty"`
+	Hostname        *string          `protobuf:"bytes,5,opt,name=hostname,proto3,oneof" json:"hostname,omitempty"`
+	Clients         []*NetworkClient `protobuf:"bytes,6,rep,name=clients,proto3" json:"clients,omitempty"`
+	DhcpVendorClass *string          `protobuf:"bytes,7,opt,name=dhcp_vendor_class,json=dhcpVendorClass,proto3,oneof" json:"dhcp_vendor_class,omitempty"`
+	DhcpPrlHash     *string          `protobuf:"bytes,8,opt,name=dhcp_prl_hash,json=dhcpPrlHash,proto3,oneof" json:"dhcp_prl_hash,omitempty"`
+	DhcpHostname    *string          `protobuf:"bytes,9,opt,name=dhcp_hostname,json=dhcpHostname,proto3,oneof" json:"dhcp_hostname,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *CommandAck) Reset() {
 	*x = CommandAck{}
-	mi := &file_router_agent_proto_msgTypes[9]
+	mi := &file_router_agent_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -626,7 +777,7 @@ func (x *CommandAck) String() string {
 func (*CommandAck) ProtoMessage() {}
 
 func (x *CommandAck) ProtoReflect() protoreflect.Message {
-	mi := &file_router_agent_proto_msgTypes[9]
+	mi := &file_router_agent_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -639,7 +790,7 @@ func (x *CommandAck) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandAck.ProtoReflect.Descriptor instead.
 func (*CommandAck) Descriptor() ([]byte, []int) {
-	return file_router_agent_proto_rawDescGZIP(), []int{9}
+	return file_router_agent_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *CommandAck) GetId() string {
@@ -684,14 +835,36 @@ func (x *CommandAck) GetClients() []*NetworkClient {
 	return nil
 }
 
+func (x *CommandAck) GetDhcpVendorClass() string {
+	if x != nil && x.DhcpVendorClass != nil {
+		return *x.DhcpVendorClass
+	}
+	return ""
+}
+
+func (x *CommandAck) GetDhcpPrlHash() string {
+	if x != nil && x.DhcpPrlHash != nil {
+		return *x.DhcpPrlHash
+	}
+	return ""
+}
+
+func (x *CommandAck) GetDhcpHostname() string {
+	if x != nil && x.DhcpHostname != nil {
+		return *x.DhcpHostname
+	}
+	return ""
+}
+
 var File_router_agent_proto protoreflect.FileDescriptor
 
 const file_router_agent_proto_rawDesc = "" +
 	"\n" +
-	"\x12router_agent.proto\x12.cz.grimir.wifimanager.captive.routeragent.grpc\"\xd0\x01\n" +
+	"\x12router_agent.proto\x12.cz.grimir.wifimanager.captive.routeragent.grpc\"\xdb\x02\n" +
 	"\x12RouterAgentMessage\x12_\n" +
 	"\vsynchronize\x18\x01 \x01(\v2;.cz.grimir.wifimanager.captive.routeragent.grpc.SynchronizeH\x00R\vsynchronize\x12N\n" +
-	"\x03ack\x18\x02 \x01(\v2:.cz.grimir.wifimanager.captive.routeragent.grpc.CommandAckH\x00R\x03ackB\t\n" +
+	"\x03ack\x18\x02 \x01(\v2:.cz.grimir.wifimanager.captive.routeragent.grpc.CommandAckH\x00R\x03ack\x12\x88\x01\n" +
+	"\x1aauthorized_client_observed\x18\x03 \x01(\v2H.cz.grimir.wifimanager.captive.routeragent.grpc.AuthorizedClientObservedH\x00R\x18authorizedClientObservedB\t\n" +
 	"\amessage\"\xe2\x04\n" +
 	"\x12RouterAgentCommand\x12g\n" +
 	"\x0fget_client_info\x18\x01 \x01(\v2=.cz.grimir.wifimanager.captive.routeragent.grpc.GetClientInfoH\x00R\rgetClientInfo\x12s\n" +
@@ -716,14 +889,37 @@ const file_router_agent_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12#\n" +
 	"\rmac_addresses\x18\x02 \x03(\tR\fmacAddresses\"$\n" +
 	"\x12ListNetworkClients\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\x9b\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xd9\x02\n" +
 	"\rNetworkClient\x12\x1f\n" +
 	"\vmac_address\x18\x01 \x01(\tR\n" +
 	"macAddress\x12!\n" +
 	"\fip_addresses\x18\x02 \x03(\tR\vipAddresses\x12\x1f\n" +
 	"\bhostname\x18\x03 \x01(\tH\x00R\bhostname\x88\x01\x01\x12\x18\n" +
-	"\aallowed\x18\x04 \x01(\bR\aallowedB\v\n" +
-	"\t_hostname\"\xaf\x02\n" +
+	"\aallowed\x18\x04 \x01(\bR\aallowed\x12/\n" +
+	"\x11dhcp_vendor_class\x18\x05 \x01(\tH\x01R\x0fdhcpVendorClass\x88\x01\x01\x12'\n" +
+	"\rdhcp_prl_hash\x18\x06 \x01(\tH\x02R\vdhcpPrlHash\x88\x01\x01\x12(\n" +
+	"\rdhcp_hostname\x18\a \x01(\tH\x03R\fdhcpHostname\x88\x01\x01B\v\n" +
+	"\t_hostnameB\x14\n" +
+	"\x12_dhcp_vendor_classB\x10\n" +
+	"\x0e_dhcp_prl_hashB\x10\n" +
+	"\x0e_dhcp_hostname\"\xcf\x03\n" +
+	"\x18AuthorizedClientObserved\x12\x1f\n" +
+	"\vmac_address\x18\x01 \x01(\tR\n" +
+	"macAddress\x12!\n" +
+	"\fip_addresses\x18\x02 \x03(\tR\vipAddresses\x12\x1f\n" +
+	"\bhostname\x18\x03 \x01(\tH\x00R\bhostname\x88\x01\x01\x12\x1f\n" +
+	"\vobserved_at\x18\x04 \x01(\tR\n" +
+	"observedAt\x12*\n" +
+	"\x0einterface_name\x18\x05 \x01(\tH\x01R\rinterfaceName\x88\x01\x01\x12#\n" +
+	"\ris_randomized\x18\x06 \x01(\bR\fisRandomized\x12/\n" +
+	"\x11dhcp_vendor_class\x18\a \x01(\tH\x02R\x0fdhcpVendorClass\x88\x01\x01\x12'\n" +
+	"\rdhcp_prl_hash\x18\b \x01(\tH\x03R\vdhcpPrlHash\x88\x01\x01\x12(\n" +
+	"\rdhcp_hostname\x18\t \x01(\tH\x04R\fdhcpHostname\x88\x01\x01B\v\n" +
+	"\t_hostnameB\x11\n" +
+	"\x0f_interface_nameB\x14\n" +
+	"\x12_dhcp_vendor_classB\x10\n" +
+	"\x0e_dhcp_prl_hashB\x10\n" +
+	"\x0e_dhcp_hostname\"\xed\x03\n" +
 	"\n" +
 	"CommandAck\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
@@ -732,10 +928,16 @@ const file_router_agent_proto_rawDesc = "" +
 	"\vmac_address\x18\x04 \x01(\tH\x01R\n" +
 	"macAddress\x88\x01\x01\x12\x1f\n" +
 	"\bhostname\x18\x05 \x01(\tH\x02R\bhostname\x88\x01\x01\x12W\n" +
-	"\aclients\x18\x06 \x03(\v2=.cz.grimir.wifimanager.captive.routeragent.grpc.NetworkClientR\aclientsB\x10\n" +
+	"\aclients\x18\x06 \x03(\v2=.cz.grimir.wifimanager.captive.routeragent.grpc.NetworkClientR\aclients\x12/\n" +
+	"\x11dhcp_vendor_class\x18\a \x01(\tH\x03R\x0fdhcpVendorClass\x88\x01\x01\x12'\n" +
+	"\rdhcp_prl_hash\x18\b \x01(\tH\x04R\vdhcpPrlHash\x88\x01\x01\x12(\n" +
+	"\rdhcp_hostname\x18\t \x01(\tH\x05R\fdhcpHostname\x88\x01\x01B\x10\n" +
 	"\x0e_error_messageB\x0e\n" +
 	"\f_mac_addressB\v\n" +
-	"\t_hostname2\xac\x01\n" +
+	"\t_hostnameB\x14\n" +
+	"\x12_dhcp_vendor_classB\x10\n" +
+	"\x0e_dhcp_prl_hashB\x10\n" +
+	"\x0e_dhcp_hostname2\xac\x01\n" +
 	"\x12RouterAgentService\x12\x95\x01\n" +
 	"\aConnect\x12B.cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage\x1aB.cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand(\x010\x01B\xe2\x02\n" +
 	"2com.cz.grimir.wifimanager.captive.routeragent.grpcB\x10RouterAgentProtoP\x01Z:github.com/wifi-manager/routeragent/internal/routeragentpb\xa2\x02\x06CGWCRG\xaa\x02.Cz.Grimir.Wifimanager.Captive.Routeragent.Grpc\xca\x02.Cz\\Grimir\\Wifimanager\\Captive\\Routeragent\\Grpc\xe2\x02:Cz\\Grimir\\Wifimanager\\Captive\\Routeragent\\Grpc\\GPBMetadata\xea\x023Cz::Grimir::Wifimanager::Captive::Routeragent::Grpcb\x06proto3"
@@ -752,35 +954,37 @@ func file_router_agent_proto_rawDescGZIP() []byte {
 	return file_router_agent_proto_rawDescData
 }
 
-var file_router_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_router_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_router_agent_proto_goTypes = []any{
-	(*RouterAgentMessage)(nil), // 0: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage
-	(*RouterAgentCommand)(nil), // 1: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand
-	(*Synchronize)(nil),        // 2: cz.grimir.wifimanager.captive.routeragent.grpc.Synchronize
-	(*GetClientInfo)(nil),      // 3: cz.grimir.wifimanager.captive.routeragent.grpc.GetClientInfo
-	(*AllowClientAccess)(nil),  // 4: cz.grimir.wifimanager.captive.routeragent.grpc.AllowClientAccess
-	(*RevokeClientAccess)(nil), // 5: cz.grimir.wifimanager.captive.routeragent.grpc.RevokeClientAccess
-	(*SetAllowedClients)(nil),  // 6: cz.grimir.wifimanager.captive.routeragent.grpc.SetAllowedClients
-	(*ListNetworkClients)(nil), // 7: cz.grimir.wifimanager.captive.routeragent.grpc.ListNetworkClients
-	(*NetworkClient)(nil),      // 8: cz.grimir.wifimanager.captive.routeragent.grpc.NetworkClient
-	(*CommandAck)(nil),         // 9: cz.grimir.wifimanager.captive.routeragent.grpc.CommandAck
+	(*RouterAgentMessage)(nil),       // 0: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage
+	(*RouterAgentCommand)(nil),       // 1: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand
+	(*Synchronize)(nil),              // 2: cz.grimir.wifimanager.captive.routeragent.grpc.Synchronize
+	(*GetClientInfo)(nil),            // 3: cz.grimir.wifimanager.captive.routeragent.grpc.GetClientInfo
+	(*AllowClientAccess)(nil),        // 4: cz.grimir.wifimanager.captive.routeragent.grpc.AllowClientAccess
+	(*RevokeClientAccess)(nil),       // 5: cz.grimir.wifimanager.captive.routeragent.grpc.RevokeClientAccess
+	(*SetAllowedClients)(nil),        // 6: cz.grimir.wifimanager.captive.routeragent.grpc.SetAllowedClients
+	(*ListNetworkClients)(nil),       // 7: cz.grimir.wifimanager.captive.routeragent.grpc.ListNetworkClients
+	(*NetworkClient)(nil),            // 8: cz.grimir.wifimanager.captive.routeragent.grpc.NetworkClient
+	(*AuthorizedClientObserved)(nil), // 9: cz.grimir.wifimanager.captive.routeragent.grpc.AuthorizedClientObserved
+	(*CommandAck)(nil),               // 10: cz.grimir.wifimanager.captive.routeragent.grpc.CommandAck
 }
 var file_router_agent_proto_depIdxs = []int32{
-	2, // 0: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage.synchronize:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.Synchronize
-	9, // 1: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage.ack:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.CommandAck
-	3, // 2: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.get_client_info:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.GetClientInfo
-	4, // 3: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.allow_client_access:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.AllowClientAccess
-	5, // 4: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.revoke_client_access:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.RevokeClientAccess
-	6, // 5: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.set_allowed_clients:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.SetAllowedClients
-	7, // 6: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.list_network_clients:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.ListNetworkClients
-	8, // 7: cz.grimir.wifimanager.captive.routeragent.grpc.CommandAck.clients:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.NetworkClient
-	0, // 8: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentService.Connect:input_type -> cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage
-	1, // 9: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentService.Connect:output_type -> cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand
-	9, // [9:10] is the sub-list for method output_type
-	8, // [8:9] is the sub-list for method input_type
-	8, // [8:8] is the sub-list for extension type_name
-	8, // [8:8] is the sub-list for extension extendee
-	0, // [0:8] is the sub-list for field type_name
+	2,  // 0: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage.synchronize:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.Synchronize
+	10, // 1: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage.ack:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.CommandAck
+	9,  // 2: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage.authorized_client_observed:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.AuthorizedClientObserved
+	3,  // 3: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.get_client_info:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.GetClientInfo
+	4,  // 4: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.allow_client_access:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.AllowClientAccess
+	5,  // 5: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.revoke_client_access:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.RevokeClientAccess
+	6,  // 6: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.set_allowed_clients:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.SetAllowedClients
+	7,  // 7: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.list_network_clients:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.ListNetworkClients
+	8,  // 8: cz.grimir.wifimanager.captive.routeragent.grpc.CommandAck.clients:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.NetworkClient
+	0,  // 9: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentService.Connect:input_type -> cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage
+	1,  // 10: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentService.Connect:output_type -> cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand
+	10, // [10:11] is the sub-list for method output_type
+	9,  // [9:10] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_router_agent_proto_init() }
@@ -791,6 +995,7 @@ func file_router_agent_proto_init() {
 	file_router_agent_proto_msgTypes[0].OneofWrappers = []any{
 		(*RouterAgentMessage_Synchronize)(nil),
 		(*RouterAgentMessage_Ack)(nil),
+		(*RouterAgentMessage_AuthorizedClientObserved)(nil),
 	}
 	file_router_agent_proto_msgTypes[1].OneofWrappers = []any{
 		(*RouterAgentCommand_GetClientInfo)(nil),
@@ -801,13 +1006,14 @@ func file_router_agent_proto_init() {
 	}
 	file_router_agent_proto_msgTypes[8].OneofWrappers = []any{}
 	file_router_agent_proto_msgTypes[9].OneofWrappers = []any{}
+	file_router_agent_proto_msgTypes[10].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_router_agent_proto_rawDesc), len(file_router_agent_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

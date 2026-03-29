@@ -8,9 +8,12 @@ dependencies {
 
     implementation(project(":captive:core"))
 
+    implementation(libs.springBootStarter)
     implementation(libs.bundles.springContextTx)
+    implementation(libs.bundles.jackson)
 
     implementation(libs.kotlinLogging)
+    implementation(libs.yauaa)
 
     testImplementation(platform(libs.junitBom))
     testImplementation(libs.bundles.testBase)

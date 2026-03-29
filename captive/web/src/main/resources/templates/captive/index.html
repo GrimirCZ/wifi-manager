@@ -153,6 +153,20 @@
           </p>
         </div>
 
+        <div class="captive-card" th:if="${deviceVerificationRequired == true}">
+          <div class="alert alert-warning" role="alert">
+            <div class="font-semibold" th:text="#{captive.verification.title}">
+              Please sign in again
+            </div>
+            <div class="text-sm" th:text="#{captive.verification.body}">
+              We noticed this device no longer matches its last verified sign-in, so we paused access and need you to sign in again.
+            </div>
+            <div class="text-sm" th:text="#{captive.verification.helper}">
+              This can happen after a device, browser, or network setting changes.
+            </div>
+          </div>
+        </div>
+
         <!-- Access code form -->
         <form class="captive-card space-y-5"
             th:action="@{/captive}"
