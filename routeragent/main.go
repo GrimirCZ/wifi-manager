@@ -21,6 +21,15 @@ import (
 )
 
 var grpcRun func(context.Context, config.Config, grpcclient.CommandHandler) error = grpcclient.Run
+var newIPProvider = func(ctx context.Context, cfg config.Config) ipmapping.Provider {
+	return ipmapping.New(ctx, cfg)
+}
+var newHostnameProvider = func(ctx context.Context, path string) hostname.Provider {
+	return hostname.NewDnsmasqProvider(ctx, path)
+}
+var newDHCPFingerprintProvider = func(ctx context.Context, cfg config.Config) (dhcpfingerprint.Provider, error) {
+	return dhcpfingerprint.New(cfg, ctx)
+}
 
 func main() {
 	cfg, err := config.Load()
@@ -44,9 +53,12 @@ func main() {
 func run(ctx context.Context, cfg config.Config, firewallBackend firewall.Backend, logger *log.Logger) error {
 	logger.Printf("firewall backend: %s", firewallBackend)
 
-	ipProvider := ipmapping.New(ctx, cfg)
-	hostnameProvider := hostname.NewDnsmasqProvider(ctx, cfg.DnsmasqLeasesPath)
-	dhcpFingerprintProvider := dhcpfingerprint.NewDnsmasqProvider(ctx, cfg.DnsmasqDHCPLogPath)
+	ipProvider := newIPProvider(ctx, cfg)
+	hostnameProvider := newHostnameProvider(ctx, cfg.DnsmasqLeasesPath)
+	dhcpFingerprintProvider, err := newDHCPFingerprintProvider(ctx, cfg)
+	if err != nil {
+		return errRuntime("dhcp fingerprint provider", err)
+	}
 	allowedIPs := allowedip.NewMemoryRepository()
 	routerAgent := agent.New(firewallBackend, ipProvider, hostnameProvider, allowedIPs, dhcpFingerprintProvider, cfg.ActionTimeout)
 	startObservedStateDumpOnSignal(ctx, ipProvider, hostnameProvider, dhcpFingerprintProvider)
@@ -79,8 +91,14 @@ func run(ctx context.Context, cfg config.Config, firewallBackend firewall.Backen
 		return errRuntime("hostname provider", err)
 	}
 
-	if err := dhcpFingerprintProvider.Start(); err != nil {
-		return errRuntime("dhcp fingerprint provider", err)
+	// Force one post-bootstrap snapshot read before DHCP log replay starts.
+	_ = ipProvider.ListClients()
+
+	if dhcpFingerprintProvider != nil {
+		logger.Print(dhcpFingerprintProviderStartupMessage(cfg))
+		if err := dhcpFingerprintProvider.Start(); err != nil {
+			return errRuntime("dhcp fingerprint provider", err)
+		}
 	}
 
 	if cfg.ObserveMode {
@@ -100,6 +118,17 @@ func run(ctx context.Context, cfg config.Config, firewallBackend firewall.Backen
 
 func errRuntime(component string, err error) error {
 	return &runtimeError{component: component, err: err}
+}
+
+func dhcpFingerprintProviderStartupMessage(cfg config.Config) string {
+	switch cfg.DnsmasqDHCPSource {
+	case "file":
+		return "starting dhcp fingerprint provider source=file path=" + cfg.DnsmasqDHCPLogPath
+	case "journald":
+		return "starting dhcp fingerprint provider source=journald unit=" + cfg.DnsmasqDHCPJournalUnit
+	default:
+		return "starting dhcp fingerprint provider source=disabled"
+	}
 }
 
 func startObservedStateDumpOnSignal(

@@ -4,43 +4,64 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/GrimirCZ/wifi-manager/routeragent/internal/dnsmasqfile"
+	"github.com/GrimirCZ/wifi-manager/routeragent/internal/config"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/normalize"
 )
 
-type DnsmasqProvider struct {
+type dnsmasqProvider struct {
 	ctx                  context.Context
-	logPath              string
 	store                *store
 	transactions         map[string]*transactionObservation
 	lastTransactionByMAC map[string]string
 	now                  func() time.Time
+	source               lineSource
 }
 
-func NewDnsmasqProvider(ctx context.Context, logPath string) *DnsmasqProvider {
-	return &DnsmasqProvider{
+func New(cfg config.Config, ctx context.Context) (Provider, error) {
+	switch cfg.DnsmasqDHCPSource {
+	case "":
+		return nil, nil
+	case "file":
+		return NewDnsmasqProvider(ctx, cfg.DnsmasqDHCPLogPath), nil
+	case "journald":
+		return NewJournaldProvider(ctx, cfg.DnsmasqDHCPJournalUnit), nil
+	default:
+		return nil, fmt.Errorf("unsupported DHCP fingerprint source: %s", cfg.DnsmasqDHCPSource)
+	}
+}
+
+func NewDnsmasqProvider(ctx context.Context, logPath string) *dnsmasqProvider {
+	return newProvider(ctx, newFileLineSource(logPath))
+}
+
+func NewJournaldProvider(ctx context.Context, unit string) *dnsmasqProvider {
+	return newProvider(ctx, newJournalctlLineSource(unit))
+}
+
+func newProvider(ctx context.Context, source lineSource) *dnsmasqProvider {
+	return &dnsmasqProvider{
 		ctx:                  ctx,
-		logPath:              logPath,
 		store:                newStore(),
 		transactions:         make(map[string]*transactionObservation),
 		lastTransactionByMAC: make(map[string]string),
 		now:                  time.Now,
+		source:               source,
 	}
 }
 
-func (d *DnsmasqProvider) Start() error {
-	if strings.TrimSpace(d.logPath) == "" {
+func (d *dnsmasqProvider) Start() error {
+	if d.source == nil {
 		return nil
 	}
-
-	return dnsmasqfile.FollowLines(d.ctx, d.logPath, d.consumeLine)
+	return d.source.Start(d.ctx, d.consumeLine)
 }
 
-func (d *DnsmasqProvider) LookupByMAC(mac string) (Observation, bool) {
+func (d *dnsmasqProvider) LookupByMAC(mac string) (Observation, bool) {
 	return d.store.lookup(strings.ToLower(strings.TrimSpace(mac)))
 }
 
@@ -48,7 +69,7 @@ var macPattern = regexp.MustCompile(`(?i)([0-9a-f]{2}(?::[0-9a-f]{2}){5})`)
 var transactionPattern = regexp.MustCompile(`^(?:.*dnsmasq-dhcp\[[0-9]+\]:\s+)?([0-9]+)\b`)
 var optionPrefixPattern = regexp.MustCompile(`^\s*(\d+)`)
 
-func (d *DnsmasqProvider) consumeLine(line string) {
+func (d *dnsmasqProvider) consumeLine(line string) {
 	line = strings.TrimSpace(line)
 	if line == "" {
 		return
@@ -72,7 +93,7 @@ func (d *DnsmasqProvider) consumeLine(line string) {
 		tx.prlOptions = append(tx.prlOptions, extractRequestedOptionNumbers(value)...)
 		tx.observation.PRLHash = hashOrderedList(tx.prlOptions)
 	}
-	if value, ok := extractValueAfter(lower, []string{"hostname:", "client-hostname:"}); ok {
+	if value, ok := extractValueAfter(lower, []string{"hostname:", "client-hostname:", "client provides name:"}); ok {
 		tx.observation.Hostname = strings.Trim(value, `" `)
 	}
 
@@ -139,7 +160,7 @@ func hashOrderedList(values []string) string {
 	return hex.EncodeToString(sum[:])
 }
 
-func (d *DnsmasqProvider) transaction(
+func (d *dnsmasqProvider) transaction(
 	txid string,
 	now time.Time,
 ) *transactionObservation {
@@ -152,7 +173,7 @@ func (d *DnsmasqProvider) transaction(
 	return tx
 }
 
-func (d *DnsmasqProvider) cleanupTransactions(now time.Time) {
+func (d *dnsmasqProvider) cleanupTransactions(now time.Time) {
 	for txid, tx := range d.transactions {
 		if now.Sub(tx.lastUpdatedAt) <= transactionTTL {
 			continue

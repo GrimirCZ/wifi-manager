@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -145,11 +146,83 @@ func TestRunNormalModeInvokesGrpcRunner(t *testing.T) {
 	}
 }
 
+func TestRunStartsDHCPAfterInitialClientSnapshotRead(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	originalGrpcRun := grpcRun
+	originalNewIPProvider := newIPProvider
+	originalNewHostnameProvider := newHostnameProvider
+	originalNewDHCPFingerprintProvider := newDHCPFingerprintProvider
+	defer func() {
+		grpcRun = originalGrpcRun
+		newIPProvider = originalNewIPProvider
+		newHostnameProvider = originalNewHostnameProvider
+		newDHCPFingerprintProvider = originalNewDHCPFingerprintProvider
+	}()
+
+	var (
+		mu     sync.Mutex
+		events []string
+	)
+	record := func(event string) {
+		mu.Lock()
+		defer mu.Unlock()
+		events = append(events, event)
+	}
+
+	ipProvider := &stubIPMappingProvider{
+		clients: []ipmapping.ClientView{
+			{MAC: "00:11:22:33:44:55", IPs: []string{"192.0.2.10"}},
+		},
+		onStart:       func() { record("ip-start") },
+		onListClients: func() { record("ip-list") },
+	}
+	dhcpProvider := &stubDHCPFingerprintProvider{
+		onStart: func() { record("dhcp-start") },
+	}
+
+	newIPProvider = func(ctx context.Context, cfg config.Config) ipmapping.Provider {
+		record("dhcp-factory-prep")
+		return ipProvider
+	}
+	newHostnameProvider = func(ctx context.Context, path string) hostname.Provider {
+		return &stubHostnameProvider{}
+	}
+	newDHCPFingerprintProvider = func(ctx context.Context, cfg config.Config) (dhcpfingerprint.Provider, error) {
+		record("dhcp-factory")
+		return dhcpProvider, nil
+	}
+	grpcRun = func(ctx context.Context, cfg config.Config, handler grpcclient.CommandHandler) error {
+		record("grpc")
+		return nil
+	}
+
+	err := run(ctx, config.Config{
+		GrpcTarget:        "localhost:9091",
+		DnsmasqDHCPSource: "journald",
+		DummyMode:         true,
+	}, firewall.NewDummyBackend(), testLogger())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	want := []string{"dhcp-factory-prep", "dhcp-factory", "ip-start", "ip-list", "dhcp-start", "grpc"}
+	if !reflect.DeepEqual(events, want) {
+		t.Fatalf("unexpected startup order: %#v", events)
+	}
+}
+
 type stubIPMappingProvider struct {
-	clients []ipmapping.ClientView
+	clients       []ipmapping.ClientView
+	onStart       func()
+	onListClients func()
 }
 
 func (s *stubIPMappingProvider) Start() error {
+	if s.onStart != nil {
+		s.onStart()
+	}
 	return nil
 }
 
@@ -166,6 +239,9 @@ func (s *stubIPMappingProvider) IPsForMAC(mac string) []string {
 }
 
 func (s *stubIPMappingProvider) ListClients() []ipmapping.ClientView {
+	if s.onListClients != nil {
+		s.onListClients()
+	}
 	return append([]ipmapping.ClientView(nil), s.clients...)
 }
 
@@ -190,9 +266,13 @@ var _ hostname.Provider = (*stubHostnameProvider)(nil)
 
 type stubDHCPFingerprintProvider struct {
 	observations map[string]dhcpfingerprint.Observation
+	onStart      func()
 }
 
 func (s *stubDHCPFingerprintProvider) Start() error {
+	if s.onStart != nil {
+		s.onStart()
+	}
 	return nil
 }
 

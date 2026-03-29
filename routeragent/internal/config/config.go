@@ -9,25 +9,27 @@ import (
 )
 
 type Config struct {
-	GrpcTarget         string
-	ManagedInterfaces  []string
-	ObserveMode        bool
-	TLSEnabled         bool
-	TLSCAFile          string
-	TLSCertFile        string
-	TLSKeyFile         string
-	TLSServerName      string
-	DummyMode          bool
-	NftFamily          string
-	NftTable           string
-	NftSetV4           string
-	NftSetV6           string
-	DnsmasqLeasesPath  string
-	DnsmasqDHCPLogPath string
-	ReconnectDelay     time.Duration
-	ActionTimeout      time.Duration
-	SyncInterval       time.Duration
-	ReconcileInterval  time.Duration
+	GrpcTarget             string
+	ManagedInterfaces      []string
+	ObserveMode            bool
+	TLSEnabled             bool
+	TLSCAFile              string
+	TLSCertFile            string
+	TLSKeyFile             string
+	TLSServerName          string
+	DummyMode              bool
+	NftFamily              string
+	NftTable               string
+	NftSetV4               string
+	NftSetV6               string
+	DnsmasqLeasesPath      string
+	DnsmasqDHCPSource      string
+	DnsmasqDHCPLogPath     string
+	DnsmasqDHCPJournalUnit string
+	ReconnectDelay         time.Duration
+	ActionTimeout          time.Duration
+	SyncInterval           time.Duration
+	ReconcileInterval      time.Duration
 }
 
 func Load() (Config, error) {
@@ -46,8 +48,12 @@ func Load() (Config, error) {
 		NftSetV4:          strings.TrimSpace(os.Getenv("ROUTERAGENT_NFT_SET_V4")),
 		NftSetV6:          strings.TrimSpace(os.Getenv("ROUTERAGENT_NFT_SET_V6")),
 		DnsmasqLeasesPath: strings.TrimSpace(os.Getenv("ROUTERAGENT_DNSMASQ_LEASES_PATH")),
+		DnsmasqDHCPSource: strings.TrimSpace(os.Getenv("ROUTERAGENT_DNSMASQ_DHCP_SOURCE")),
 		DnsmasqDHCPLogPath: strings.TrimSpace(
 			os.Getenv("ROUTERAGENT_DNSMASQ_DHCP_LOG_PATH"),
+		),
+		DnsmasqDHCPJournalUnit: strings.TrimSpace(
+			os.Getenv("ROUTERAGENT_DNSMASQ_DHCP_JOURNAL_UNIT"),
 		),
 		ReconnectDelay:    envDuration("ROUTERAGENT_GRPC_RECONNECT_DELAY", 3*time.Second),
 		ActionTimeout:     envDuration("ROUTERAGENT_ACTION_TIMEOUT", 5*time.Second),
@@ -63,6 +69,20 @@ func Load() (Config, error) {
 		if cfg.TLSCAFile == "" || cfg.TLSCertFile == "" || cfg.TLSKeyFile == "" {
 			return cfg, fmt.Errorf("ROUTERAGENT_TLS_CA_FILE, ROUTERAGENT_TLS_CERT_FILE, and ROUTERAGENT_TLS_KEY_FILE are required when TLS is enabled")
 		}
+	}
+
+	switch cfg.DnsmasqDHCPSource {
+	case "":
+	case "journald":
+		if cfg.DnsmasqDHCPJournalUnit == "" {
+			return cfg, fmt.Errorf("ROUTERAGENT_DNSMASQ_DHCP_JOURNAL_UNIT is required when ROUTERAGENT_DNSMASQ_DHCP_SOURCE=journald")
+		}
+	case "file":
+		if cfg.DnsmasqDHCPLogPath == "" {
+			return cfg, fmt.Errorf("ROUTERAGENT_DNSMASQ_DHCP_LOG_PATH is required when ROUTERAGENT_DNSMASQ_DHCP_SOURCE=file")
+		}
+	default:
+		return cfg, fmt.Errorf("ROUTERAGENT_DNSMASQ_DHCP_SOURCE must be one of: file, journald")
 	}
 
 	return cfg, nil
