@@ -4,6 +4,7 @@ import cz.grimir.wifimanager.captive.application.shared.port.CaptiveEventPublish
 import cz.grimir.wifimanager.shared.events.AuthorizationTokenRemovedEvent
 import cz.grimir.wifimanager.shared.events.ClientAccessRevokedEvent
 import cz.grimir.wifimanager.shared.events.DeviceAuthorizedEvent
+import cz.grimir.wifimanager.shared.events.DeviceFingerprintMismatchDetectedEvent
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceAuthorizedEvent
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceConnectedEvent
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceRemovedEvent
@@ -15,6 +16,10 @@ class SpringCaptiveEventPublisher(
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) : CaptiveEventPublisher {
     override fun publish(event: DeviceAuthorizedEvent) {
+        applicationEventPublisher.publishEvent(event)
+    }
+
+    override fun publish(event: DeviceFingerprintMismatchDetectedEvent) {
         applicationEventPublisher.publishEvent(event)
     }
 

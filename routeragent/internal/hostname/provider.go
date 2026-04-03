@@ -18,16 +18,10 @@ func newStore() *store {
 	}
 }
 
-func (s *store) update(entries map[string]string) {
+func (s *store) replace(entries map[string]string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	for ip, hostname := range entries {
-		if hostname == "" {
-			delete(s.ipToHostname, ip)
-			continue
-		}
-		s.ipToHostname[ip] = hostname
-	}
+	s.ipToHostname = entries
 }
 
 func (s *store) lookup(ip string) (string, bool) {

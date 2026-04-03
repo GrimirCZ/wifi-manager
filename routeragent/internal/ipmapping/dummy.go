@@ -8,7 +8,7 @@ type DummyProvider struct {
 
 func NewDummyProvider(ctx context.Context) *DummyProvider {
 	s := newStore(ctx, nil)
-	s.update("127.0.0.1", "00:00:00:00:00:00")
+	s.update("127.0.0.1", "00:00:00:00:00:00", "")
 	return &DummyProvider{store: s}
 }
 

@@ -4,6 +4,7 @@ import cz.grimir.wifimanager.captive.application.networkuser.handler.command.Ups
 import cz.grimir.wifimanager.captive.application.networkuser.handler.query.ResolveNetworkUserLimitUsecase
 import cz.grimir.wifimanager.captive.application.auth.port.UserAuthProvider
 import cz.grimir.wifimanager.captive.application.auth.model.UserCredentials
+import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.security.mvc.SessionUserIdentity
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
@@ -34,6 +35,7 @@ class CaptiveAuthSessionLoginHandler(
     fun login(
         credentials: UserCredentials,
         request: HttpServletRequest,
+        expectedUserId: UserId? = null,
     ): LdapLoginResult {
         if (authProvider == null) {
             logger.warn { "No UserAuthProvider configured, cannot authenticate user ${credentials.username}" }
@@ -44,6 +46,12 @@ class CaptiveAuthSessionLoginHandler(
         if (result == null) {
             logger.info { "User authentication failed for ${credentials.username}" }
             return LdapLoginResult(success = false, failureReason = LdapLoginFailureReason.INVALID_CREDENTIALS)
+        }
+        if (expectedUserId != null && result.identity.userId != expectedUserId) {
+            logger.info {
+                "User authentication succeeded for ${credentials.username} but does not match reauth owner userId=${expectedUserId.id}"
+            }
+            return LdapLoginResult(success = false, failureReason = LdapLoginFailureReason.DEVICE_OWNERSHIP_MISMATCH)
         }
 
         val networkUser = upsertNetworkUserOnLoginUsecase.upsert(result.identity, result.allowedDeviceCount)
@@ -72,6 +80,6 @@ class CaptiveAuthSessionLoginHandler(
         val authentication = UsernamePasswordAuthenticationToken(result.identity, null, authorities)
         SecurityContextHolder.getContext().authentication = authentication
 
-        return LdapLoginResult(success = true)
+        return LdapLoginResult(success = true, userId = result.identity.userId)
     }
 }

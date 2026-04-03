@@ -20,6 +20,9 @@ data class DummyRouterAgentProperties(
     val defaultClientMacAddress: String = "00:00:00:00:00:00",
     val clientHostnameByIp: Map<String, String> = emptyMap(),
     val defaultClientHostname: String? = "dummy-device",
+    val defaultDhcpVendorClass: String? = null,
+    val defaultDhcpPrlHash: String? = null,
+    val defaultDhcpHostname: String? = null,
 )
 
 data class GrpcServerRouterAgentProperties(

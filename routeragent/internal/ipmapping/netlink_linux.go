@@ -70,7 +70,7 @@ func (n *NetlinkProvider) Start() error {
 				if !n.allowsLinkIndex(update.Neigh.LinkIndex) {
 					continue
 				}
-				event, ok := normalizeRawUpdate(update)
+				event, ok := normalizeRawUpdate(update, n.managedIfIndexes)
 				if !ok {
 					continue
 				}
@@ -116,7 +116,7 @@ func (n *NetlinkProvider) handleRawEvent(event rawEvent) {
 			state.applyDelete(event.IP)
 			return
 		}
-		state.applyUpsert(event.IP, event.MAC)
+		state.applyUpsert(event.IP, event.MAC, event.InterfaceName)
 	})
 }
 
@@ -135,7 +135,7 @@ func initialNeighborSnapshot(managedIfIndexes map[int]string) ([]rawEvent, error
 			if !allowsLinkIndexFromSet(managedIfIndexes, neigh.LinkIndex) {
 				continue
 			}
-			event, ok := normalizeNeighbor(neigh)
+			event, ok := normalizeNeighbor(neigh, managedIfIndexes)
 			if !ok || event.Deleted {
 				continue
 			}
@@ -146,16 +146,16 @@ func initialNeighborSnapshot(managedIfIndexes map[int]string) ([]rawEvent, error
 	return events, nil
 }
 
-func normalizeRawUpdate(update netlink.NeighUpdate) (rawEvent, bool) {
+func normalizeRawUpdate(update netlink.NeighUpdate, managedIfIndexes map[int]string) (rawEvent, bool) {
 	ip, ok := normalize.IPFromNet(update.Neigh.IP)
 	if !ok {
 		return rawEvent{}, false
 	}
 	if update.Type == unix.RTM_DELNEIGH {
-		return rawEvent{IP: ip, Deleted: true}, true
+		return rawEvent{IP: ip, InterfaceName: linkNameForIndex(update.Neigh.LinkIndex, managedIfIndexes), Deleted: true}, true
 	}
 	if !isLiveNeighborState(update.Neigh.State) {
-		return rawEvent{IP: ip, Deleted: true}, true
+		return rawEvent{IP: ip, InterfaceName: linkNameForIndex(update.Neigh.LinkIndex, managedIfIndexes), Deleted: true}, true
 	}
 
 	mac, ok := normalize.MACFromNet(update.Neigh.HardwareAddr)
@@ -163,12 +163,13 @@ func normalizeRawUpdate(update netlink.NeighUpdate) (rawEvent, bool) {
 		return rawEvent{}, false
 	}
 	return rawEvent{
-		IP:  ip,
-		MAC: mac,
+		IP:            ip,
+		MAC:           mac,
+		InterfaceName: linkNameForIndex(update.Neigh.LinkIndex, managedIfIndexes),
 	}, true
 }
 
-func normalizeNeighbor(neigh netlink.Neigh) (rawEvent, bool) {
+func normalizeNeighbor(neigh netlink.Neigh, managedIfIndexes map[int]string) (rawEvent, bool) {
 	ip, ok := normalize.IPFromNet(neigh.IP)
 	if !ok {
 		return rawEvent{}, false
@@ -181,9 +182,29 @@ func normalizeNeighbor(neigh netlink.Neigh) (rawEvent, bool) {
 		return rawEvent{}, false
 	}
 	return rawEvent{
-		IP:  ip,
-		MAC: mac,
+		IP:            ip,
+		MAC:           mac,
+		InterfaceName: linkNameForIndex(neigh.LinkIndex, managedIfIndexes),
 	}, true
+}
+
+func linkNameForIndex(linkIndex int, managedIfIndexes map[int]string) string {
+	if linkIndex == 0 {
+		return ""
+	}
+	if managedIfIndexes != nil {
+		if name, ok := managedIfIndexes[linkIndex]; ok {
+			return name
+		}
+	}
+	link, err := netlink.LinkByIndex(linkIndex)
+	if err != nil {
+		return ""
+	}
+	if attrs := link.Attrs(); attrs != nil {
+		return attrs.Name
+	}
+	return ""
 }
 
 func (n *NetlinkProvider) Updates() <-chan Update {

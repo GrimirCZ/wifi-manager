@@ -22,6 +22,12 @@ app:
 
 wifimanager:
   captive:
+    fingerprinting:
+      enabled: true
+      enforce-threshold: ${CAPTIVE_FINGERPRINTING_ENFORCE_THRESHOLD:70}
+      log-threshold: ${CAPTIVE_FINGERPRINTING_LOG_THRESHOLD:40}
+      trusted-proxy-enabled: ${CAPTIVE_FINGERPRINTING_TRUSTED_PROXY_ENABLED:true}
+      trusted-tls-header-name: ${CAPTIVE_FINGERPRINTING_TRUSTED_PROXY_HEADER_NAME:X-Device-Tls-Fingerprint}
     auth:
       google:
         enabled: ${GOOGLE_LDAP_CAPTIVE_ENABLED:false}

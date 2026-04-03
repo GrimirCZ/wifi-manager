@@ -20,6 +20,11 @@ type CommandHandler interface {
 	HandleCommand(ctx context.Context, stream *routeragentgrpc.Stream, cmd *routeragentpb.RouterAgentCommand) error
 }
 
+type streamLifecycleHandler interface {
+	OnStreamConnected(sender *routeragentgrpc.Stream)
+	OnStreamDisconnected(sender *routeragentgrpc.Stream)
+}
+
 func Run(ctx context.Context, cfg config.Config, handler CommandHandler) error {
 	dialOpts, err := buildDialOptions(cfg)
 	if err != nil {
@@ -58,6 +63,10 @@ func runOnce(ctx context.Context, cfg config.Config, handler CommandHandler, dia
 	stream, err := client.Connect(streamCtx)
 	if err != nil {
 		return err
+	}
+	if lifecycleHandler, ok := handler.(streamLifecycleHandler); ok {
+		lifecycleHandler.OnStreamConnected(stream)
+		defer lifecycleHandler.OnStreamDisconnected(stream)
 	}
 
 	closeDone := make(chan struct{})

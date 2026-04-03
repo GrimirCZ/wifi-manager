@@ -14,8 +14,7 @@ private val logger = KotlinLogging.logger {}
 
 @Component
 class CurrentClientArgumentResolver(
-    private val cache: CurrentClientIdentityCache,
-    private val routerAgentPort: RouterAgentPort,
+    private val currentClientResolver: CurrentClientResolver,
 ) : HandlerMethodArgumentResolver {
     override fun supportsParameter(parameter: MethodParameter): Boolean {
         val hasAnnotation = parameter.hasParameterAnnotation(CurrentClient::class.java)
@@ -33,21 +32,6 @@ class CurrentClientArgumentResolver(
             webRequest.getNativeRequest(HttpServletRequest::class.java)
                 ?: error("No HttpServletRequest")
 
-        return cache.getOrLoad(request) {
-            val ip = request.remoteAddr
-
-            val clientInfo = routerAgentPort.getClientInfo(ip)
-            if (clientInfo == null) {
-                logger.warn { "Could not find client info for $ip" }
-                error("Unable to identify client based on provided IP address")
-            }
-            // NOTE: improve user facing error handling?
-
-            ClientInfo(
-                ipAddress = ip,
-                macAddress = clientInfo.macAddress,
-                hostname = clientInfo.hostname,
-            )
-        }
+        return currentClientResolver.resolve(request)
     }
 }

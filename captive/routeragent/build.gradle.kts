@@ -8,10 +8,17 @@ plugins {
 
 dependencies {
     implementation(project(":shared:application"))
+    implementation(project(":captive:core"))
     implementation(project(":captive:application"))
     implementation(libs.springBootStarterWeb)
     implementation(libs.kotlinLogging)
     implementation(libs.bundles.grpc)
+
+    testImplementation(platform(libs.junitBom))
+    testImplementation(libs.bundles.testBase)
+    testImplementation(libs.bundles.testMockito)
+    testImplementation(libs.bundles.jackson)
+    testRuntimeOnly(libs.bundles.testRuntime)
 }
 
 protobuf {
@@ -30,4 +37,8 @@ protobuf {
             }
         }
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

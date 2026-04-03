@@ -44,7 +44,7 @@ class CaptiveDeviceController(
     ): String {
         val device = findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)
         if (device != null) {
-            return "redirect:/captive"
+            return if (device.reauthRequiredAt != null) "redirect:/captive/login" else "redirect:/captive"
         }
 
         val networkUser = findNetworkUserByUserIdUsecase.find(user.userId)
@@ -86,6 +86,9 @@ class CaptiveDeviceController(
     ): String {
         val existing = findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)
         if (existing != null) {
+            if (existing.reauthRequiredAt != null) {
+                return "redirect:/captive/login"
+            }
             bindingResult.reject("captive.device.error.already-authorized")
             return wizard(user, clientInfo, model)
         }
@@ -121,6 +124,7 @@ class CaptiveDeviceController(
                 name = resolvedName,
                 hostname = clientInfo.hostname,
                 isRandomized = MacAddressUtils.isLocallyAdministered(clientInfo.macAddress),
+                fingerprintProfile = clientInfo.fingerprintProfile,
             )
         } catch (ex: DeviceOwnershipException) {
             bindingResult.reject("captive.device.error.owned")

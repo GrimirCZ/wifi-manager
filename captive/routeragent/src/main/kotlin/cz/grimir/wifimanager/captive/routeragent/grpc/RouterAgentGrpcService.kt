@@ -2,6 +2,8 @@ package cz.grimir.wifimanager.captive.routeragent.grpc
 
 import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedClientFingerprintGuard
+import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -16,6 +18,8 @@ class RouterAgentGrpcService(
     private val hub: RouterAgentHub,
     private val findAuthorizationTokenPort: FindAuthorizationTokenPort,
     private val allowedMacReadPort: AllowedMacReadPort,
+    private val authorizedClientFingerprintGuard: AuthorizedClientFingerprintGuard,
+    private val deviceFingerprintService: DeviceFingerprintService,
     private val commandExecutor: TaskExecutor,
 ) : RouterAgentServiceGrpc.RouterAgentServiceImplBase() {
     override fun connect(responseObserver: StreamObserver<RouterAgentCommand>): StreamObserver<RouterAgentMessage> {
@@ -52,6 +56,32 @@ class RouterAgentGrpcService(
                                 is TaskRejectedException,
                                 is RejectedExecutionException,
                                     -> logger.error(ex) { "Failed to schedule allowed clients synchronization" }
+
+                                else -> throw ex
+                            }
+                        }
+                    }
+
+                    RouterAgentMessage.MessageCase.AUTHORIZED_CLIENT_OBSERVED -> {
+                        val observed = message.authorizedClientObserved
+                        try {
+                            commandExecutor.execute {
+                                authorizedClientFingerprintGuard.processAuthorizedClientObservation(
+                                    mac = observed.macAddress,
+                                    currentFingerprint =
+                                        deviceFingerprintService.createRouterObservation(
+                                            hostname = observed.hostname,
+                                            dhcpHostname = observed.dhcpHostname,
+                                            dhcpVendorClass = observed.dhcpVendorClass,
+                                            dhcpPrlHash = observed.dhcpPrlHash,
+                                        ),
+                                )
+                            }
+                        } catch (ex: RuntimeException) {
+                            when (ex) {
+                                is TaskRejectedException,
+                                is RejectedExecutionException,
+                                    -> logger.error(ex) { "Failed to schedule authorized client observation handling" }
 
                                 else -> throw ex
                             }

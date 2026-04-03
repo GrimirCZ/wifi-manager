@@ -14,9 +14,11 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     implementation(libs.bundles.springDataJpa)
+    implementation(libs.bundles.jackson)
 //    implementation("io.hypersistence:hypersistence-utils-hibernate-71:3.14.0")
 
     testImplementation(platform(libs.junitBom))
     testImplementation(libs.bundles.testBase)
+    testImplementation(libs.bundles.testMockito)
     testRuntimeOnly(libs.bundles.testRuntime)
 }

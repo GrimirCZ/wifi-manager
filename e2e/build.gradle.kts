@@ -2,6 +2,8 @@ group = "cz.grimir.wifimanager.e2e"
 
 dependencies {
     testImplementation(project(":app"))
+    testImplementation(project(":captive:application"))
+    testImplementation(project(":captive:core"))
 
     testImplementation(libs.playwright)
     testImplementation(libs.springBootStarterDataJpa)

@@ -9,9 +9,9 @@ import (
 func TestStoreListClientsGroupsAndOrdersEntries(t *testing.T) {
 	store := newStore(context.Background(), nil)
 
-	store.update("192.0.2.11", "aa:aa:aa:aa:aa:aa")
-	store.update("192.0.2.20", "bb:bb:bb:bb:bb:bb")
-	store.update("192.0.2.10", "aa:aa:aa:aa:aa:aa")
+	store.update("192.0.2.11", "aa:aa:aa:aa:aa:aa", "br-lan")
+	store.update("192.0.2.20", "bb:bb:bb:bb:bb:bb", "br-lan")
+	store.update("192.0.2.10", "aa:aa:aa:aa:aa:aa", "br-lan")
 
 	clients := store.listClients()
 	if len(clients) != 2 {
@@ -36,9 +36,9 @@ func TestStoreListClientsGroupsAndOrdersEntries(t *testing.T) {
 func TestStoreMoveAndDeleteKeepSnapshotsIsolated(t *testing.T) {
 	store := newStore(context.Background(), nil)
 
-	store.update("192.0.2.10", "aa:aa:aa:aa:aa:aa")
-	store.update("192.0.2.20", "bb:bb:bb:bb:bb:bb")
-	store.update("192.0.2.10", "bb:bb:bb:bb:bb:bb")
+	store.update("192.0.2.10", "aa:aa:aa:aa:aa:aa", "br-lan")
+	store.update("192.0.2.20", "bb:bb:bb:bb:bb:bb", "br-lan")
+	store.update("192.0.2.10", "bb:bb:bb:bb:bb:bb", "br-lan")
 
 	mac, ok := store.lookupMAC("192.0.2.10")
 	if !ok || mac != "bb:bb:bb:bb:bb:bb" {

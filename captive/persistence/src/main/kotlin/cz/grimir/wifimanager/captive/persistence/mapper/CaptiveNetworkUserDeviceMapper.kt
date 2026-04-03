@@ -1,12 +1,15 @@
 package cz.grimir.wifimanager.captive.persistence.mapper
 
+import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
 import cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.persistence.entity.NetworkUserDeviceEntity
 import cz.grimir.wifimanager.shared.core.UserId
 import org.springframework.stereotype.Component
 
 @Component
-class CaptiveNetworkUserDeviceMapper {
+class CaptiveNetworkUserDeviceMapper(
+    private val deviceFingerprintService: DeviceFingerprintService,
+) {
     fun toDomain(entity: NetworkUserDeviceEntity): NetworkUserDevice =
         NetworkUserDevice(
             userId = UserId(entity.userId),
@@ -16,6 +19,10 @@ class CaptiveNetworkUserDeviceMapper {
             isRandomized = entity.isRandomized,
             authorizedAt = entity.authorizedAt,
             lastSeenAt = entity.lastSeenAt,
+            fingerprintProfile = deviceFingerprintService.fromJsonNode(entity.fingerprintProfile),
+            fingerprintStatus = entity.fingerprintStatus,
+            fingerprintVerifiedAt = entity.fingerprintVerifiedAt,
+            reauthRequiredAt = entity.reauthRequiredAt,
         )
 
     fun toEntity(domain: NetworkUserDevice): NetworkUserDeviceEntity =
@@ -27,5 +34,9 @@ class CaptiveNetworkUserDeviceMapper {
             isRandomized = domain.isRandomized,
             authorizedAt = domain.authorizedAt,
             lastSeenAt = domain.lastSeenAt,
+            fingerprintProfile = deviceFingerprintService.toJsonNode(domain.fingerprintProfile),
+            fingerprintStatus = domain.fingerprintStatus,
+            fingerprintVerifiedAt = domain.fingerprintVerifiedAt,
+            reauthRequiredAt = domain.reauthRequiredAt,
         )
 }

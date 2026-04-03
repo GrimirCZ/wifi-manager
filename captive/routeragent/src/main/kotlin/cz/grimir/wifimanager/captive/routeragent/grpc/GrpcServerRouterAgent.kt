@@ -1,6 +1,8 @@
 package cz.grimir.wifimanager.captive.routeragent.grpc
 
 import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadPort
+import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedClientFingerprintGuard
+import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
 import cz.grimir.wifimanager.captive.application.integration.routeragent.port.ClientInfo
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
@@ -34,12 +36,22 @@ class GrpcServerRouterAgent(
     private val properties: GrpcServerRouterAgentProperties,
     findAuthorizationTokenPort: FindAuthorizationTokenPort,
     allowedMacReadPort: AllowedMacReadPort,
+    authorizedClientFingerprintGuard: AuthorizedClientFingerprintGuard,
+    deviceFingerprintService: DeviceFingerprintService,
     commandExecutor: TaskExecutor,
 ) : RouterAgentPort,
     AutoCloseable,
     InitializingBean {
     private val hub = RouterAgentHub(properties.commandTimeout)
-    private val service = RouterAgentGrpcService(hub, findAuthorizationTokenPort, allowedMacReadPort, commandExecutor)
+    private val service =
+        RouterAgentGrpcService(
+            hub,
+            findAuthorizationTokenPort,
+            allowedMacReadPort,
+            authorizedClientFingerprintGuard,
+            deviceFingerprintService,
+            commandExecutor,
+        )
     private val server = buildServer(properties, service)
 
     override fun afterPropertiesSet() {
@@ -52,6 +64,9 @@ class GrpcServerRouterAgent(
             ClientInfo(
                 macAddress = it.macAddress!!,
                 hostname = it.hostname,
+                dhcpVendorClass = it.dhcpVendorClass,
+                dhcpPrlHash = it.dhcpPrlHash,
+                dhcpHostname = it.dhcpHostname,
             )
         }
     }
@@ -75,6 +90,9 @@ class GrpcServerRouterAgent(
                 ipAddresses = client.ipAddressesList,
                 hostname = client.hostname,
                 allowed = client.allowed,
+                dhcpVendorClass = client.dhcpVendorClass,
+                dhcpPrlHash = client.dhcpPrlHash,
+                dhcpHostname = client.dhcpHostname,
             )
         }
     }
