@@ -1,6 +1,7 @@
 group = "cz.grimir.wifimanager.captive.application"
 
 dependencies {
+    implementation(project(":admin:application"))
     implementation(project(":shared:core"))
     implementation(project(":shared:events"))
     implementation(project(":shared:util"))
@@ -8,6 +9,7 @@ dependencies {
 
     implementation(project(":captive:core"))
 
+    implementation(libs.springBootStarter)
     implementation(libs.bundles.springContextTx)
 
     implementation(libs.kotlinLogging)

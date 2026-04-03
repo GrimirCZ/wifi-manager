@@ -1,6 +1,7 @@
 package cz.grimir.wifimanager.captive.auth.google
 
 import cz.grimir.wifimanager.captive.application.auth.port.UserAuthProvider
+import cz.grimir.wifimanager.captive.application.migration.port.MigratableUserDirectoryPort
 import cz.grimir.wifimanager.shared.core.UserDirectoryClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -22,9 +23,23 @@ private val logger = KotlinLogging.logger {}
 )
 class CaptiveAuthGoogleConfig {
     @Bean
+    fun googleDirectoryApiClient(properties: GoogleLdapProperties): GoogleDirectoryApiClient = GoogleDirectoryApiClient(properties)
+
+    @Bean
+    fun migratableUserDirectoryPort(
+        properties: GoogleLdapProperties,
+        googleDirectoryApiClient: GoogleDirectoryApiClient,
+    ): MigratableUserDirectoryPort =
+        GoogleDirectoryMigratableUserResolver(
+            directoryApiClient = googleDirectoryApiClient,
+            allowedDevicesByGroup = properties.allowedDevicesByGroup(),
+        )
+
+    @Bean
     fun googleLdapAuthProvider(
         userDirectoryClient: UserDirectoryClient,
         properties: GoogleLdapProperties,
+        googleDirectoryApiClient: GoogleDirectoryApiClient,
     ): UserAuthProvider {
         if (!properties.isConfigured()) {
             logger.warn { "Google LDAP login disabled: missing search configuration or service-account-json-path." }
@@ -35,11 +50,10 @@ class CaptiveAuthGoogleConfig {
         val contextSource = googleLdapContextSource(properties)
         val ldapTemplate = LdapTemplate(contextSource)
         val secureLdapClient = GoogleSecureLdapClient(ldapTemplate, properties)
-        val directoryApiClient = GoogleDirectoryApiClient(properties)
 
         return GoogleLdapAuthProvider(
             secureLdapClient = secureLdapClient,
-            directoryApiClient = directoryApiClient,
+            directoryApiClient = googleDirectoryApiClient,
             userDirectoryClient = userDirectoryClient,
             allowedDevicesByGroup = allowedDevicesByGroup,
         )
