@@ -1,48 +1,88 @@
-# wifimanager
+# WiFi Manager
 
-This project uses [Gradle](https://gradle.org/).
-To build and run the application, use the *Gradle* tool window by clicking the Gradle icon in the right-hand toolbar,
-or run it directly from the terminal:
+WiFi Manager is a Kotlin/Spring Boot application for managing Wi-Fi access through an admin interface and a captive portal.
 
-* Run `./gradlew run` to build and run the application.
-* Run `./gradlew build` to only build the application.
-* Run `./gradlew check` to run all checks, including tests.
-* Run `./gradlew clean` to clean all build outputs.
+## Features
 
-Note the usage of the Gradle Wrapper (`./gradlew`).
-This is the suggested way to use Gradle in production projects.
+- Ticket-based Wi-Fi access management
+- Admin UI for creating and ending access tickets
+- Captive portal for user login and device authorization
+- Allowed MAC address management
+- Device tracking and authorization history
+- OIDC login for admin access
+- Router-agent integration for allowing and revoking network access
 
-[Learn more about the Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html).
+## Architecture
 
-[Learn more about Gradle tasks](https://docs.gradle.org/current/userguide/command_line_interface.html#common_tasks).
+The application is built as a modular monolith. Modules are split by bounded context (`admin`, `captive`, `user`) with `shared` for cross-cutting concerns and each context follows Clean Architecture with separate domain, application, adapter, and integration layers.
 
-This project follows the suggested multi-module setup and consists of the `app` and `utils` subprojects.
-The shared build logic was extracted to a convention plugin located in `buildSrc`.
+## Modules
 
-This project uses a version catalog (see `gradle/libs.versions.toml`) to declare and version dependencies
-and both a build cache and a configuration cache (see `gradle.properties`).
+- `app/` contains the runnable shell Spring Boot application and local development configuration.
+- `admin/` contains the staff-facing ticketing and management functionality. 
+- `captive/` contains the captive portal and device authorization flow.
+- `user/` contains user identity and directory support.
+- `shared/` contains shared libraries, events, security, and UI assets.
+- `e2e/` contains end-to-end test suite.
+- `routeragent/` contains the standalone Go router agent.
 
-## OIDC Provider
+## Requirements
 
-For dev/demo: Keycloak
+You need JDK 21, Docker, npm and Go 1.25.
 
-https://www.keycloak.org/getting-started/getting-started-docker#_create_a_user
-https://www.keycloak.org/server/containers#_importing_a_realm_on_startup
+## Local development
 
-## Required SW
+Start local infrastructure:
 
-- java 21
-- gradle
-- bun
-
-Build CSS:
-
+```bash
+docker compose -f app/compose.yml up -d
 ```
+
+This starts PostgreSQL on `localhost:5432` and Keycloak on `http://localhost:8081`.
+
+Run the application:
+
+```bash
+./gradlew run
+```
+
+On Windows:
+
+```powershell
+.\gradlew.bat run
+```
+
+The application runs on `http://localhost:8080`.
+
+Keycloak imports the dev realm from `app/keycloak/import/wifimanager-realm.json`. Default admin credentials are `admin` / `admin`.
+
+## Commands
+
+Build and test:
+
+```bash
+./gradlew bootJar
+./gradlew check
+```
+
+Format:
+
+```bash
+./gradlew spotlessApply
+./gradlew spotlessCheck
+```
+
+CSS:
+
+```bash
 ./gradlew buildCss
+./gradlew watchCss # to reload in real-time in development
 ```
 
-Continuously build CSS:
+## Configuration
 
-```
-./gradlew watchCss
-```
+Main application configuration lives in `app/src/main/resources/application.yml`. Development overrides are in `app/src/main/resources/application-dev.yml`.
+
+## Notes
+
+Use the Gradle wrapper instead of a system Gradle installation. Do not commit secrets; keep OIDC and client credentials in local configuration or environment variables.
