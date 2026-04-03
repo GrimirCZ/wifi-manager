@@ -3,6 +3,8 @@ package cz.grimir.wifimanager.captive.routeragent.grpc
 import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.grpc.Status
+import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
 import org.springframework.core.task.TaskExecutor
 import org.springframework.core.task.TaskRejectedException
@@ -49,7 +51,8 @@ class RouterAgentGrpcService(
                             when (ex) {
                                 is TaskRejectedException,
                                 is RejectedExecutionException,
-                                -> logger.error(ex) { "Failed to schedule allowed clients synchronization" }
+                                    -> logger.error(ex) { "Failed to schedule allowed clients synchronization" }
+
                                 else -> throw ex
                             }
                         }
@@ -61,6 +64,12 @@ class RouterAgentGrpcService(
 
             override fun onError(t: Throwable) {
                 hub.unregisterConnection(connectionId, t)
+                if (t is StatusRuntimeException && t.status.code == Status.Code.CANCELLED) {
+                    logger.info {
+                        "Router agent connection cancelled id=$connectionId remoteAddr=$remoteAddr peerCert=$peerCertSubject"
+                    }
+                    return
+                }
                 logger.warn(t) { "Router agent connection error id=$connectionId" }
             }
 

@@ -46,3 +46,5 @@ bin/
 
 ### Icons ###
 shared/ui/src/main/resources/static/assets/shared/icons/
+
+.gocache
