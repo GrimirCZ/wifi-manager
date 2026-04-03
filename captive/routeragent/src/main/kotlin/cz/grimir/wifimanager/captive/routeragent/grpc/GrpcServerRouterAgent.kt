@@ -4,6 +4,7 @@ import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadP
 import cz.grimir.wifimanager.captive.application.integration.routeragent.port.ClientInfo
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
+import cz.grimir.wifimanager.captive.application.networkuserdevice.port.NetworkUserDeviceReadPort
 import cz.grimir.wifimanager.captive.routeragent.GrpcServerRouterAgentProperties
 import cz.grimir.wifimanager.captive.routeragent.GrpcServerTlsProperties
 import cz.grimir.wifimanager.shared.application.network.NetworkClient
@@ -34,6 +35,7 @@ import javax.net.ssl.TrustManagerFactory
 class GrpcServerRouterAgent(
     private val properties: GrpcServerRouterAgentProperties,
     findAuthorizationTokenPort: FindAuthorizationTokenPort,
+    networkUserDeviceReadPort: NetworkUserDeviceReadPort,
     allowedMacReadPort: AllowedMacReadPort,
     applicationEventPublisher: ApplicationEventPublisher,
     commandExecutor: TaskExecutor
@@ -45,6 +47,7 @@ class GrpcServerRouterAgent(
         RouterAgentGrpcService(
             hub,
             findAuthorizationTokenPort,
+            networkUserDeviceReadPort,
             allowedMacReadPort,
             applicationEventPublisher,
             commandExecutor,

@@ -18,6 +18,7 @@ import cz.grimir.wifimanager.shared.ui.AccessCodeFormatter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HtmxRequest
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.BindingResult
@@ -56,6 +57,14 @@ class CaptivePortalController(
             return "redirect:/captive/login"
         }
         return "captive/index"
+    }
+
+    @GetMapping("/captive/info")
+    fun info(
+        @CurrentClient
+        clientInfo: ClientInfo,
+    ): ResponseEntity<String> {
+        return ResponseEntity.ok(clientInfo.toString())
     }
 
     @PostMapping("/captive")
