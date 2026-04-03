@@ -11,6 +11,9 @@ class CaptiveAuthorizationRules : ModuleAuthorizationRules {
             .requestMatchers("/captive", "/captive/", "/captive/help/**", "/captive/login")
             .permitAll()
         registry
+            .requestMatchers("/captive/api/migration/**")
+            .permitAll()
+        registry
             .requestMatchers("/captive/device", "/captive/device/**")
             .authenticated()
     }

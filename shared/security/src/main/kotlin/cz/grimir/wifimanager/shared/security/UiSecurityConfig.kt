@@ -33,6 +33,9 @@ class UiSecurityConfig(
             }
 
         http
+            .csrf {
+                it.ignoringRequestMatchers(pathPattern("/captive/api/migration/**"))
+            }
             .securityContext {
                 it.requireExplicitSave(false)
             }.authorizeHttpRequests { auth ->
