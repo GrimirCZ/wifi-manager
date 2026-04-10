@@ -3,12 +3,12 @@ package cz.grimir.wifimanager.captive.web.mvc
 import cz.grimir.wifimanager.captive.application.authorization.command.AuthorizeDeviceWithCodeCommand
 import cz.grimir.wifimanager.captive.application.authorization.handler.command.AuthorizeDeviceWithCodeUsecase
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedClientFingerprintGuard
-import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedMacState
-import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedMacVerification
 import cz.grimir.wifimanager.captive.application.identity.port.CaptiveUserIdentityPort
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.TouchNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
+import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessState
+import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessStatus
+import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessStatusService
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveAccessCodeForm
 import cz.grimir.wifimanager.captive.web.security.support.ClientInfo
 import cz.grimir.wifimanager.shared.core.TicketId
@@ -36,7 +36,7 @@ class CaptivePortalControllerTest {
     private val findAuthorizationTokenPort: FindAuthorizationTokenPort = mock()
     private val touchNetworkUserDeviceUsecase: TouchNetworkUserDeviceUsecase = mock()
     private val userIdentityPort: CaptiveUserIdentityPort = mock()
-    private val authorizedClientFingerprintGuard: AuthorizedClientFingerprintGuard = mock()
+    private val clientAccessStatusService: CaptiveClientAccessStatusService = mock()
     private val htmxRequest: HtmxRequest = mock()
 
     private val controller =
@@ -46,7 +46,7 @@ class CaptivePortalControllerTest {
             findAuthorizationTokenPort = findAuthorizationTokenPort,
             touchNetworkUserDeviceUsecase = touchNetworkUserDeviceUsecase,
             userIdentityPort = userIdentityPort,
-            authorizedClientFingerprintGuard = authorizedClientFingerprintGuard,
+            clientAccessStatusService = clientAccessStatusService,
         )
 
     private val clientInfo =
@@ -67,10 +67,9 @@ class CaptivePortalControllerTest {
         val model = ExtendedModelMap()
         val token = token(requireUserNameOnLogin = true)
         given(htmxRequest.isHtmxRequest).willReturn(true)
-        given(authorizedClientFingerprintGuard.verifyAuthorizedMac(clientInfo.macAddress, clientInfo.fingerprintProfile))
-            .willReturn(AuthorizedMacVerification(AuthorizedMacState.NONE))
+        given(clientAccessStatusService.resolve(clientInfo))
+            .willReturn(CaptiveClientAccessStatus(CaptiveClientAccessState.UNAUTHORIZED))
         given(findAuthorizationTokenPort.findByAccessCode("ABCDEFGH")).willReturn(token)
-        given(findAuthorizationTokenPort.findByAuthorizedDeviceMac(clientInfo.macAddress)).willReturn(null)
 
         val view = controller.submit(clientInfo, form, bindingResult, request(), model, htmxRequest)
 
@@ -86,10 +85,9 @@ class CaptivePortalControllerTest {
         val bindingResult = BeanPropertyBindingResult(form, "form")
         val model = ExtendedModelMap()
         given(htmxRequest.isHtmxRequest).willReturn(true)
-        given(authorizedClientFingerprintGuard.verifyAuthorizedMac(clientInfo.macAddress, clientInfo.fingerprintProfile))
-            .willReturn(AuthorizedMacVerification(AuthorizedMacState.NONE))
+        given(clientAccessStatusService.resolve(clientInfo))
+            .willReturn(CaptiveClientAccessStatus(CaptiveClientAccessState.UNAUTHORIZED))
         given(findAuthorizationTokenPort.findByAccessCode("ABCDEFGH")).willReturn(token(requireUserNameOnLogin = true))
-        given(findAuthorizationTokenPort.findByAuthorizedDeviceMac(clientInfo.macAddress)).willReturn(null)
 
         val view = controller.submit(clientInfo, form, bindingResult, request(), model, htmxRequest)
 
@@ -106,10 +104,9 @@ class CaptivePortalControllerTest {
         val bindingResult = BeanPropertyBindingResult(form, "form")
         val model = ExtendedModelMap()
         given(htmxRequest.isHtmxRequest).willReturn(true)
-        given(authorizedClientFingerprintGuard.verifyAuthorizedMac(clientInfo.macAddress, clientInfo.fingerprintProfile))
-            .willReturn(AuthorizedMacVerification(AuthorizedMacState.NONE))
+        given(clientAccessStatusService.resolve(clientInfo))
+            .willReturn(CaptiveClientAccessStatus(CaptiveClientAccessState.UNAUTHORIZED))
         given(findAuthorizationTokenPort.findByAccessCode("ABCDEFGH")).willReturn(token(requireUserNameOnLogin = true))
-        given(findAuthorizationTokenPort.findByAuthorizedDeviceMac(clientInfo.macAddress)).willReturn(null)
 
         val view = controller.submit(clientInfo, form, bindingResult, request(), model, htmxRequest)
 
@@ -129,10 +126,9 @@ class CaptivePortalControllerTest {
         val bindingResult = BeanPropertyBindingResult(form, "form")
         val model = ExtendedModelMap()
         given(htmxRequest.isHtmxRequest).willReturn(true)
-        given(authorizedClientFingerprintGuard.verifyAuthorizedMac(clientInfo.macAddress, clientInfo.fingerprintProfile))
-            .willReturn(AuthorizedMacVerification(AuthorizedMacState.NONE))
+        given(clientAccessStatusService.resolve(clientInfo))
+            .willReturn(CaptiveClientAccessStatus(CaptiveClientAccessState.UNAUTHORIZED))
         given(findAuthorizationTokenPort.findByAccessCode("ABCDEFGH")).willReturn(token(requireUserNameOnLogin = false))
-        given(findAuthorizationTokenPort.findByAuthorizedDeviceMac(clientInfo.macAddress)).willReturn(null)
 
         controller.submit(clientInfo, form, bindingResult, request(), model, htmxRequest)
 
@@ -148,10 +144,10 @@ class CaptivePortalControllerTest {
         val session = mock<HttpSession>()
         val model = ExtendedModelMap()
         given(request.session).willReturn(session)
-        given(authorizedClientFingerprintGuard.verifyAuthorizedMac(clientInfo.macAddress, clientInfo.fingerprintProfile))
+        given(clientAccessStatusService.resolve(clientInfo))
             .willReturn(
-                AuthorizedMacVerification(
-                    state = AuthorizedMacState.REAUTH_REQUIRED,
+                CaptiveClientAccessStatus(
+                    state = CaptiveClientAccessState.REAUTH_REQUIRED_NETWORK_USER_DEVICE,
                     networkUserDevice =
                         cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice(
                             userId = cz.grimir.wifimanager.shared.core.UserId(UUID.fromString("00000000-0000-0000-0000-000000000111")),

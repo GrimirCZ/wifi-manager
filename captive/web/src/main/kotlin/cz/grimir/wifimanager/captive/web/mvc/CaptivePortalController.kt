@@ -1,8 +1,6 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
 import cz.grimir.wifimanager.captive.application.authorization.command.AuthorizeDeviceWithCodeCommand
-import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedClientFingerprintGuard
-import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedMacState
 import cz.grimir.wifimanager.captive.application.identity.port.CaptiveUserIdentityPort
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.authorization.handler.command.AuthorizeDeviceWithCodeUsecase
@@ -10,6 +8,9 @@ import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.comma
 import cz.grimir.wifimanager.captive.core.exceptions.InvalidAccessCodeException
 import cz.grimir.wifimanager.captive.core.exceptions.KickedAddressAttemptedLoginException
 import cz.grimir.wifimanager.captive.core.value.Device
+import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessState
+import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessStatus
+import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessStatusService
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveAccessCodeForm
 import cz.grimir.wifimanager.captive.web.security.support.ClientInfo
 import cz.grimir.wifimanager.captive.web.security.support.CurrentClient
@@ -33,7 +34,7 @@ class CaptivePortalController(
     private val findAuthorizationTokenPort: FindAuthorizationTokenPort,
     private val touchNetworkUserDeviceUsecase: TouchNetworkUserDeviceUsecase,
     private val userIdentityPort: CaptiveUserIdentityPort,
-    private val authorizedClientFingerprintGuard: AuthorizedClientFingerprintGuard,
+    private val clientAccessStatusService: CaptiveClientAccessStatusService,
 ) {
     companion object {
         private const val MIN_REQUIRED_NAME_LENGTH = 3
@@ -170,30 +171,30 @@ class CaptivePortalController(
         model: Model,
         request: HttpServletRequest,
     ): Boolean {
-        val verification = authorizedClientFingerprintGuard.verifyAuthorizedMac(clientInfo.macAddress, clientInfo.fingerprintProfile)
-        if (verification.state == AuthorizedMacState.REAUTH_REQUIRED) {
-            if (verification.networkUserDevice != null) {
+        val status = clientAccessStatusService.resolve(clientInfo)
+        if (status.state == CaptiveClientAccessState.REAUTH_REQUIRED_NETWORK_USER_DEVICE) {
+            if (status.networkUserDevice != null) {
                 request.session.setAttribute(ACCOUNT_REAUTH_SESSION_KEY, true)
                 return true
             }
-            model.addAttribute("deviceVerificationRequired", true)
-            model.addAttribute("accountAuthorized", false)
-            model.addAttribute("deviceLoggedIn", false)
-            model.addAttribute("deviceKicked", false)
-            model.addAttribute("usedTicketValidUntil", verification.token?.validUntil)
-            model.addAttribute("usedTicketName", verification.ticketDevice?.displayName)
-            model.addAttribute(
-                "usedTicketDevice",
-                verification.ticketDevice?.deviceName ?: verification.networkUserDevice?.name ?: clientInfo.hostname ?: clientInfo.macAddress,
+        }
+        if (status.state == CaptiveClientAccessState.REAUTH_REQUIRED_TICKET_DEVICE) {
+            applyTicketLikeModel(
+                model = model,
+                clientInfo = clientInfo,
+                tokenValidUntil = status.token?.validUntil,
+                displayName = status.ticketDevice?.displayName,
+                deviceName = status.ticketDevice?.deviceName,
+                deviceLoggedIn = false,
+                deviceKicked = false,
+                deviceVerificationRequired = true,
             )
-            model.addAttribute("clientMacAddress", clientInfo.macAddress)
-            model.addAttribute("clientIpAddress", clientInfo.ipAddress)
             return false
         }
 
         request.session.removeAttribute(ACCOUNT_REAUTH_SESSION_KEY)
-        val networkDevice = verification.networkUserDevice
-        if (verification.state == AuthorizedMacState.ACTIVE_NETWORK_USER_DEVICE && networkDevice != null) {
+        val networkDevice = status.networkUserDevice
+        if (status.state == CaptiveClientAccessState.ACTIVE_NETWORK_USER_DEVICE && networkDevice != null) {
             touchNetworkUserDeviceUsecase.touch(networkDevice.userId, networkDevice.mac)
             val identity = userIdentityPort.findByUserId(networkDevice.userId)
             model.addAttribute("accountAuthorized", true)
@@ -211,8 +212,39 @@ class CaptivePortalController(
             return false
         }
 
-        val token = verification.token ?: findAuthorizationTokenPort.findByAuthorizedDeviceMac(clientInfo.macAddress)
-        if (token == null) {
+        if (status.state == CaptiveClientAccessState.ACTIVE_TICKET_DEVICE ||
+            status.state == CaptiveClientAccessState.KICKED_TICKET_DEVICE
+        ) {
+            applyTicketLikeModel(
+                model = model,
+                clientInfo = clientInfo,
+                tokenValidUntil = status.token?.validUntil,
+                displayName = status.ticketDevice?.displayName,
+                deviceName = status.ticketDevice?.deviceName,
+                deviceLoggedIn = status.state == CaptiveClientAccessState.ACTIVE_TICKET_DEVICE,
+                deviceKicked = status.state == CaptiveClientAccessState.KICKED_TICKET_DEVICE,
+                deviceVerificationRequired = false,
+            )
+            return false
+        }
+
+        if (status.state == CaptiveClientAccessState.ACTIVE_ALLOWED_MAC) {
+            applyTicketLikeModel(
+                model = model,
+                clientInfo = clientInfo,
+                tokenValidUntil = status.allowedMac?.validUntil,
+                displayName = null,
+                deviceName = clientInfo.hostname,
+                deviceLoggedIn = true,
+                deviceKicked = false,
+                deviceVerificationRequired = false,
+            )
+            return false
+        }
+
+        if (status.state == CaptiveClientAccessState.UNAUTHORIZED ||
+            status.state == CaptiveClientAccessState.EXPIRED_ALLOWED_MAC
+        ) {
             model.addAttribute("accountAuthorized", false)
             model.addAttribute("deviceLoggedIn", false)
             model.addAttribute("deviceKicked", false)
@@ -225,21 +257,30 @@ class CaptivePortalController(
             return false
         }
 
-        val kicked = token.kickedMacAddresses.contains(clientInfo.macAddress)
-        val authorizedDevice = verification.ticketDevice ?: token.authorizedDevices.firstOrNull { it.mac == clientInfo.macAddress }
+        return false
+    }
 
+    private fun applyTicketLikeModel(
+        model: Model,
+        clientInfo: ClientInfo,
+        tokenValidUntil: java.time.Instant?,
+        displayName: String?,
+        deviceName: String?,
+        deviceLoggedIn: Boolean,
+        deviceKicked: Boolean,
+        deviceVerificationRequired: Boolean,
+    ) {
         model.addAttribute("accountAuthorized", false)
-        model.addAttribute("deviceLoggedIn", !kicked)
-        model.addAttribute("deviceKicked", kicked)
-        model.addAttribute("deviceVerificationRequired", false)
-        model.addAttribute("usedTicketValidUntil", token.validUntil)
-        model.addAttribute("usedTicketName", authorizedDevice?.displayName)
+        model.addAttribute("deviceLoggedIn", deviceLoggedIn)
+        model.addAttribute("deviceKicked", deviceKicked)
+        model.addAttribute("deviceVerificationRequired", deviceVerificationRequired)
+        model.addAttribute("usedTicketValidUntil", tokenValidUntil)
+        model.addAttribute("usedTicketName", displayName)
         model.addAttribute(
             "usedTicketDevice",
-            authorizedDevice?.deviceName ?: clientInfo.hostname ?: clientInfo.macAddress,
+            deviceName ?: clientInfo.hostname ?: clientInfo.macAddress,
         )
         model.addAttribute("clientMacAddress", clientInfo.macAddress)
         model.addAttribute("clientIpAddress", clientInfo.ipAddress)
-        return false
     }
 }

@@ -43,6 +43,8 @@ wifimanager:
   wifi:
     ssid: my-wifi
   captive:
+    portal:
+      public-base-url: https://localhost
     router-agent:
       grpc:
         port: 9091

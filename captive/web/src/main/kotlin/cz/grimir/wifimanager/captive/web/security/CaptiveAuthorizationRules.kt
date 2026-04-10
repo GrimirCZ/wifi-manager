@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 class CaptiveAuthorizationRules : ModuleAuthorizationRules {
     override fun configure(registry: AuthorizationRegistry) {
         registry
-            .requestMatchers("/captive", "/captive/", "/captive/help/**", "/captive/login")
+            .requestMatchers("/captive", "/captive/", "/captive/api", "/captive/help/**", "/captive/login")
             .permitAll()
         registry
             .requestMatchers("/captive/device", "/captive/device/**")

@@ -22,6 +22,8 @@ app:
 
 wifimanager:
   captive:
+    portal:
+      public-base-url: ${CAPTIVE_PORTAL_PUBLIC_BASE_URL:https://localhost}
     fingerprinting:
       enabled: true
       enforce-threshold: ${CAPTIVE_FINGERPRINTING_ENFORCE_THRESHOLD:70}
