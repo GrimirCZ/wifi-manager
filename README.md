@@ -63,6 +63,7 @@ Build and test:
 ```bash
 ./gradlew bootJar
 ./gradlew check
+./gradlew :e2e:screenshotTest
 ```
 
 Format:

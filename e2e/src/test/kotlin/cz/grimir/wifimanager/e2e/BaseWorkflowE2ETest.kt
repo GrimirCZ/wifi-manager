@@ -11,6 +11,7 @@ import com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat
 import com.microsoft.playwright.options.AriaRole
 import com.microsoft.playwright.options.FormData
 import com.microsoft.playwright.options.RequestOptions
+import com.microsoft.playwright.options.ViewportSize
 import cz.grimir.wifimanager.app.Application
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -28,6 +29,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 import org.testcontainers.utility.MountableFile
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -145,15 +148,31 @@ abstract class BaseWorkflowE2ETest {
     @Autowired
     protected lateinit var jdbcTemplate: JdbcTemplate
 
+    protected enum class RenderMode {
+        DESKTOP,
+        PHONE,
+    }
+
+    protected data class ScreenshotSpec(
+        val fileName: String,
+        val mode: RenderMode,
+        val fullPage: Boolean = false,
+    )
+
+    protected enum class LanguageVariant(
+        val code: String,
+    ) {
+        EN("en"),
+        CS("cs"),
+    }
+
     protected val baseUrl: String
         get() = "http://localhost:8080"
 
     @BeforeEach
     fun setupTest() {
         truncateDomainTables()
-        context = browser().newContext(Browser.NewContextOptions().setIgnoreHTTPSErrors(true))
-        page = context.newPage()
-        page.onDialog { dialog -> dialog.accept() }
+        resetBrowserContext()
     }
 
     @AfterEach
@@ -223,7 +242,7 @@ abstract class BaseWorkflowE2ETest {
             )
         ).isVisible()
         assertThat(page.getByRole(AriaRole.HEADING, Page.GetByRoleOptions().setName("Allowed MAC addresses"))).isVisible()
-        assertThat(page.getByRole(AriaRole.HEADING, Page.GetByRoleOptions().setName("Network clients"))).isVisible()
+        assertThat(page.getByText("Network clients").first()).isVisible()
     }
 
     protected fun assertTopNavItemVisible(
@@ -389,7 +408,7 @@ abstract class BaseWorkflowE2ETest {
     }
 
     protected fun authorizeDeviceAsUserInIsolatedContext(deviceName: String = "E2E Device") {
-        val isolatedContext = browser().newContext(Browser.NewContextOptions().setIgnoreHTTPSErrors(true))
+        val isolatedContext = browser().newContext(browserContextOptions(RenderMode.DESKTOP))
         val isolatedPage = isolatedContext.newPage()
         isolatedContext.use {
             isolatedPage.navigate("$baseUrl/captive/login")
@@ -409,6 +428,80 @@ abstract class BaseWorkflowE2ETest {
                 ),
             ).isVisible()
         }
+    }
+
+    protected fun <T> withIsolatedPage(
+        mode: RenderMode = RenderMode.DESKTOP,
+        block: (Page) -> T,
+    ): T {
+        val isolatedContext = browser().newContext(browserContextOptions(mode))
+        val isolatedPage = isolatedContext.newPage()
+        isolatedPage.onDialog { dialog -> dialog.accept() }
+        isolatedContext.use {
+            return block(isolatedPage)
+        }
+    }
+
+    protected fun useRenderMode(mode: RenderMode) {
+        resetBrowserContext(mode)
+    }
+
+    protected fun captureScreenshot(
+        spec: ScreenshotSpec,
+        target: Locator? = null,
+    ): Path {
+        if (spec.mode != activeRenderMode) {
+            useRenderMode(spec.mode)
+        }
+        preparePageForScreenshot()
+        waitForPageToSettle()
+
+        val outputPath = screenshotOutputDir().resolve(spec.fileName)
+        Files.createDirectories(outputPath.parent)
+        if (target != null) {
+            target.screenshot(
+                Locator.ScreenshotOptions()
+                    .setAnimations(com.microsoft.playwright.options.ScreenshotAnimations.DISABLED)
+                    .setPath(outputPath),
+            )
+        } else {
+            page.screenshot(
+                Page.ScreenshotOptions()
+                    .setAnimations(com.microsoft.playwright.options.ScreenshotAnimations.DISABLED)
+                    .setFullPage(spec.fullPage)
+                    .setPath(outputPath),
+            )
+        }
+        return outputPath
+    }
+
+    protected fun captureLocalizedScreenshots(
+        spec: ScreenshotSpec,
+        target: Locator? = null,
+        languages: List<LanguageVariant> = listOf(LanguageVariant.EN, LanguageVariant.CS),
+    ): List<Path> {
+        val outputs = mutableListOf<Path>()
+        for (language in languages) {
+            setLanguage(language)
+            outputs.add(captureScreenshot(spec.withLanguage(language), target))
+            if (target != null) {
+                outputs.add(captureScreenshot(spec.withLanguage(language).asFullPageVariant(), target = null))
+            }
+        }
+        return outputs
+    }
+
+    protected fun waitForPageToSettle() {
+        page.waitForLoadState()
+        page.waitForFunction(
+            """
+            () => {
+              const htmxReady = window.htmx === undefined || document.querySelector('.htmx-request') === null;
+              return htmxReady && document.fonts.status === 'loaded';
+            }
+            """.trimIndent(),
+        )
+        page.waitForTimeout(150.0)
     }
 
     private fun truncateDomainTables() {
@@ -459,5 +552,126 @@ abstract class BaseWorkflowE2ETest {
         openAccountMenu()
         val accountMenu = profileButton.locator("xpath=following-sibling::*[@role='menu'][1]")
         assertThat(accountMenu.getByText(email)).isVisible()
+    }
+
+    private var activeRenderMode: RenderMode = RenderMode.DESKTOP
+
+    private fun resetBrowserContext(mode: RenderMode = RenderMode.DESKTOP) {
+        if (::context.isInitialized) {
+            context.close()
+        }
+        activeRenderMode = mode
+        context = browser().newContext(browserContextOptions(mode))
+        page = context.newPage()
+        page.onDialog { dialog -> dialog.accept() }
+    }
+
+    private fun browserContextOptions(mode: RenderMode): Browser.NewContextOptions {
+        val options = Browser.NewContextOptions().setIgnoreHTTPSErrors(true)
+        return when (mode) {
+            RenderMode.DESKTOP ->
+                options.setViewportSize(1440, 1200)
+
+            RenderMode.PHONE ->
+                options
+                    .setViewportSize(ViewportSize(375, 667))
+                    .setScreenSize(375, 667)
+                    .setDeviceScaleFactor(2.0)
+                    .setIsMobile(true)
+                    .setHasTouch(true)
+                    .setUserAgent(
+                        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) " +
+                            "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 " +
+                            "Mobile/15E148 Safari/604.1"
+                    )
+        }
+    }
+
+    private fun preparePageForScreenshot() {
+        page.evaluate(
+            """
+            () => {
+              if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+              }
+            }
+            """.trimIndent(),
+        )
+        page.addStyleTag(
+            Page.AddStyleTagOptions().setContent(
+                """
+                *,
+                *::before,
+                *::after {
+                  animation: none !important;
+                  transition: none !important;
+                  caret-color: transparent !important;
+                }
+                [data-testid='debug'],
+                #ticket-copy-toast {
+                  display: none !important;
+                }
+                *:focus,
+                *:focus-visible,
+                *:active {
+                  outline: none !important;
+                  box-shadow: none !important;
+                }
+                .group:hover [role='menu'],
+                .group:focus-within [role='menu'] {
+                  display: none !important;
+                }
+                """
+                    .trimIndent(),
+            ),
+        )
+    }
+
+    private fun screenshotOutputDir(): Path {
+        val explicit = System.getProperty("wifimanager.screenshots.output-dir")
+        val rootDir = System.getProperty("wifimanager.root-dir") ?: error("Missing wifimanager.root-dir")
+        val base =
+            if (!explicit.isNullOrBlank()) {
+                Paths.get(explicit)
+            } else {
+                Paths.get(rootDir, "build", "reports", "screenshots")
+            }
+        return Files.createDirectories(base)
+    }
+
+    private fun setLanguage(language: LanguageVariant) {
+        val current = URI(page.url())
+        val query = current.rawQuery.orEmpty()
+        val preserved =
+            query
+                .split("&")
+                .filter { it.isNotBlank() && !it.startsWith("lang=") }
+                .toMutableList()
+        preserved += "lang=${language.code}"
+        val querySuffix = if (preserved.isEmpty()) "" else "?${preserved.joinToString("&")}"
+        page.navigate("$baseUrl${current.path}$querySuffix")
+        waitForPageToSettle()
+    }
+
+    private fun ScreenshotSpec.withLanguage(language: LanguageVariant): ScreenshotSpec {
+        val dotIndex = fileName.lastIndexOf('.')
+        val withSuffix =
+            if (dotIndex >= 0) {
+                "${fileName.substring(0, dotIndex)}-${language.code}${fileName.substring(dotIndex)}"
+            } else {
+                "$fileName-${language.code}"
+            }
+        return copy(fileName = withSuffix)
+    }
+
+    private fun ScreenshotSpec.asFullPageVariant(): ScreenshotSpec {
+        val dotIndex = fileName.lastIndexOf('.')
+        val withSuffix =
+            if (dotIndex >= 0) {
+                "${fileName.substring(0, dotIndex)}-full${fileName.substring(dotIndex)}"
+            } else {
+                "$fileName-full"
+            }
+        return copy(fileName = withSuffix, fullPage = true)
     }
 }

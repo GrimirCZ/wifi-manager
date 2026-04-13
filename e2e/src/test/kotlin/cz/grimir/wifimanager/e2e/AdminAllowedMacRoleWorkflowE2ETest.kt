@@ -27,7 +27,6 @@ class AdminAllowedMacRoleWorkflowE2ETest : BaseWorkflowE2ETest() {
         assertTopNavItemVisible("Admin", shouldBeVisible = true)
         openAllowedMacFromAccountMenu()
 
-        page.locator("#allowed-mac-form-details summary").click()
         val form = page.locator("form:has(#allowed-mac-input)")
         assertThat(form).isVisible()
         form.getByLabel("MAC address").fill(macAddress)

@@ -1,51 +1,73 @@
 <!DOCTYPE html>
-<div th:fragment="networkClientList" xmlns:th="http://www.thymeleaf.org" id="network-client-list" class="card space-y-4 md:h-full">
-    <div class="flex items-center justify-between gap-4">
-        <div class="space-y-1">
-            <h2 class="text-xl font-semibold" th:text="#{admin.networkClients.title}">Network clients</h2>
-            <span class="text-text-muted text-sm" th:text="#{admin.networkClients.subtitle}">Live view from router.</span>
-        </div>
-        <button class="btn btn-secondary" type="button"
+<div th:fragment="networkClientList" xmlns:th="http://www.thymeleaf.org" id="network-client-list"
+     class="space-y-4 border-t border-border/50 px-6 py-5">
+    <div class="flex items-center justify-between gap-3">
+        <p class="text-xs text-text-muted" th:text="#{admin.networkClients.prefill}">
+            Select a device to prefill the MAC address above.
+        </p>
+        <button class="btn btn-secondary h-9 shrink-0 px-3 text-xs" type="button"
                 th:hx-get="@{/admin/_network-clients}"
                 hx-target="#network-client-list"
                 hx-swap="outerHTML">
-            <span class="btn-text" th:text="#{admin.networkClients.load}">Load</span>
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20 4v4h-4M4 20v-4h4"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.51 9a8 8 0 0 1 14.07-1.27M19.49 15a8 8 0 0 1-14.07 1.27"/>
+            </svg>
+            <span class="btn-text" th:text="#{admin.networkClients.load}">Refresh</span>
             <span class="spinner"></span>
         </button>
     </div>
 
-    <div th:if="${networkClients == null or networkClients.isEmpty()}" class="text-sm text-text-muted"
-         th:text="#{admin.networkClients.empty}">No clients found.</div>
+    <div th:if="${networkClients == null or networkClients.isEmpty()}"
+         class="rounded-2xl border border-border/50 px-4 py-8 text-center text-sm text-text-muted"
+         th:text="#{admin.networkClients.empty}">
+        No clients found. Hit Refresh to load.
+    </div>
 
-    <ul th:if="${networkClients != null and !networkClients.isEmpty()}" class="space-y-3">
+    <ul th:if="${networkClients != null and !networkClients.isEmpty()}"
+        class="overflow-hidden rounded-2xl border border-border/50 divide-y divide-border/40">
         <li th:each="client : ${networkClients}"
-            class="grid gap-3 rounded-lg border border-border bg-surface-muted p-3 md:grid-cols-[1fr_auto] md:items-center">
-            <div class="space-y-1">
-                <div class="flex items-center gap-2">
-                    <span class="text-sm font-semibold"
+            class="flex cursor-pointer items-center gap-3.5 bg-[rgb(var(--surface-lowest))] px-4 py-3.5 transition-colors duration-100 hover:bg-[rgb(var(--surface-muted))]"
+            th:attr="data-mac=${client.macAddress},data-hostname=${client.hostname}"
+            data-script="on click
+                           set #allowed-mac-input.value to my @data-mac
+                           then set #allowed-mac-hostname.value to my @data-hostname
+                           then add .mac-input-highlight to #allowed-mac-input
+                           then wait 1.5s
+                           then remove .mac-input-highlight from #allowed-mac-input
+                           then call window.scrollTo({top:0, behavior:'smooth'})">
+            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors"
+                  th:classappend="${client.allowed ? ' bg-success/10 text-success' : ' bg-[rgb(var(--surface-muted))] text-text-muted'}">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" aria-hidden="true">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/>
+                    <path stroke-linecap="round" d="M8 21h8M12 17v4"/>
+                </svg>
+            </span>
+
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-baseline gap-2">
+                    <span class="truncate text-sm font-semibold"
                           th:text="${client.hostname != null ? client.hostname : #messages.msg('admin.networkClients.unknown')}">hostname</span>
+                    <span th:if="${client.isLocalAdmin}"
+                          class="badge shrink-0 bg-[rgb(var(--surface-muted))] text-[10px] font-semibold uppercase tracking-wide text-text-muted"
+                          th:text="#{admin.allowedMacs.tag.localAdmin}">admin</span>
                 </div>
-                <span class="font-mono text-sm" th:text="${client.macAddress}">AA:BB:CC:DD:EE:FF</span>
-                <span class="text-text-muted text-xs">
-                    <span th:each="ip, stat : ${client.ipAddresses}" th:text="${ip + (stat.last ? '' : ', ')}">192.168.0.10</span>
-                </span>
-            </div>
-            <div class="flex items-center justify-between gap-2 md:flex-col md:items-end">
-                <div class="flex items-center gap-2">
-                    <span class="badge" th:classappend="${client.allowed ? ' bg-success/10 text-success' : ' bg-border text-text-muted'}"
-                          th:text="${client.allowed ? #messages.msg('admin.networkClients.allowed') : #messages.msg('admin.networkClients.notAllowed')}">
-                        Allowed
+                <div class="mt-0.5 flex flex-wrap items-center gap-1.5">
+                    <span class="font-mono text-[11px] text-text-muted" th:text="${client.macAddress}">AA:BB:CC:DD:EE:FF</span>
+                    <span th:if="${client.ipAddresses != null and !client.ipAddresses.isEmpty()}"
+                          class="text-[10px] text-text-muted opacity-50">|</span>
+                    <span class="text-[11px] text-text-muted">
+                        <span th:each="ip, stat : ${client.ipAddresses}" th:text="${ip + (stat.last ? '' : ', ')}"></span>
                     </span>
-                    <span th:if="${client.isLocalAdmin}" class="badge bg-border text-text-muted text-xs"
-                          th:text="#{admin.allowedMacs.tag.localAdmin}">Randomized</span>
                 </div>
-                <button class="btn btn-secondary text-xs px-2 py-1 select-none" type="button"
-                        th:attr="data-mac=${client.macAddress},data-hostname=${client.hostname}"
-                        data-script="on click set #allowed-mac-form-details.open to true then set #allowed-mac-input.value to my @data-mac then set #allowed-mac-hostname.value to my @data-hostname then if window.innerWidth < 768 then call #allowed-mac-form-details.scrollIntoView()">
-                    <span class="btn-text" th:text="#{admin.networkClients.select}">Select</span>
-                </button>
             </div>
+
+            <span class="badge shrink-0 whitespace-nowrap text-[11px]"
+                  th:classappend="${client.allowed ? ' bg-success/10 text-success' : ' bg-[rgb(var(--surface-muted))] text-text-muted'}"
+                  th:text="${client.allowed ? #messages.msg('admin.networkClients.allowed') : #messages.msg('admin.networkClients.select')}">
+                Allowed
+            </span>
         </li>
     </ul>
-
 </div>

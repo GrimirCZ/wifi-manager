@@ -8,7 +8,7 @@
             th:attr="id=${'ticket-device-list-' + ticketId}"
             hx-swap-oob="true"
             class="grid gap-4 md:grid-cols-2">
-        <div th:if="${devices == null or devices.isEmpty()}" class="device-row text-sm text-text-muted"
+        <div th:if="${devices == null or devices.isEmpty()}" class="admin-empty-state md:col-span-2 text-sm text-text-muted"
              th:text="#{admin.ticket.active.devices.empty}">
             No connected devices yet.
         </div>

@@ -15,11 +15,14 @@
 
     <div th:if="${activeTickets != null and !activeTickets.isEmpty()}" class="space-y-8">
         <div th:if="${isAdmin}" class="surface-panel print:hidden">
-            <details class="space-y-5">
-                <summary class="btn btn-primary inline-flex cursor-pointer list-none" th:text="#{admin.ticket.create.button}">
-                    Create ticket
+            <details class="space-y-4">
+                <summary class="btn btn-primary inline-flex cursor-pointer list-none gap-2">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span th:text="#{admin.ticket.create.button}">Create ticket</span>
                 </summary>
-                <div class="rounded-[1.75rem] bg-white p-5">
+                <div class="admin-add-panel">
                     <div th:replace="~{admin/fragments/ticket-form :: ticketForm(null)}"></div>
                 </div>
             </details>
@@ -107,21 +110,21 @@
                 </div>
             </div>
 
-            <div class="space-y-5 print:hidden">
+            <div class="surface-panel space-y-5 print:hidden">
                 <div class="flex items-center justify-between gap-4">
                     <div>
-                        <h2 class="text-3xl font-semibold tracking-[-0.04em]" th:text="#{admin.ticket.active.devices}">Connected devices</h2>
-                        <p class="mt-2 text-sm leading-7 text-text-muted" th:text="#{admin.ticket.active.devices.toggle}">
+                        <h2 class="text-2xl font-semibold tracking-[-0.03em]" th:text="#{admin.ticket.active.devices}">Connected devices</h2>
+                        <p class="mt-1 text-sm text-text-muted" th:text="#{admin.ticket.active.devices.toggle}">
                             Manage devices
                         </p>
                     </div>
-                    <span class="badge bg-brand-500 px-4 py-2 text-white">
+                    <span class="badge bg-brand-500 px-4 py-2 text-white font-semibold tabular-nums">
                         <span th:attr="id=${'ticket-device-count-' + ticket.id}" th:text="${deviceCount}">0</span>
                     </span>
                 </div>
 
-                <div th:attr="id=${'ticket-device-list-' + ticket.id}" class="grid gap-4 md:grid-cols-2">
-                    <div class="device-row text-sm text-text-muted" th:text="#{admin.ticket.active.devices.empty}">
+                <div th:attr="id=${'ticket-device-list-' + ticket.id}" class="grid gap-3 md:grid-cols-2">
+                    <div class="admin-empty-state md:col-span-2 text-sm text-text-muted" th:text="#{admin.ticket.active.devices.empty}">
                         No connected devices yet.
                     </div>
                 </div>

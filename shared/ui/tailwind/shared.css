@@ -329,6 +329,68 @@
   .admin-side-link-active {
     @apply bg-[rgb(var(--surface-lowest))] text-brand-700 shadow-[0_22px_44px_-34px_rgba(0,105,109,0.24)];
   }
+
+  /* ── Admin: segmented tab bar ── */
+
+  .admin-tab-bar {
+    @apply inline-flex gap-0.5 rounded-full bg-[rgb(var(--surface-muted))] p-1;
+  }
+
+  .admin-tab {
+    @apply inline-flex items-center rounded-full px-4 py-1.5 text-sm font-medium text-text-muted no-underline transition-colors duration-150 cursor-pointer;
+    @apply hover:text-text;
+  }
+
+  .admin-tab-active {
+    @apply bg-[rgb(var(--surface-lowest))] text-brand-700 shadow-[0_2px_8px_-2px_rgba(0,105,109,0.14)];
+  }
+
+  /* ── Admin: list items inside panel cards ── */
+
+  .admin-list-item {
+    @apply rounded-2xl bg-[rgb(var(--surface-muted))] px-4 py-3.5 transition-colors duration-150;
+  }
+
+  /* ── Admin: device icon ring ── */
+
+  .admin-device-icon {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] bg-brand-100 text-brand-700;
+  }
+
+  /* ── Admin: add form section (collapsible) ── */
+
+  .admin-add-trigger {
+    @apply flex w-full cursor-pointer list-none items-center justify-between gap-3 rounded-2xl bg-brand-50 px-4 py-3 text-sm font-medium text-brand-700 transition-colors duration-150 select-none;
+    @apply hover:bg-brand-100;
+  }
+
+  .admin-add-trigger::-webkit-details-marker {
+    display: none;
+  }
+
+  .admin-add-panel {
+    @apply mt-3 rounded-2xl bg-[rgb(var(--surface-lowest))] p-4 shadow-[inset_0_0_0_1px_rgba(207,223,228,0.6)];
+  }
+
+  /* ── Admin: empty state ── */
+
+  .admin-empty-state {
+    @apply flex flex-col items-center gap-2 rounded-2xl bg-[rgb(var(--surface-muted))] px-6 py-8 text-center;
+  }
+
+  .admin-empty-icon {
+    @apply flex h-12 w-12 items-center justify-center rounded-full bg-[rgb(var(--surface-high))] text-text-muted;
+  }
+
+  /* ── Admin: status dot ── */
+
+  .admin-status-dot {
+    @apply h-2 w-2 shrink-0 rounded-full;
+  }
+
+  .admin-status-dot-active   { background-color: rgb(var(--success)); }
+  .admin-status-dot-inactive { background-color: rgb(var(--border)); }
+  .admin-status-dot-danger   { background-color: rgb(var(--danger)); }
 }
 
 button:has(.spinner) {
