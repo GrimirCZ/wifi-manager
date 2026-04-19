@@ -6,8 +6,9 @@ import org.springframework.stereotype.Component
 class AccessCodeFormatter {
     companion object {
         private const val BARCODE_PREFIX = "W"
-        private val NORMALIZED_CODE_REGEX = Regex("^[A-Z0-9]{8}$")
-        private val FORMATTED_CODE_REGEX = Regex("^[A-Z0-9]{3}-[A-Z0-9]{3}-[A-Z0-9]{2}$")
+        private const val ACCESS_CODE_LENGTH = 6
+        private val NORMALIZED_CODE_REGEX = Regex("^[A-Z0-9]{$ACCESS_CODE_LENGTH}$")
+        private val FORMATTED_CODE_REGEX = Regex("^[A-Z0-9]{3}-[A-Z0-9]{3}$")
     }
 
     val barcodePrefix: String
@@ -22,7 +23,7 @@ class AccessCodeFormatter {
             .trim()
             .uppercase()
             .filter(Char::isLetterOrDigit)
-            .take(8)
+            .take(ACCESS_CODE_LENGTH)
             .chunked(3)
             .joinToString("-")
 
@@ -38,7 +39,7 @@ class AccessCodeFormatter {
 
     fun createBarcodePayload(code: String): String {
         val normalizedCode = normalize(code)
-        require(isValidNormalized(normalizedCode)) { "Access code must be 8 alphanumeric characters." }
+        require(isValidNormalized(normalizedCode)) { "Access code must be 6 alphanumeric characters." }
         return buildString {
             append(BARCODE_PREFIX)
             append(normalizedCode)
@@ -58,7 +59,7 @@ class AccessCodeFormatter {
         }
 
         val encodedCode = normalizedPayload.removePrefix(BARCODE_PREFIX)
-        if (encodedCode.length != 9) {
+        if (encodedCode.length != ACCESS_CODE_LENGTH + 1) {
             return null
         }
 

@@ -40,7 +40,7 @@ class CreateTicketUsecase(
         val ticket =
             Ticket(
                 id = TicketId.new(),
-                accessCode = accessCodeGenerator.generate(8),
+                accessCode = accessCodeGenerator.generate(6),
                 createdAt = now,
                 validUntil = validUntil,
                 wasCanceled = false,

@@ -10,14 +10,14 @@ class AccessCodeFormatterTest {
 
     @Test
     fun `barcode payload round trips access code`() {
-        val payload = formatter.createBarcodePayload("ABC-DEF-GH")
+        val payload = formatter.createBarcodePayload("ABC-DEF")
 
-        assertEquals("ABCDEFGH", formatter.parseBarcodePayload(payload))
+        assertEquals("ABCDEF", formatter.parseBarcodePayload(payload))
     }
 
     @Test
     fun `barcode payload parser rejects invalid checksum`() {
-        val payload = formatter.createBarcodePayload("ABCDEFGH").dropLast(1) + "Z"
+        val payload = formatter.createBarcodePayload("ABCDEF").dropLast(1) + "Z"
 
         assertNull(formatter.parseBarcodePayload(payload))
     }

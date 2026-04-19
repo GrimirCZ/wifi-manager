@@ -11,6 +11,7 @@ import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnaps
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.events.TicketCreatedEvent
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
@@ -52,10 +53,12 @@ class CreateTicketUsecaseTest {
         val ticketCaptor = argumentCaptor<Ticket>()
         verify(saveTicketPort).save(ticketCaptor.capture())
         assertFalse(ticketCaptor.firstValue.requireUserNameOnLogin)
+        assertEquals(6, ticketCaptor.firstValue.accessCode.length)
 
         val eventCaptor = argumentCaptor<TicketCreatedEvent>()
         verify(eventPublisher).publish(eventCaptor.capture())
         assertFalse(eventCaptor.firstValue.requireUserNameOnLogin)
+        assertEquals(6, eventCaptor.firstValue.accessCode.length)
     }
 
     @Test

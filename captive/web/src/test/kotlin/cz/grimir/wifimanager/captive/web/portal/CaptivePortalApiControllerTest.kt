@@ -263,7 +263,7 @@ class CaptivePortalApiControllerTest {
 
         return AuthorizationToken(
             id = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000300")),
-            accessCode = "ABCDEFGH",
+            accessCode = "ABCDEF",
             validUntil = validUntil,
             requireUserNameOnLogin = false,
             authorizedDevices = mutableListOf(device),

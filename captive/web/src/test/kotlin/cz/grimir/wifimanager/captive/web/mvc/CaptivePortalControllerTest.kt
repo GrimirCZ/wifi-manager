@@ -6,14 +6,16 @@ import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthoriz
 import cz.grimir.wifimanager.captive.application.identity.port.CaptiveUserIdentityPort
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.TouchNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
+import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveAccessCodeForm
 import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessState
 import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessStatus
 import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessStatusService
-import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveAccessCodeForm
 import cz.grimir.wifimanager.captive.web.security.support.ClientInfo
 import cz.grimir.wifimanager.shared.core.TicketId
 import cz.grimir.wifimanager.shared.ui.AccessCodeFormatter
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HtmxRequest
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpSession
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -24,8 +26,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verifyNoInteractions
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpSession
 import org.springframework.ui.ExtendedModelMap
 import org.springframework.validation.BeanPropertyBindingResult
 import java.time.Instant
@@ -62,14 +62,14 @@ class CaptivePortalControllerTest {
 
     @Test
     fun `required name ticket returns htmx name step when name is missing`() {
-        val form = CaptiveAccessCodeForm(accessCode = "abc-def-gh", acceptTerms = true)
+        val form = CaptiveAccessCodeForm(accessCode = "abc-def", acceptTerms = true)
         val bindingResult = BeanPropertyBindingResult(form, "form")
         val model = ExtendedModelMap()
         val token = token(requireUserNameOnLogin = true)
         given(htmxRequest.isHtmxRequest).willReturn(true)
         given(clientAccessStatusService.resolve(clientInfo))
             .willReturn(CaptiveClientAccessStatus(CaptiveClientAccessState.UNAUTHORIZED))
-        given(findAuthorizationTokenPort.findByAccessCode("ABCDEFGH")).willReturn(token)
+        given(findAuthorizationTokenPort.findByAccessCode("ABCDEF")).willReturn(token)
 
         val view = controller.submit(clientInfo, form, bindingResult, request(), model, htmxRequest)
 
@@ -81,13 +81,13 @@ class CaptivePortalControllerTest {
 
     @Test
     fun `name shorter than three characters is rejected after trim`() {
-        val form = CaptiveAccessCodeForm(accessCode = "ABCDEFGH", name = "  ab  ", acceptTerms = true)
+        val form = CaptiveAccessCodeForm(accessCode = "ABCDEF", name = "  ab  ", acceptTerms = true)
         val bindingResult = BeanPropertyBindingResult(form, "form")
         val model = ExtendedModelMap()
         given(htmxRequest.isHtmxRequest).willReturn(true)
         given(clientAccessStatusService.resolve(clientInfo))
             .willReturn(CaptiveClientAccessStatus(CaptiveClientAccessState.UNAUTHORIZED))
-        given(findAuthorizationTokenPort.findByAccessCode("ABCDEFGH")).willReturn(token(requireUserNameOnLogin = true))
+        given(findAuthorizationTokenPort.findByAccessCode("ABCDEF")).willReturn(token(requireUserNameOnLogin = true))
 
         val view = controller.submit(clientInfo, form, bindingResult, request(), model, htmxRequest)
 
@@ -100,7 +100,7 @@ class CaptivePortalControllerTest {
 
     @Test
     fun `access code with invalid format is rejected before lookup`() {
-        val form = CaptiveAccessCodeForm(accessCode = "ABC-DEF-G", acceptTerms = true)
+        val form = CaptiveAccessCodeForm(accessCode = "ABC-DE", acceptTerms = true)
         val bindingResult = BeanPropertyBindingResult(form, "form")
         val model = ExtendedModelMap()
         given(htmxRequest.isHtmxRequest).willReturn(true)
@@ -110,7 +110,7 @@ class CaptivePortalControllerTest {
         val view = controller.submit(clientInfo, form, bindingResult, request(), model, htmxRequest)
 
         assertEquals("captive/index :: captiveContent", view)
-        assertEquals("ABC-DEF-G", form.accessCode)
+        assertEquals("ABC-DE", form.accessCode)
         assertTrue(bindingResult.hasFieldErrors("accessCode"))
         assertEquals("captive.error.code.format", bindingResult.getFieldError("accessCode")?.code)
         verifyNoInteractions(findAuthorizationTokenPort, authorizeDeviceWithCodeUsecase)
@@ -118,37 +118,37 @@ class CaptivePortalControllerTest {
 
     @Test
     fun `dashed access code is normalized for lookup`() {
-        val form = CaptiveAccessCodeForm(accessCode = "abc-def-gh", acceptTerms = true)
+        val form = CaptiveAccessCodeForm(accessCode = "abc-def", acceptTerms = true)
         val bindingResult = BeanPropertyBindingResult(form, "form")
         val model = ExtendedModelMap()
         given(htmxRequest.isHtmxRequest).willReturn(true)
         given(clientAccessStatusService.resolve(clientInfo))
             .willReturn(CaptiveClientAccessStatus(CaptiveClientAccessState.UNAUTHORIZED))
-        given(findAuthorizationTokenPort.findByAccessCode("ABCDEFGH")).willReturn(token(requireUserNameOnLogin = false))
+        given(findAuthorizationTokenPort.findByAccessCode("ABCDEF")).willReturn(token(requireUserNameOnLogin = false))
 
         controller.submit(clientInfo, form, bindingResult, request(), model, htmxRequest)
 
-        verify(findAuthorizationTokenPort).findByAccessCode("ABCDEFGH")
+        verify(findAuthorizationTokenPort).findByAccessCode("ABCDEF")
         verify(authorizeDeviceWithCodeUsecase).authorize(org.mockito.kotlin.any())
-        assertEquals("ABC-DEF-GH", form.accessCode)
+        assertEquals("ABC-DEF", form.accessCode)
     }
 
     @Test
     fun `valid three character name authorizes required name ticket`() {
-        val form = CaptiveAccessCodeForm(accessCode = "ABCDEFGH", name = "  abc  ", acceptTerms = true)
+        val form = CaptiveAccessCodeForm(accessCode = "ABCDEF", name = "  abc  ", acceptTerms = true)
         val bindingResult = BeanPropertyBindingResult(form, "form")
         val model = ExtendedModelMap()
         given(htmxRequest.isHtmxRequest).willReturn(true)
         given(clientAccessStatusService.resolve(clientInfo))
             .willReturn(CaptiveClientAccessStatus(CaptiveClientAccessState.UNAUTHORIZED))
-        given(findAuthorizationTokenPort.findByAccessCode("ABCDEFGH")).willReturn(token(requireUserNameOnLogin = true))
+        given(findAuthorizationTokenPort.findByAccessCode("ABCDEF")).willReturn(token(requireUserNameOnLogin = true))
 
         val view = controller.submit(clientInfo, form, bindingResult, request(), model, htmxRequest)
 
         assertEquals("captive/index :: captiveContent", view)
         val commandCaptor = argumentCaptor<AuthorizeDeviceWithCodeCommand>()
         verify(authorizeDeviceWithCodeUsecase).authorize(commandCaptor.capture())
-        assertEquals("ABCDEFGH", commandCaptor.firstValue.accessCode)
+        assertEquals("ABCDEF", commandCaptor.firstValue.accessCode)
         assertEquals("abc", commandCaptor.firstValue.device.displayName)
         assertEquals("guest-phone", commandCaptor.firstValue.device.deviceName)
         assertEquals(false, model["requireUserNameStep"])
@@ -157,13 +157,13 @@ class CaptivePortalControllerTest {
 
     @Test
     fun `unflagged ticket authorizes immediately without requiring a name`() {
-        val form = CaptiveAccessCodeForm(accessCode = "ABCDEFGH", acceptTerms = true)
+        val form = CaptiveAccessCodeForm(accessCode = "ABCDEF", acceptTerms = true)
         val bindingResult = BeanPropertyBindingResult(form, "form")
         val model = ExtendedModelMap()
         given(htmxRequest.isHtmxRequest).willReturn(true)
         given(clientAccessStatusService.resolve(clientInfo))
             .willReturn(CaptiveClientAccessStatus(CaptiveClientAccessState.UNAUTHORIZED))
-        given(findAuthorizationTokenPort.findByAccessCode("ABCDEFGH")).willReturn(token(requireUserNameOnLogin = false))
+        given(findAuthorizationTokenPort.findByAccessCode("ABCDEF")).willReturn(token(requireUserNameOnLogin = false))
 
         controller.submit(clientInfo, form, bindingResult, request(), model, htmxRequest)
 
@@ -209,7 +209,7 @@ class CaptivePortalControllerTest {
     private fun token(requireUserNameOnLogin: Boolean): AuthorizationToken =
         AuthorizationToken(
             id = TicketId(UUID.fromString("00000000-0000-0000-0000-000000000300")),
-            accessCode = "ABCDEFGH",
+            accessCode = "ABCDEF",
             validUntil = Instant.parse("2025-01-01T10:00:00Z"),
             requireUserNameOnLogin = requireUserNameOnLogin,
             authorizedDevices = mutableListOf(),
