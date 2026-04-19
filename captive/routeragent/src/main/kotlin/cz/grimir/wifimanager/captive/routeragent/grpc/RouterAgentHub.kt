@@ -52,7 +52,7 @@ class RouterAgentHub(
                         .addAllMacAddresses(macAddresses)
                         .build(),
                 ).build()
-        logger.info { "Allowing client access for macAddresses=$macAddresses, commandId=$commandId" }
+        logger.debug { "Allowing client access for macAddresses=$macAddresses, commandId=$commandId" }
         waitForAllAcks(sendToAll(command), commandId(command))
     }
 
@@ -72,7 +72,7 @@ class RouterAgentHub(
                         .addAllMacAddresses(macAddresses)
                         .build(),
                 ).build()
-        logger.info { "Revoking client access for macAddresses=$macAddresses, commandId=$commandId" }
+        logger.debug { "Revoking client access for macAddresses=$macAddresses, commandId=$commandId" }
         waitForAllAcks(sendToAll(command), commandId(command))
     }
 
@@ -88,7 +88,7 @@ class RouterAgentHub(
                         .addAllMacAddresses(macAddresses)
                         .build(),
                 ).build()
-        logger.info { "Setting allowed macAddresses=$macAddresses, command=$commandId" }
+        logger.debug { "Setting allowed macAddresses=$macAddresses, command=$commandId" }
         waitForAllAcks(sendToAll(command), commandId(command))
     }
 
@@ -104,7 +104,7 @@ class RouterAgentHub(
                         .setIpAddress(ipAddress)
                         .build(),
                 ).build()
-        logger.info { "Getting mac for ip=$ipAddress, commandId=$commandId" }
+        logger.debug { "Getting mac for ip=$ipAddress, commandId=$commandId" }
         return waitForFirstSuccessfulAck(sendToAll(command), commandId(command))
     }
 
@@ -119,7 +119,7 @@ class RouterAgentHub(
                         .setId(commandId)
                         .build(),
                 ).build()
-        logger.info { "Listing network clients commandId=$commandId" }
+        logger.debug { "Listing network clients commandId=$commandId" }
         return waitForFirstSuccessfulAck(sendToAll(command), commandId(command))
     }
 
