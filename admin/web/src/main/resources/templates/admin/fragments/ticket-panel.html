@@ -47,7 +47,7 @@
             <div class="hero-shell">
                 <div class="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
                     <div class="space-y-6">
-                        <div class="space-y-4">
+                        <div class="space-y-2">
                             <div class="hero-kicker" th:text="#{admin.ticket.active.title}">Active ticket</div>
                             <h1 class="hero-title" th:text="#{admin.ticket.active.heading}">How to connect</h1>
                         </div>
@@ -139,10 +139,10 @@
     </div>
 
     <div th:if="${activeTickets == null or activeTickets.isEmpty()}" class="hero-shell space-y-5">
-        <div class="space-y-3">
+        <div class="space-y-2">
             <div class="hero-kicker" th:text="#{admin.ticket.create.kicker}">Session setup</div>
             <h1 class="hero-title" th:text="#{admin.ticket.create.title}">Create ticket</h1>
-            <p class="max-w-2xl text-sm leading-7 text-text-muted" th:text="#{admin.ticket.create.help}">
+            <p class="hero-copy max-w-2xl" th:text="#{admin.ticket.create.help}">
                 Choose a duration and generate a fresh access code for the network.
             </p>
         </div>
