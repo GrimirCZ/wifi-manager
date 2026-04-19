@@ -40,7 +40,7 @@
             </nav>
         </div>
 
-        <div sec:authorize="isAuthenticated()" class="flex items-center gap-3">
+        <div class="flex items-center gap-3">
             <details class="mobile-menu md:hidden">
                 <summary class="mobile-menu-button list-none">
                     <span class="sr-only">Open navigation menu</span>
@@ -51,7 +51,7 @@
                     </svg>
                 </summary>
 
-                <div class="mobile-menu-panel">
+                <div sec:authorize="isAuthenticated()" class="mobile-menu-panel">
                     <div class="mobile-menu-body">
                         <nav class="mobile-menu-section mobile-menu-section-primary">
                             <a class="mobile-menu-link"
@@ -103,7 +103,7 @@
 
             <div th:replace="~{shared/fragments/language-switcher :: languageSwitcher(#{admin.language.label}, #{admin.language.en}, #{admin.language.cs})}"></div>
 
-            <div class="group relative hidden md:block">
+            <div sec:authorize="isAuthenticated()" class="group relative hidden md:block">
                 <button
                         type="button"
                         class="flex items-center gap-3 rounded-full bg-surface-muted px-2.5 py-2 shadow-[0_18px_40px_-30px_rgba(22,29,31,0.14)] transition hover:bg-[rgb(var(--surface-lowest))]"

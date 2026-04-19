@@ -1,6 +1,7 @@
-package cz.grimir.wifimanager.captive.auth.google
+package cz.grimir.wifimanager.shared.application.identity.google
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.http.GenericUrl
@@ -10,21 +11,14 @@ import com.google.auth.oauth2.GoogleCredentials
 import java.io.FileInputStream
 
 class GoogleDirectoryApiClient(
-    private val properties: GoogleLdapProperties,
+    private val properties: GoogleDirectoryApiProperties,
+    private val requestFactoryProvider: () -> HttpRequestFactory = { defaultRequestFactory(properties) },
+    private val objectMapper: ObjectMapper = defaultObjectMapper(),
 ) {
-    private val credentials: GoogleCredentials = loadCredentials(properties)
-    private val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
-    private val requestFactory: HttpRequestFactory =
-        httpTransport.createRequestFactory(HttpCredentialsAdapter(credentials))
-    private val objectMapper =
-        jacksonObjectMapper().apply {
-            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true)
-            configure(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES, true)
-        }
+    private val requestFactory: HttpRequestFactory by lazy(requestFactoryProvider)
 
-    fun fetchUser(username: String): GoogleDirectoryUser {
-        val url = GenericUrl("${properties.directoryApiBaseUrl}/users/$username")
+    fun fetchUser(userKey: String): GoogleDirectoryUser {
+        val url = GenericUrl("${properties.directoryApiBaseUrl}/users/$userKey")
         url["customer"] = properties.directoryCustomer
 
         val response = requestFactory.buildGetRequest(url).execute()
@@ -59,15 +53,6 @@ class GoogleDirectoryApiClient(
         } finally {
             response.disconnect()
         }
-    }
-
-    private fun loadCredentials(properties: GoogleLdapProperties): GoogleCredentials {
-        val raw =
-            FileInputStream(properties.serviceAccountJsonPath).use { stream ->
-                GoogleCredentials.fromStream(stream)
-            }
-        val scoped = raw.createScoped(DIRECTORY_SCOPES)
-        return properties.impersonatedUser?.let { scoped.createDelegated(it) } ?: scoped
     }
 
     data class UserResponse(
@@ -106,5 +91,27 @@ class GoogleDirectoryApiClient(
                 "https://www.googleapis.com/auth/admin.directory.user.readonly",
                 "https://www.googleapis.com/auth/admin.directory.group.readonly",
             )
+
+        private fun defaultObjectMapper(): ObjectMapper =
+            jacksonObjectMapper().apply {
+                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true)
+                configure(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES, true)
+            }
+
+        private fun defaultRequestFactory(properties: GoogleDirectoryApiProperties): HttpRequestFactory {
+            require(properties.isConfigured()) {
+                "Google Directory API is not configured: missing service-account-json-path."
+            }
+
+            val raw =
+                FileInputStream(properties.serviceAccountJsonPath).use { stream ->
+                    GoogleCredentials.fromStream(stream)
+                }
+            val scoped = raw.createScoped(DIRECTORY_SCOPES)
+            val credentials = properties.impersonatedUser?.let { scoped.createDelegated(it) } ?: scoped
+            val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
+            return httpTransport.createRequestFactory(HttpCredentialsAdapter(credentials))
+        }
     }
 }

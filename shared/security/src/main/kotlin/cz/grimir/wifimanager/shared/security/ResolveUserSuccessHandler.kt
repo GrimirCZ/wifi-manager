@@ -4,10 +4,12 @@ import cz.grimir.wifimanager.shared.core.ResolveUserCommand
 import cz.grimir.wifimanager.shared.core.RoleMappingInput
 import cz.grimir.wifimanager.shared.core.UserDirectoryClient
 import cz.grimir.wifimanager.shared.core.UserProfileSnapshot
+import cz.grimir.wifimanager.shared.security.oidc.OidcLoginEnricher
 import cz.grimir.wifimanager.shared.security.mvc.SessionUserIdentity
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Component
 @Component
 class ResolveUserSuccessHandler(
     private val userDirectoryClient: UserDirectoryClient,
+    private val oidcLoginEnricherProvider: ObjectProvider<OidcLoginEnricher>,
 ) : AuthenticationSuccessHandler {
     private val logger = KotlinLogging.logger {}
     private val delegate = SavedRequestAwareAuthenticationSuccessHandler()
@@ -47,39 +50,55 @@ class ResolveUserSuccessHandler(
                 ?: oidcUser.getClaimAsString("sub")
                 ?: error("OIDC subject (sub) not available")
 
-        val email =
-            oidcUser.getClaimAsString("email")
-                ?: error("OIDC claim 'email' is required for UI login")
-
-        val displayName =
-            oidcUser.getClaimAsString("preferred_username")
-                ?: oidcUser.getClaimAsString("name")
-                ?: email
-
-        val pictureUrl = oidcUser.getClaimAsString("picture")
-
-        val roles = extractRoles(oidcUser, oauth)
-        val groups = extractGroups(oidcUser)
-
         val result =
             try {
+                val loginEnrichment =
+                    if (oidcLoginEnricherProvider.ifAvailable?.supports(issuer) == true) {
+                        oidcLoginEnricherProvider.ifAvailable!!.enrich(oidcUser)
+                    } else {
+                        null
+                    }
+
+                val profile =
+                    loginEnrichment?.profile ?: run {
+                        val email =
+                            oidcUser.getClaimAsString("email")
+                                ?: error("OIDC claim 'email' is required for UI login")
+
+                        val displayName =
+                            oidcUser.getClaimAsString("preferred_username")
+                                ?: oidcUser.getClaimAsString("name")
+                                ?: email
+
+                        UserProfileSnapshot(
+                            displayName = displayName,
+                            email = email,
+                            pictureUrl = oidcUser.getClaimAsString("picture"),
+                        )
+                    }
+
+                val roleMapping =
+                    loginEnrichment?.roleMapping
+                        ?: RoleMappingInput(
+                            roles = extractRoles(oidcUser, oauth),
+                            groups = extractGroups(oidcUser),
+                        )
+                val resolvedGroups = loginEnrichment?.groups ?: roleMapping.groups
+
                 userDirectoryClient.resolveUser(
                     ResolveUserCommand(
                         issuer = issuer,
                         subject = subject,
-                        profile =
-                            UserProfileSnapshot(
-                                displayName = displayName,
-                                email = email,
-                                pictureUrl = pictureUrl,
-                            ),
-                        roleMapping =
-                            RoleMappingInput(
-                                roles = roles,
-                                groups = groups,
-                            ),
+                        profile = profile,
+                        roleMapping = roleMapping,
                     ),
-                )
+                ).also { resolved ->
+                    logger.info {
+                        "OIDC login resolved user issuer=$issuer registrationId=${oauth.authorizedClientRegistrationId} " +
+                            "email=${profile.email} groups=${resolvedGroups.sorted()} " +
+                            "userId=${resolved.userId} identityId=${resolved.identityId}"
+                    }
+                }
             } catch (ex: Exception) {
                 logger.error(ex) {
                     "Failed to resolve user during OIDC login issuer=$issuer registrationId=${oauth.authorizedClientRegistrationId}"

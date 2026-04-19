@@ -1,0 +1,26 @@
+spring:
+  config:
+    activate:
+      on-profile: google
+  security:
+    oauth2:
+      client:
+        provider:
+          google:
+            issuer-uri: https://accounts.google.com
+        registration:
+          admin:
+            provider: google
+            client-name: Google
+            client-id: ${GOOGLE_OIDC_CLIENT_ID:}
+            client-secret: ${GOOGLE_OIDC_CLIENT_SECRET:}
+            scope:
+              - openid
+              - profile
+              - email
+
+wifimanager:
+  security:
+    oidc-registration-id: admin
+    authorities-provider-by-registration:
+      admin: passthrough

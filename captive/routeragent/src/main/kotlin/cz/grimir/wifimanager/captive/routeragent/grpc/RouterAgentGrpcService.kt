@@ -2,12 +2,12 @@ package cz.grimir.wifimanager.captive.routeragent.grpc
 
 import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedClientFingerprintGuard
-import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
+import cz.grimir.wifimanager.shared.events.AuthorizedClientObservedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.core.task.TaskExecutor
 import org.springframework.core.task.TaskRejectedException
 import java.util.concurrent.RejectedExecutionException
@@ -18,9 +18,8 @@ class RouterAgentGrpcService(
     private val hub: RouterAgentHub,
     private val findAuthorizationTokenPort: FindAuthorizationTokenPort,
     private val allowedMacReadPort: AllowedMacReadPort,
-    private val authorizedClientFingerprintGuard: AuthorizedClientFingerprintGuard,
-    private val deviceFingerprintService: DeviceFingerprintService,
-    private val commandExecutor: TaskExecutor,
+    private val applicationEventPublisher: ApplicationEventPublisher,
+    private val commandExecutor: TaskExecutor
 ) : RouterAgentServiceGrpc.RouterAgentServiceImplBase() {
     override fun connect(responseObserver: StreamObserver<RouterAgentCommand>): StreamObserver<RouterAgentMessage> {
         val connectionId = hub.registerConnection(responseObserver)
@@ -64,28 +63,15 @@ class RouterAgentGrpcService(
 
                     RouterAgentMessage.MessageCase.AUTHORIZED_CLIENT_OBSERVED -> {
                         val observed = message.authorizedClientObserved
-                        try {
-                            commandExecutor.execute {
-                                authorizedClientFingerprintGuard.processAuthorizedClientObservation(
-                                    mac = observed.macAddress,
-                                    currentFingerprint =
-                                        deviceFingerprintService.createRouterObservation(
-                                            hostname = observed.hostname,
-                                            dhcpHostname = observed.dhcpHostname,
-                                            dhcpVendorClass = observed.dhcpVendorClass,
-                                            dhcpPrlHash = observed.dhcpPrlHash,
-                                        ),
-                                )
-                            }
-                        } catch (ex: RuntimeException) {
-                            when (ex) {
-                                is TaskRejectedException,
-                                is RejectedExecutionException,
-                                    -> logger.error(ex) { "Failed to schedule authorized client observation handling" }
-
-                                else -> throw ex
-                            }
-                        }
+                        applicationEventPublisher.publishEvent(
+                            AuthorizedClientObservedEvent(
+                                macAddress = observed.macAddress,
+                                hostname = observed.hostname.ifBlank { null },
+                                dhcpHostname = observed.dhcpHostname.ifBlank { null },
+                                dhcpVendorClass = observed.dhcpVendorClass.ifBlank { null },
+                                dhcpPrlHash = observed.dhcpPrlHash.ifBlank { null },
+                            ),
+                        )
                     }
 
                     else -> logger.warn { "Unhandled router agent message ${message.messageCase}" }

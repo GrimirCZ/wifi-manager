@@ -21,6 +21,12 @@ app:
     default: en
 
 wifimanager:
+  google:
+    directory:
+      directory-customer: ${GOOGLE_DIRECTORY_CUSTOMER:my_customer}
+      service-account-json-path: ${GOOGLE_LDAP_SERVICE_ACCOUNT_JSON:}
+      impersonated-user: ${GOOGLE_LDAP_IMPERSONATED_USER:}
+      directory-api-base-url: ${GOOGLE_DIRECTORY_API_BASE_URL:https://admin.googleapis.com/admin/directory/v1}
   captive:
     request-routing:
       ipv4-subnets: ${CAPTIVE_PORTAL_IPV4_SUBNET:[]}
@@ -39,10 +45,6 @@ wifimanager:
         ldap-url: ldaps://ldap.google.com:636
         user-search-base: ${GOOGLE_LDAP_USER_SEARCH_BASE:}
         user-search-filter: "mail={0}"
-        directory-customer: "my_customer" # use this to refer to your G Suite / Google Workspace account
-        service-account-json-path: ${GOOGLE_LDAP_SERVICE_ACCOUNT_JSON:}
-        impersonated-user: ${GOOGLE_LDAP_IMPERSONATED_USER:}
-        directory-api-base-url: https://admin.googleapis.com/admin/directory/v1
         allowed-devices-by-group: ${GOOGLE_LDAP_ALLOWED_DEVICES_BY_GROUP:}
         connect-timeout: 5s
         read-timeout: 5s

@@ -8,6 +8,7 @@ plugins {
 
 dependencies {
     implementation(project(":shared:application"))
+    implementation(project(":shared:events"))
     implementation(project(":captive:core"))
     implementation(project(":captive:application"))
     implementation(libs.springBootStarterWeb)

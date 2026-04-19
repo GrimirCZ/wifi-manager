@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments/head :: head(#{admin.error.title})}"></head>
+<body class="app-shell">
+<div th:replace="~{admin/fragments/header :: header('WiFi Manager')}"></div>
+<main class="app-main">
+    <section class="hero-shell space-y-5">
+        <div class="space-y-3">
+            <div class="hero-kicker" th:text="#{admin.error.kicker}">Unexpected problem</div>
+            <h1 class="hero-title" th:text="#{admin.error.heading}">Something went wrong</h1>
+            <p class="max-w-2xl text-sm leading-7 text-text-muted" th:text="#{admin.error.body}">
+                We could not finish that request. Please try again.
+            </p>
+        </div>
+
+        <div th:replace="~{admin/fragments/error :: errorContent}"></div>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<div id="captive-content" class="captive-content" th:fragment="errorContent" xmlns:th="http://www.thymeleaf.org">
+    <div class="captive-card captive-card-hero">
+        <div class="captive-icon-ring captive-icon-ring-danger">
+            <img th:src="@{/assets/shared/icons/outline/wifi-off.svg}" alt="" class="captive-icon" />
+        </div>
+        <h1 class="captive-title" th:text="#{captive.error.heading}">Something went wrong</h1>
+        <p class="captive-subtitle" th:text="#{captive.error.body}">
+            We could not finish that request. Please try again.
+        </p>
+    </div>
+
+    <div class="captive-card">
+        <div class="alert alert-danger" role="alert">
+            <div class="font-semibold" th:text="#{captive.error.detail.title}">
+                The portal hit an unexpected error.
+            </div>
+            <div class="text-sm" th:text="#{captive.error.detail.body}">
+                Refresh the page or return to the portal home and try again.
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <a class="btn btn-primary" th:href="${returnHref}" th:text="#{captive.error.cta}">
+                Return to portal
+            </a>
+        </div>
+    </div>
+</div>

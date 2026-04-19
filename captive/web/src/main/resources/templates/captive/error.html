@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{captive/fragments/head :: head(#{captive.error.page.title})}"></head>
+<body class="bg-surface captive-body">
+<div th:replace="~{captive/fragments/header :: header(#{captive.page.title})}"></div>
+<main class="captive-main">
+    <div th:replace="~{captive/fragments/error :: errorContent}"></div>
+</main>
+</body>
+</html>

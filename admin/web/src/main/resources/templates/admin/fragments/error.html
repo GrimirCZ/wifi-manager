@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<section th:fragment="errorContent" xmlns:th="http://www.thymeleaf.org" class="surface-panel space-y-5">
+    <div class="alert alert-danger" role="alert">
+        <div class="font-semibold" th:text="#{admin.error.heading}">
+            Something went wrong
+        </div>
+        <div class="text-sm" th:text="#{admin.error.body}">
+            We could not finish that request. Please try again.
+        </div>
+    </div>
+
+    <div class="flex flex-wrap gap-3">
+        <a class="btn btn-primary" th:href="${returnHref}" th:text="#{admin.error.cta}">
+            Return to tickets
+        </a>
+    </div>
+</section>

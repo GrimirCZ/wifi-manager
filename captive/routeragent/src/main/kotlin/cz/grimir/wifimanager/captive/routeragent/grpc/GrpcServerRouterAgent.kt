@@ -1,8 +1,6 @@
 package cz.grimir.wifimanager.captive.routeragent.grpc
 
 import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadPort
-import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedClientFingerprintGuard
-import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
 import cz.grimir.wifimanager.captive.application.integration.routeragent.port.ClientInfo
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
@@ -21,6 +19,7 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import io.grpc.netty.shaded.io.netty.handler.ssl.ClientAuth
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder
 import org.springframework.beans.factory.InitializingBean
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.core.task.TaskExecutor
 import java.io.File
 import java.io.FileInputStream
@@ -36,9 +35,8 @@ class GrpcServerRouterAgent(
     private val properties: GrpcServerRouterAgentProperties,
     findAuthorizationTokenPort: FindAuthorizationTokenPort,
     allowedMacReadPort: AllowedMacReadPort,
-    authorizedClientFingerprintGuard: AuthorizedClientFingerprintGuard,
-    deviceFingerprintService: DeviceFingerprintService,
-    commandExecutor: TaskExecutor,
+    applicationEventPublisher: ApplicationEventPublisher,
+    commandExecutor: TaskExecutor
 ) : RouterAgentPort,
     AutoCloseable,
     InitializingBean {
@@ -48,8 +46,7 @@ class GrpcServerRouterAgent(
             hub,
             findAuthorizationTokenPort,
             allowedMacReadPort,
-            authorizedClientFingerprintGuard,
-            deviceFingerprintService,
+            applicationEventPublisher,
             commandExecutor,
         )
     private val server = buildServer(properties, service)

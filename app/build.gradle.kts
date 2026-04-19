@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":shared:application"))
     implementation(project(":shared:ui"))
     implementation(project(":shared:security"))
 
