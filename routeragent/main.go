@@ -6,8 +6,10 @@ import (
 	"os"
 	"os/signal"
 	"slices"
+	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/agent"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/allowedip"
@@ -29,6 +31,9 @@ var newHostnameProvider = func(ctx context.Context, path string) hostname.Provid
 }
 var newDHCPFingerprintProvider = func(ctx context.Context, cfg config.Config) (dhcpfingerprint.Provider, error) {
 	return dhcpfingerprint.New(cfg, ctx)
+}
+var nowObservedNetworkState = func() time.Time {
+	return time.Now().UTC()
 }
 
 func main() {
@@ -169,32 +174,78 @@ func observedNetworkStateLogLines(
 	hostnameProvider hostname.Provider,
 	dhcpFingerprintProvider dhcpfingerprint.Provider,
 ) []string {
+	return observedNetworkStateLogLinesAt(nowObservedNetworkState(), ipProvider, hostnameProvider, dhcpFingerprintProvider)
+}
+
+func observedNetworkStateLogLinesAt(
+	now time.Time,
+	ipProvider ipmapping.Provider,
+	hostnameProvider hostname.Provider,
+	dhcpFingerprintProvider dhcpfingerprint.Provider,
+) []string {
 	clients := ipProvider.ListClients()
 	if len(clients) == 0 {
 		return []string{"observed network state dump (signal=SIGUSR1): no clients observed"}
 	}
 
-	lines := make([]string, 0, len(clients)+1)
-	lines = append(lines, "observed network state dump (signal=SIGUSR1): current clients")
+	cutoff := now.Add(-15 * time.Minute)
+	recent := make([]ipmapping.ClientView, 0, len(clients))
+	older := make([]ipmapping.ClientView, 0, len(clients))
 	for _, client := range clients {
-		hostnames := observedHostnamesForIPs(hostnameProvider, client.IPs)
-		dhcpDetails := observedDHCPFingerprintDetails(dhcpFingerprintProvider, client.MAC)
-		macDetails := "mac=" + client.MAC + " randomized=" + formatBool(macutil.IsRandomizedMAC(client.MAC))
-		if len(hostnames) == 0 {
-			line := "observed client " + macDetails + " ips=" + formatList(client.IPs)
-			if dhcpDetails != "" {
-				line += " " + dhcpDetails
-			}
-			lines = append(lines, line)
+		if !client.LastSeenAt.IsZero() && client.LastSeenAt.Before(cutoff) {
+			older = append(older, client)
 			continue
 		}
-		line := "observed client " + macDetails + " ips=" + formatList(client.IPs) + " hostnames=" + formatList(hostnames)
+		recent = append(recent, client)
+	}
+
+	lines := make([]string, 0, len(clients)+3)
+	lines = append(lines, "observed network state dump (signal=SIGUSR1): current clients")
+	lines = append(lines, "observed network state section=seen_within_15m clients="+formatCount(len(recent)))
+	for _, client := range recent {
+		lines = append(lines, observedNetworkClientLogLine(client, hostnameProvider, dhcpFingerprintProvider))
+	}
+	lines = append(lines, "observed network state section=older_than_15m clients="+formatCount(len(older)))
+	for _, client := range older {
+		lines = append(lines, observedNetworkClientLogLine(client, hostnameProvider, dhcpFingerprintProvider))
+	}
+	return lines
+}
+
+func observedNetworkClientLogLine(
+	client ipmapping.ClientView,
+	hostnameProvider hostname.Provider,
+	dhcpFingerprintProvider dhcpfingerprint.Provider,
+) string {
+	hostnames := observedHostnamesForIPs(hostnameProvider, client.IPs)
+	dhcpDetails := observedDHCPFingerprintDetails(dhcpFingerprintProvider, client.MAC)
+	macDetails := "mac=" + client.MAC +
+		" randomized=" + formatBool(macutil.IsRandomizedMAC(client.MAC)) +
+		" status=" + string(client.Status) +
+		" last_seen_at=" + formatObservedStateTimestamp(client.LastSeenAt)
+	if len(hostnames) == 0 {
+		line := "observed client " + macDetails + " ips=" + formatList(client.IPs)
 		if dhcpDetails != "" {
 			line += " " + dhcpDetails
 		}
-		lines = append(lines, line)
+		return line
 	}
-	return lines
+	line := "observed client " + macDetails + " ips=" + formatList(client.IPs) + " hostnames=" + formatList(hostnames)
+	if dhcpDetails != "" {
+		line += " " + dhcpDetails
+	}
+	return line
+}
+
+func formatObservedStateTimestamp(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.UTC().Format(time.RFC3339)
+}
+
+func formatCount(n int) string {
+	return strconv.Itoa(n)
 }
 
 func observedHostnamesForIPs(hostnameProvider hostname.Provider, ips []string) []string {

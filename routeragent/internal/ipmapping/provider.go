@@ -2,22 +2,41 @@ package ipmapping
 
 import (
 	"context"
+	"log"
 	"slices"
 	"sync/atomic"
+	"time"
 
 	"github.com/tidwall/btree"
 )
+
+type NeighborStatus string
+
+const (
+	NeighborStatusLive  NeighborStatus = "live"
+	NeighborStatusStale NeighborStatus = "stale"
+)
+
+var nowUTC = func() time.Time {
+	return time.Now().UTC()
+}
+
+var logMACLifecyclef = log.Printf
 
 type Update struct {
 	IP            string
 	MAC           string
 	InterfaceName string
+	Status        NeighborStatus
+	LastSeenAt    time.Time
 	Deleted       bool
 }
 
 type ClientView struct {
-	MAC string
-	IPs []string
+	MAC        string
+	IPs        []string
+	Status     NeighborStatus
+	LastSeenAt time.Time
 }
 
 type Provider interface {
@@ -33,8 +52,11 @@ const UpdateChannelSize = 1024
 // ipToMAC is the point-lookup index entry for one observed IP address.
 // Within a published snapshot, one IP must resolve to at most one MAC.
 type ipToMAC struct {
-	IP  string
-	MAC string
+	IP            string
+	MAC           string
+	InterfaceName string
+	Status        NeighborStatus
+	LastSeenAt    time.Time
 }
 
 // macToClient is the grouped-scan index entry for one observed MAC address.
@@ -50,6 +72,8 @@ type rawEvent struct {
 	IP            string
 	MAC           string
 	InterfaceName string
+	Status        NeighborStatus
+	LastSeenAt    time.Time
 	Deleted       bool
 }
 
@@ -197,6 +221,14 @@ func (s *snapshot) lookupMAC(ip string) (string, bool) {
 	return item.MAC, true
 }
 
+func (s *snapshot) lookupEntry(ip string) (ipToMAC, bool) {
+	item, ok := s.byIP.Get(ipToMAC{IP: ip})
+	if !ok {
+		return ipToMAC{}, false
+	}
+	return item, true
+}
+
 func (s *snapshot) ipsForMAC(mac string) []string {
 	item, ok := s.byMAC.Get(macToClient{MAC: mac})
 	if !ok || len(item.IPs) == 0 {
@@ -205,12 +237,33 @@ func (s *snapshot) ipsForMAC(mac string) []string {
 	return slices.Clone(item.IPs)
 }
 
+func (s *snapshot) hasMAC(mac string) bool {
+	item, ok := s.byMAC.Get(macToClient{MAC: mac})
+	return ok && len(item.IPs) > 0
+}
+
 func (s *snapshot) listClients() []ClientView {
 	clients := make([]ClientView, 0, s.byMAC.Len())
 	s.byMAC.Scan(func(item macToClient) bool {
+		status := NeighborStatusStale
+		var lastSeenAt time.Time
+		for _, ip := range item.IPs {
+			entry, ok := s.lookupEntry(ip)
+			if !ok {
+				continue
+			}
+			if entry.Status == NeighborStatusLive {
+				status = NeighborStatusLive
+			}
+			if entry.LastSeenAt.After(lastSeenAt) {
+				lastSeenAt = entry.LastSeenAt
+			}
+		}
 		clients = append(clients, ClientView{
-			MAC: item.MAC,
-			IPs: slices.Clone(item.IPs),
+			MAC:        item.MAC,
+			IPs:        slices.Clone(item.IPs),
+			Status:     status,
+			LastSeenAt: lastSeenAt,
 		})
 		return true
 	})
@@ -222,13 +275,20 @@ func (s *snapshot) listClients() []ClientView {
 
 // withUpsert applies one observed IP -> MAC mapping as a path-copy CoW update
 // across both indices and returns a new immutable snapshot only when state changes.
-func (s *snapshot) withUpsert(ipStr, macStr, interfaceName string) (*snapshot, Update, bool) {
+func (s *snapshot) withUpsert(ipStr, macStr, interfaceName string, observedAt time.Time) (*snapshot, Update, bool) {
 	if ipStr == "" || macStr == "" {
 		return s, Update{}, false
 	}
+	if observedAt.IsZero() {
+		observedAt = nowUTC()
+	}
 
-	currentMAC, exists := s.lookupMAC(ipStr)
-	if exists && currentMAC == macStr {
+	current, exists := s.lookupEntry(ipStr)
+	if exists &&
+		current.MAC == macStr &&
+		current.InterfaceName == interfaceName &&
+		current.Status == NeighborStatusLive &&
+		current.LastSeenAt.Equal(observedAt) {
 		return s, Update{}, false
 	}
 
@@ -237,14 +297,52 @@ func (s *snapshot) withUpsert(ipStr, macStr, interfaceName string) (*snapshot, U
 		byMAC: s.byMAC.Copy(),
 	}
 
-	if exists {
-		removeIPFromClientTree(next.byMAC, currentMAC, ipStr)
+	if exists && current.MAC != macStr {
+		removeIPFromClientTree(next.byMAC, current.MAC, ipStr)
 	}
 
-	next.byIP.Set(ipToMAC{IP: ipStr, MAC: macStr})
+	next.byIP.Set(ipToMAC{
+		IP:            ipStr,
+		MAC:           macStr,
+		InterfaceName: interfaceName,
+		Status:        NeighborStatusLive,
+		LastSeenAt:    observedAt,
+	})
 	upsertIPIntoClientTree(next.byMAC, macStr, ipStr)
 
-	return next, Update{IP: ipStr, MAC: macStr, InterfaceName: interfaceName}, true
+	return next, Update{
+		IP:            ipStr,
+		MAC:           macStr,
+		InterfaceName: interfaceName,
+		Status:        NeighborStatusLive,
+		LastSeenAt:    observedAt,
+	}, true
+}
+
+func (s *snapshot) withMarkStale(ipStr string) (*snapshot, Update, bool) {
+	if ipStr == "" {
+		return s, Update{}, false
+	}
+
+	current, exists := s.lookupEntry(ipStr)
+	if !exists || current.Status == NeighborStatusStale {
+		return s, Update{}, false
+	}
+
+	next := &snapshot{
+		byIP:  s.byIP.Copy(),
+		byMAC: s.byMAC.Copy(),
+	}
+	current.Status = NeighborStatusStale
+	next.byIP.Set(current)
+
+	return next, Update{
+		IP:            current.IP,
+		MAC:           current.MAC,
+		InterfaceName: current.InterfaceName,
+		Status:        NeighborStatusStale,
+		LastSeenAt:    current.LastSeenAt,
+	}, true
 }
 
 // withDelete removes one observed IP as a path-copy CoW update across both
@@ -254,7 +352,7 @@ func (s *snapshot) withDelete(ipStr string) (*snapshot, Update, bool) {
 		return s, Update{}, false
 	}
 
-	currentMAC, exists := s.lookupMAC(ipStr)
+	current, exists := s.lookupEntry(ipStr)
 	if !exists {
 		return s, Update{}, false
 	}
@@ -264,9 +362,16 @@ func (s *snapshot) withDelete(ipStr string) (*snapshot, Update, bool) {
 		byMAC: s.byMAC.Copy(),
 	}
 	next.byIP.Delete(ipToMAC{IP: ipStr})
-	removeIPFromClientTree(next.byMAC, currentMAC, ipStr)
+	removeIPFromClientTree(next.byMAC, current.MAC, ipStr)
 
-	return next, Update{IP: ipStr, MAC: currentMAC, Deleted: true}, true
+	return next, Update{
+		IP:            ipStr,
+		MAC:           current.MAC,
+		InterfaceName: current.InterfaceName,
+		Status:        current.Status,
+		LastSeenAt:    current.LastSeenAt,
+		Deleted:       true,
+	}, true
 }
 
 func upsertIPIntoClientTree(tree *btree.BTreeG[macToClient], mac, ip string) {
@@ -324,22 +429,54 @@ func (w *writerState) emit(update Update) {
 }
 
 func (w *writerState) applyUpsert(ipStr, macStr, interfaceName string) (string, string, bool) {
-	next, update, changed := w.current.withUpsert(ipStr, macStr, interfaceName)
+	createdMAC := !w.current.hasMAC(macStr)
+	next, update, changed := w.current.withUpsert(ipStr, macStr, interfaceName, nowUTC())
 	if !changed {
 		return "", "", false
 	}
 	w.publish(next)
 	w.emit(update)
+	if createdMAC {
+		logMACLifecyclef(
+			"observed client created mac=%s first_ip=%s interface=%s status=%s last_seen_at=%s",
+			update.MAC,
+			update.IP,
+			update.InterfaceName,
+			update.Status,
+			update.LastSeenAt.UTC().Format(time.RFC3339),
+		)
+	}
 	return update.IP, update.MAC, true
 }
 
+func (w *writerState) applyMarkStale(ipStr string) (string, bool) {
+	next, update, changed := w.current.withMarkStale(ipStr)
+	if !changed {
+		return "", false
+	}
+	w.publish(next)
+	w.emit(update)
+	return update.MAC, true
+}
+
 func (w *writerState) applyDelete(ipStr string) (string, bool) {
+	current, existed := w.current.lookupEntry(ipStr)
 	next, update, changed := w.current.withDelete(ipStr)
 	if !changed {
 		return "", false
 	}
 	w.publish(next)
 	w.emit(update)
+	if existed && !next.hasMAC(current.MAC) {
+		logMACLifecyclef(
+			"observed client deleted mac=%s last_ip=%s interface=%s status=%s last_seen_at=%s",
+			update.MAC,
+			update.IP,
+			update.InterfaceName,
+			update.Status,
+			update.LastSeenAt.UTC().Format(time.RFC3339),
+		)
+	}
 	return update.MAC, true
 }
 
@@ -351,7 +488,10 @@ func (w *writerState) bootstrap(initial []rawEvent, replay []rawEvent) {
 		if event.Deleted {
 			continue
 		}
-		next, _, _ = next.withUpsert(event.IP, event.MAC, event.InterfaceName)
+		next, _, _ = next.withUpsert(event.IP, event.MAC, event.InterfaceName, event.LastSeenAt)
+		if event.Status == NeighborStatusStale {
+			next, _, _ = next.withMarkStale(event.IP)
+		}
 	}
 
 	replayed := make([]Update, 0, len(replay))
@@ -362,8 +502,10 @@ func (w *writerState) bootstrap(initial []rawEvent, replay []rawEvent) {
 		)
 		if event.Deleted {
 			next, update, changed = next.withDelete(event.IP)
+		} else if event.Status == NeighborStatusStale {
+			next, update, changed = next.withMarkStale(event.IP)
 		} else {
-			next, update, changed = next.withUpsert(event.IP, event.MAC, event.InterfaceName)
+			next, update, changed = next.withUpsert(event.IP, event.MAC, event.InterfaceName, event.LastSeenAt)
 		}
 		if changed {
 			replayed = append(replayed, update)

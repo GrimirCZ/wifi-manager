@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/vishvananda/netlink"
 	"golang.org/x/sys/unix"
@@ -56,6 +57,13 @@ func TestResolveManagedInterfacesFailsForMissingName(t *testing.T) {
 }
 
 func TestNormalizeNeighborAcceptsIPv4AndIPv6WithLinkIndexPreservedExternally(t *testing.T) {
+	nowUTC = func() time.Time {
+		return time.Date(2026, time.April, 19, 12, 0, 0, 0, time.UTC)
+	}
+	defer func() {
+		nowUTC = func() time.Time { return time.Now().UTC() }
+	}()
+
 	ipv4, ok := normalizeNeighbor(netlink.Neigh{
 		LinkIndex:    3,
 		State:        netlink.NUD_REACHABLE,
@@ -65,7 +73,7 @@ func TestNormalizeNeighborAcceptsIPv4AndIPv6WithLinkIndexPreservedExternally(t *
 	if !ok {
 		t.Fatal("expected ipv4 neighbor to normalize")
 	}
-	if !reflect.DeepEqual(ipv4, rawEvent{IP: "192.0.2.10", MAC: "aa:bb:cc:dd:ee:ff", InterfaceName: "br-lan"}) {
+	if !reflect.DeepEqual(ipv4, rawEvent{IP: "192.0.2.10", MAC: "aa:bb:cc:dd:ee:ff", InterfaceName: "br-lan", Status: NeighborStatusLive, LastSeenAt: nowUTC()}) {
 		t.Fatalf("unexpected ipv4 event: %#v", ipv4)
 	}
 
@@ -81,7 +89,7 @@ func TestNormalizeNeighborAcceptsIPv4AndIPv6WithLinkIndexPreservedExternally(t *
 	if !ok {
 		t.Fatal("expected ipv6 update to normalize")
 	}
-	if !reflect.DeepEqual(ipv6, rawEvent{IP: "fe80::11:22ff:fe33:4455", MAC: "02:11:22:33:44:55", InterfaceName: "wlan0"}) {
+	if !reflect.DeepEqual(ipv6, rawEvent{IP: "fe80::11:22ff:fe33:4455", MAC: "02:11:22:33:44:55", InterfaceName: "wlan0", Status: NeighborStatusLive, LastSeenAt: nowUTC()}) {
 		t.Fatalf("unexpected ipv6 event: %#v", ipv6)
 	}
 }
@@ -91,7 +99,6 @@ func TestNormalizeNeighborRejectsNonLiveBootstrapStates(t *testing.T) {
 		name  string
 		state int
 	}{
-		{name: "stale", state: netlink.NUD_STALE},
 		{name: "failed", state: netlink.NUD_FAILED},
 		{name: "incomplete", state: netlink.NUD_INCOMPLETE},
 	} {
@@ -109,37 +116,83 @@ func TestNormalizeNeighborRejectsNonLiveBootstrapStates(t *testing.T) {
 	}
 }
 
-func TestNormalizeRawUpdateDeletesNonLiveStates(t *testing.T) {
-	for _, tc := range []struct {
-		name  string
-		state int
-	}{
-		{name: "stale", state: netlink.NUD_STALE},
-		{name: "failed", state: netlink.NUD_FAILED},
-		{name: "incomplete", state: netlink.NUD_INCOMPLETE},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			event, ok := normalizeRawUpdate(netlink.NeighUpdate{
-				Type: unix.RTM_NEWNEIGH,
-				Neigh: netlink.Neigh{
-					LinkIndex:    3,
-					State:        tc.state,
-					IP:           []byte{192, 0, 2, 10},
-					HardwareAddr: []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
-				},
-			}, map[int]string{3: "br-lan"})
-			if !ok {
-				t.Fatalf("expected %s update to normalize into delete", tc.name)
-			}
-			want := rawEvent{IP: "192.0.2.10", InterfaceName: "br-lan", Deleted: true}
-			if !reflect.DeepEqual(event, want) {
-				t.Fatalf("unexpected delete event: %#v", event)
-			}
-		})
+func TestNormalizeNeighborIncludesStaleBootstrapState(t *testing.T) {
+	nowUTC = func() time.Time {
+		return time.Date(2026, time.April, 19, 12, 0, 0, 0, time.UTC)
+	}
+	defer func() {
+		nowUTC = func() time.Time { return time.Now().UTC() }
+	}()
+
+	event, ok := normalizeNeighbor(netlink.Neigh{
+		LinkIndex:    3,
+		State:        netlink.NUD_STALE,
+		IP:           []byte{192, 0, 2, 10},
+		HardwareAddr: []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
+	}, map[int]string{3: "br-lan"})
+	if !ok {
+		t.Fatal("expected stale neighbor to be included in bootstrap")
+	}
+	want := rawEvent{IP: "192.0.2.10", MAC: "aa:bb:cc:dd:ee:ff", InterfaceName: "br-lan", Status: NeighborStatusStale, LastSeenAt: nowUTC()}
+	if !reflect.DeepEqual(event, want) {
+		t.Fatalf("unexpected bootstrap stale event: %#v", event)
+	}
+}
+
+func TestNormalizeRawUpdateMarksStaleDeletesFailedAndIgnoresIncomplete(t *testing.T) {
+	stale, ok := normalizeRawUpdate(netlink.NeighUpdate{
+		Type: unix.RTM_NEWNEIGH,
+		Neigh: netlink.Neigh{
+			LinkIndex:    3,
+			State:        netlink.NUD_STALE,
+			IP:           []byte{192, 0, 2, 10},
+			HardwareAddr: []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
+		},
+	}, map[int]string{3: "br-lan"})
+	if !ok {
+		t.Fatal("expected stale update to normalize")
+	}
+	if !reflect.DeepEqual(stale, rawEvent{IP: "192.0.2.10", InterfaceName: "br-lan", Status: NeighborStatusStale}) {
+		t.Fatalf("unexpected stale event: %#v", stale)
+	}
+
+	failed, ok := normalizeRawUpdate(netlink.NeighUpdate{
+		Type: unix.RTM_NEWNEIGH,
+		Neigh: netlink.Neigh{
+			LinkIndex:    3,
+			State:        netlink.NUD_FAILED,
+			IP:           []byte{192, 0, 2, 10},
+			HardwareAddr: []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
+		},
+	}, map[int]string{3: "br-lan"})
+	if !ok {
+		t.Fatal("expected failed update to normalize")
+	}
+	if !reflect.DeepEqual(failed, rawEvent{IP: "192.0.2.10", InterfaceName: "br-lan", Deleted: true}) {
+		t.Fatalf("unexpected failed event: %#v", failed)
+	}
+
+	if _, ok := normalizeRawUpdate(netlink.NeighUpdate{
+		Type: unix.RTM_NEWNEIGH,
+		Neigh: netlink.Neigh{
+			LinkIndex:    3,
+			State:        netlink.NUD_INCOMPLETE,
+			IP:           []byte{192, 0, 2, 10},
+			HardwareAddr: []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
+		},
+	}, map[int]string{3: "br-lan"}); ok {
+		t.Fatal("expected incomplete update to be ignored")
 	}
 }
 
 func TestNormalizeNeighborAcceptsStaticLiveStates(t *testing.T) {
+	nowUTC = func() time.Time {
+		return time.Date(2026, time.April, 19, 12, 0, 0, 0, time.UTC)
+	}
+	defer func() {
+		nowUTC = func() time.Time { return time.Now().UTC() }
+	}()
+
 	for _, tc := range []struct {
 		name  string
 		state int
@@ -158,7 +211,7 @@ func TestNormalizeNeighborAcceptsStaticLiveStates(t *testing.T) {
 			if !ok {
 				t.Fatalf("expected %s neighbor to be kept", tc.name)
 			}
-			want := rawEvent{IP: "192.0.2.10", MAC: "aa:bb:cc:dd:ee:ff", InterfaceName: "br-lan"}
+			want := rawEvent{IP: "192.0.2.10", MAC: "aa:bb:cc:dd:ee:ff", InterfaceName: "br-lan", Status: NeighborStatusLive, LastSeenAt: nowUTC()}
 			if !reflect.DeepEqual(event, want) {
 				t.Fatalf("unexpected event: %#v", event)
 			}
@@ -166,12 +219,18 @@ func TestNormalizeNeighborAcceptsStaticLiveStates(t *testing.T) {
 	}
 }
 
-func TestLiveStateTransitionRemovesAndReaddsEntry(t *testing.T) {
+func TestLiveStateTransitionRetainsStaleAndReaddsLiveState(t *testing.T) {
 	provider := &NetlinkProvider{
 		ctx:   context.Background(),
 		store: newStore(context.Background(), nil),
 		live:  true,
 	}
+	nowUTC = func() time.Time {
+		return time.Date(2026, time.April, 19, 12, 0, 0, 0, time.UTC)
+	}
+	defer func() {
+		nowUTC = func() time.Time { return time.Now().UTC() }
+	}()
 
 	upsert, ok := normalizeRawUpdate(netlink.NeighUpdate{
 		Type: unix.RTM_NEWNEIGH,
@@ -205,10 +264,17 @@ func TestLiveStateTransitionRemovesAndReaddsEntry(t *testing.T) {
 	}
 	provider.handleRawEvent(remove)
 
-	if _, ok := provider.store.lookupMAC("192.0.2.10"); ok {
-		t.Fatal("expected stale transition to remove entry")
+	entry, ok := provider.store.lookupEntry("192.0.2.10")
+	if !ok {
+		t.Fatal("expected stale transition to retain entry")
+	}
+	if entry.Status != NeighborStatusStale {
+		t.Fatalf("expected stale status, got %#v", entry)
 	}
 
+	nowUTC = func() time.Time {
+		return time.Date(2026, time.April, 19, 12, 5, 0, 0, time.UTC)
+	}
 	readd, ok := normalizeRawUpdate(netlink.NeighUpdate{
 		Type: unix.RTM_NEWNEIGH,
 		Neigh: netlink.Neigh{
@@ -225,5 +291,9 @@ func TestLiveStateTransitionRemovesAndReaddsEntry(t *testing.T) {
 
 	if mac, ok := provider.store.lookupMAC("192.0.2.10"); !ok || mac != "aa:bb:cc:dd:ee:ff" {
 		t.Fatalf("expected entry to reappear, got %q %v", mac, ok)
+	}
+	entry, ok = provider.store.lookupEntry("192.0.2.10")
+	if !ok || entry.Status != NeighborStatusLive || !entry.LastSeenAt.Equal(nowUTC()) {
+		t.Fatalf("expected live refreshed entry, got %#v %v", entry, ok)
 	}
 }

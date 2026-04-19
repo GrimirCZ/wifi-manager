@@ -75,7 +75,7 @@ func (n *NetlinkProvider) Start() error {
 					continue
 				}
 				n.handleRawEvent(event)
-				log.Printf("Handled event: %s (%s)", event, update)
+				log.Printf("Handled event: %+v (%+v)", event, update)
 			}
 		}
 	}()
@@ -117,6 +117,10 @@ func (n *NetlinkProvider) handleRawEvent(event rawEvent) {
 			state.applyDelete(event.IP)
 			return
 		}
+		if event.Status == NeighborStatusStale {
+			state.applyMarkStale(event.IP)
+			return
+		}
 		state.applyUpsert(event.IP, event.MAC, event.InterfaceName)
 	})
 }
@@ -155,8 +159,18 @@ func normalizeRawUpdate(update netlink.NeighUpdate, managedIfIndexes map[int]str
 	if update.Type == unix.RTM_DELNEIGH {
 		return rawEvent{IP: ip, InterfaceName: linkNameForIndex(update.Neigh.LinkIndex, managedIfIndexes), Deleted: true}, true
 	}
-	if !isLiveNeighborState(update.Neigh.State) {
+	if update.Neigh.State&netlink.NUD_FAILED != 0 {
 		return rawEvent{IP: ip, InterfaceName: linkNameForIndex(update.Neigh.LinkIndex, managedIfIndexes), Deleted: true}, true
+	}
+	if update.Neigh.State&netlink.NUD_STALE != 0 {
+		return rawEvent{
+			IP:            ip,
+			InterfaceName: linkNameForIndex(update.Neigh.LinkIndex, managedIfIndexes),
+			Status:        NeighborStatusStale,
+		}, true
+	}
+	if !isLiveNeighborState(update.Neigh.State) {
+		return rawEvent{}, false
 	}
 
 	mac, ok := normalize.MACFromNet(update.Neigh.HardwareAddr)
@@ -167,6 +181,8 @@ func normalizeRawUpdate(update netlink.NeighUpdate, managedIfIndexes map[int]str
 		IP:            ip,
 		MAC:           mac,
 		InterfaceName: linkNameForIndex(update.Neigh.LinkIndex, managedIfIndexes),
+		Status:        NeighborStatusLive,
+		LastSeenAt:    nowUTC(),
 	}, true
 }
 
@@ -175,7 +191,8 @@ func normalizeNeighbor(neigh netlink.Neigh, managedIfIndexes map[int]string) (ra
 	if !ok {
 		return rawEvent{}, false
 	}
-	if !isLiveNeighborState(neigh.State) {
+	status, ok := statusFromBootstrapState(neigh.State)
+	if !ok {
 		return rawEvent{}, false
 	}
 	mac, ok := normalize.MACFromNet(neigh.HardwareAddr)
@@ -186,6 +203,8 @@ func normalizeNeighbor(neigh netlink.Neigh, managedIfIndexes map[int]string) (ra
 		IP:            ip,
 		MAC:           mac,
 		InterfaceName: linkNameForIndex(neigh.LinkIndex, managedIfIndexes),
+		Status:        status,
+		LastSeenAt:    nowUTC(),
 	}, true
 }
 
@@ -287,4 +306,14 @@ func isLiveNeighborState(state int) bool {
 		return true
 	}
 	return false
+}
+
+func statusFromBootstrapState(state int) (NeighborStatus, bool) {
+	if state&netlink.NUD_STALE != 0 {
+		return NeighborStatusStale, true
+	}
+	if isLiveNeighborState(state) {
+		return NeighborStatusLive, true
+	}
+	return "", false
 }

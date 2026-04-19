@@ -21,12 +21,16 @@ func TestBuildListNetworkClientsAckUsesCurrentSnapshot(t *testing.T) {
 		&stubIPMappingProvider{
 			clients: []ipmapping.ClientView{
 				{
-					MAC: "aa:aa:aa:aa:aa:aa",
-					IPs: []string{"192.0.2.10", "192.0.2.11"},
+					MAC:        "aa:aa:aa:aa:aa:aa",
+					IPs:        []string{"192.0.2.10", "192.0.2.11"},
+					Status:     ipmapping.NeighborStatusLive,
+					LastSeenAt: time.Date(2026, time.April, 19, 12, 0, 0, 0, time.UTC),
 				},
 				{
-					MAC: "bb:bb:bb:bb:bb:bb",
-					IPs: []string{"192.0.2.20"},
+					MAC:        "bb:bb:bb:bb:bb:bb",
+					IPs:        []string{"192.0.2.20"},
+					Status:     ipmapping.NeighborStatusStale,
+					LastSeenAt: time.Date(2026, time.April, 19, 11, 45, 0, 0, time.UTC),
 				},
 			},
 		},
@@ -53,16 +57,20 @@ func TestBuildListNetworkClientsAckUsesCurrentSnapshot(t *testing.T) {
 
 	want := []*routeragentpb.NetworkClient{
 		{
-			MacAddress:  "aa:aa:aa:aa:aa:aa",
-			IpAddresses: []string{"192.0.2.10", "192.0.2.11"},
-			Hostname:    stringPtr("laptop"),
-			Allowed:     true,
+			MacAddress:     "aa:aa:aa:aa:aa:aa",
+			IpAddresses:    []string{"192.0.2.10", "192.0.2.11"},
+			Hostname:       stringPtr("laptop"),
+			Allowed:        true,
+			NeighborStatus: neighborStatusPtr(routeragentpb.NeighborStatus_NEIGHBOR_STATUS_LIVE),
+			LastSeenAt:     stringPtr("2026-04-19T12:00:00Z"),
 		},
 		{
-			MacAddress:  "bb:bb:bb:bb:bb:bb",
-			IpAddresses: []string{"192.0.2.20"},
-			Hostname:    stringPtr("phone"),
-			Allowed:     false,
+			MacAddress:     "bb:bb:bb:bb:bb:bb",
+			IpAddresses:    []string{"192.0.2.20"},
+			Hostname:       stringPtr("phone"),
+			Allowed:        false,
+			NeighborStatus: neighborStatusPtr(routeragentpb.NeighborStatus_NEIGHBOR_STATUS_STALE),
+			LastSeenAt:     stringPtr("2026-04-19T11:45:00Z"),
 		},
 	}
 	if len(ack.Clients) != len(want) {
@@ -142,6 +150,7 @@ func TestAuthorizedMACAppearanceEmitsDelayedObservationWithLatestIPv4AndDHCPData
 		IP:            "192.0.2.10",
 		MAC:           "aa:aa:aa:aa:aa:aa",
 		InterfaceName: "wlan0",
+		Status:        ipmapping.NeighborStatusLive,
 	})
 
 	provider.ipsByMAC["aa:aa:aa:aa:aa:aa"] = []string{"2001:db8::10", "192.0.2.10", "192.0.2.11"}
@@ -149,6 +158,7 @@ func TestAuthorizedMACAppearanceEmitsDelayedObservationWithLatestIPv4AndDHCPData
 		IP:            "192.0.2.11",
 		MAC:           "aa:aa:aa:aa:aa:aa",
 		InterfaceName: "wlan0",
+		Status:        ipmapping.NeighborStatusLive,
 	})
 
 	select {
@@ -192,6 +202,7 @@ func TestGetClientInfoCancelsPendingObservationAfterAppearanceUpdate(t *testing.
 		IP:            "192.0.2.10",
 		MAC:           "aa:aa:aa:aa:aa:aa",
 		InterfaceName: "wlan0",
+		Status:        ipmapping.NeighborStatusLive,
 	})
 
 	ackSender := &stubAckSender{}
@@ -223,6 +234,7 @@ func TestDeletedObservationBeforeDelayDoesNotEmit(t *testing.T) {
 		IP:            "192.0.2.10",
 		MAC:           "aa:aa:aa:aa:aa:aa",
 		InterfaceName: "wlan0",
+		Status:        ipmapping.NeighborStatusLive,
 	})
 
 	provider.ipsByMAC["aa:aa:aa:aa:aa:aa"] = nil
@@ -254,12 +266,48 @@ func TestUnauthorizedMACAppearanceDoesNotScheduleObservation(t *testing.T) {
 		IP:            "192.0.2.10",
 		MAC:           "aa:aa:aa:aa:aa:aa",
 		InterfaceName: "wlan0",
+		Status:        ipmapping.NeighborStatusLive,
 	})
 
 	select {
 	case observed := <-sender.observed:
 		t.Fatalf("unexpected delayed observation for unauthorized mac: %#v", observed)
 	case <-time.After(100 * time.Millisecond):
+	}
+}
+
+func TestIPMoveToDifferentMACRemovesOldAllowedIP(t *testing.T) {
+	provider := &stubIPMappingProvider{
+		ipsByMAC: map[string][]string{
+			"aa:aa:aa:aa:aa:aa": []string{"192.0.2.10"},
+			"bb:bb:bb:bb:bb:bb": nil,
+		},
+	}
+	agent := New(firewall.NewDummyBackend(), provider, &stubHostnameProvider{}, allowedip.NewMemoryRepository(), &stubDHCPFingerprintProvider{}, time.Second)
+	agent.allowedMACs["aa:aa:aa:aa:aa:aa"] = struct{}{}
+
+	agent.OnIPMappingUpdate(context.Background(), ipmapping.Update{
+		IP:            "192.0.2.10",
+		MAC:           "aa:aa:aa:aa:aa:aa",
+		InterfaceName: "wlan0",
+		Status:        ipmapping.NeighborStatusLive,
+	})
+	if got := agent.allowedIPs.List(); !reflect.DeepEqual(got, []string{"192.0.2.10"}) {
+		t.Fatalf("unexpected allowed ips after first appearance: %#v", got)
+	}
+
+	provider.ipsByMAC["aa:aa:aa:aa:aa:aa"] = nil
+	provider.ipsByMAC["bb:bb:bb:bb:bb:bb"] = []string{"192.0.2.10"}
+	agent.OnIPMappingUpdate(context.Background(), ipmapping.Update{
+		IP:            "192.0.2.10",
+		MAC:           "aa:aa:aa:aa:aa:aa",
+		Deleted:       true,
+		InterfaceName: "wlan0",
+		Status:        ipmapping.NeighborStatusLive,
+	})
+
+	if got := agent.allowedIPs.List(); len(got) != 0 {
+		t.Fatalf("expected moved ip to be removed from allowed set, got %#v", got)
 	}
 }
 
@@ -296,11 +344,17 @@ func (s *stubIPMappingProvider) ListClients() []ipmapping.ClientView {
 	clients := make([]ipmapping.ClientView, 0, len(s.clients))
 	for _, client := range s.clients {
 		clients = append(clients, ipmapping.ClientView{
-			MAC: client.MAC,
-			IPs: append([]string(nil), client.IPs...),
+			MAC:        client.MAC,
+			IPs:        append([]string(nil), client.IPs...),
+			Status:     client.Status,
+			LastSeenAt: client.LastSeenAt,
 		})
 	}
 	return clients
+}
+
+func neighborStatusPtr(value routeragentpb.NeighborStatus) *routeragentpb.NeighborStatus {
+	return &value
 }
 
 type stubHostnameProvider struct {

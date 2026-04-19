@@ -18,16 +18,21 @@ import (
 )
 
 func TestObservedNetworkStateLogLinesIncludesClientsAndHostnames(t *testing.T) {
-	lines := observedNetworkStateLogLines(
+	lines := observedNetworkStateLogLinesAt(
+		time.Date(2026, time.April, 19, 12, 10, 0, 0, time.UTC),
 		&stubIPMappingProvider{
 			clients: []ipmapping.ClientView{
 				{
-					MAC: "02:11:22:33:44:55",
-					IPs: []string{"192.0.2.10", "192.0.2.11"},
+					MAC:        "02:11:22:33:44:55",
+					IPs:        []string{"192.0.2.10", "192.0.2.11"},
+					Status:     ipmapping.NeighborStatusLive,
+					LastSeenAt: time.Date(2026, time.April, 19, 12, 0, 0, 0, time.UTC),
 				},
 				{
-					MAC: "00:11:22:33:44:55",
-					IPs: []string{"192.0.2.20"},
+					MAC:        "00:11:22:33:44:55",
+					IPs:        []string{"192.0.2.20"},
+					Status:     ipmapping.NeighborStatusStale,
+					LastSeenAt: time.Date(2026, time.April, 19, 11, 30, 0, 0, time.UTC),
 				},
 			},
 		},
@@ -54,8 +59,10 @@ func TestObservedNetworkStateLogLinesIncludesClientsAndHostnames(t *testing.T) {
 
 	want := []string{
 		"observed network state dump (signal=SIGUSR1): current clients",
-		"observed client mac=02:11:22:33:44:55 randomized=true ips=[192.0.2.10 192.0.2.11] hostnames=[laptop] dhcp_vendor_class=android-dhcp-14 dhcp_prl_hash=hash-a dhcp_hostname=laptop.local",
-		"observed client mac=00:11:22:33:44:55 randomized=false ips=[192.0.2.20] hostnames=[phone] dhcp_vendor_class=ios",
+		"observed network state section=seen_within_15m clients=1",
+		"observed client mac=02:11:22:33:44:55 randomized=true status=live last_seen_at=2026-04-19T12:00:00Z ips=[192.0.2.10 192.0.2.11] hostnames=[laptop] dhcp_vendor_class=android-dhcp-14 dhcp_prl_hash=hash-a dhcp_hostname=laptop.local",
+		"observed network state section=older_than_15m clients=1",
+		"observed client mac=00:11:22:33:44:55 randomized=false status=stale last_seen_at=2026-04-19T11:30:00Z ips=[192.0.2.20] hostnames=[phone] dhcp_vendor_class=ios",
 	}
 	if !reflect.DeepEqual(lines, want) {
 		t.Fatalf("unexpected log lines: %#v", lines)

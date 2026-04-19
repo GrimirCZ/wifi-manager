@@ -58,6 +58,11 @@ message ListNetworkClients {
   string id = 1;
 }
 
+enum NeighborStatus {
+  NEIGHBOR_STATUS_LIVE = 0;
+  NEIGHBOR_STATUS_STALE = 1;
+}
+
 message NetworkClient {
   string mac_address = 1;
   repeated string ip_addresses = 2;
@@ -66,6 +71,8 @@ message NetworkClient {
   optional string dhcp_vendor_class = 5;
   optional string dhcp_prl_hash = 6;
   optional string dhcp_hostname = 7;
+  optional NeighborStatus neighbor_status = 8;
+  optional string last_seen_at = 9;
 }
 
 message AuthorizedClientObserved {

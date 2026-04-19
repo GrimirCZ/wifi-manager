@@ -91,6 +91,9 @@ func (a *Agent) OnIPMappingUpdate(ctx context.Context, update ipmapping.Update) 
 		}
 		return
 	}
+	if update.Status != ipmapping.NeighborStatusLive {
+		return
+	}
 	if !a.isMACAllowed(update.MAC) {
 		return
 	}
@@ -308,6 +311,8 @@ func (a *Agent) buildListNetworkClientsAck(id string) *routeragentpb.CommandAck 
 			DhcpVendorClass: optionalStringPtr(dhcpObservation.VendorClass),
 			DhcpPrlHash:     optionalStringPtr(dhcpObservation.PRLHash),
 			DhcpHostname:    optionalStringPtr(dhcpObservation.Hostname),
+			NeighborStatus:  optionalNeighborStatus(view.Status),
+			LastSeenAt:      optionalStringPtr(formatTimestamp(view.LastSeenAt)),
 		})
 	}
 
@@ -315,6 +320,27 @@ func (a *Agent) buildListNetworkClientsAck(id string) *routeragentpb.CommandAck 
 		Id:      id,
 		Success: true,
 		Clients: clients,
+	}
+}
+
+func formatTimestamp(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.UTC().Format(time.RFC3339)
+}
+
+func optionalNeighborStatus(status ipmapping.NeighborStatus) *routeragentpb.NeighborStatus {
+	switch status {
+	case ipmapping.NeighborStatusLive:
+		value := routeragentpb.NeighborStatus_NEIGHBOR_STATUS_LIVE
+		return &value
+	case ipmapping.NeighborStatusStale:
+		value := routeragentpb.NeighborStatus_NEIGHBOR_STATUS_STALE
+		return &value
+	default:
+		value := routeragentpb.NeighborStatus_NEIGHBOR_STATUS_LIVE
+		return &value
 	}
 }
 

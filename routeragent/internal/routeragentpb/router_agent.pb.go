@@ -21,6 +21,52 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type NeighborStatus int32
+
+const (
+	NeighborStatus_NEIGHBOR_STATUS_LIVE  NeighborStatus = 0
+	NeighborStatus_NEIGHBOR_STATUS_STALE NeighborStatus = 1
+)
+
+// Enum value maps for NeighborStatus.
+var (
+	NeighborStatus_name = map[int32]string{
+		0: "NEIGHBOR_STATUS_LIVE",
+		1: "NEIGHBOR_STATUS_STALE",
+	}
+	NeighborStatus_value = map[string]int32{
+		"NEIGHBOR_STATUS_LIVE":  0,
+		"NEIGHBOR_STATUS_STALE": 1,
+	}
+)
+
+func (x NeighborStatus) Enum() *NeighborStatus {
+	p := new(NeighborStatus)
+	*p = x
+	return p
+}
+
+func (x NeighborStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (NeighborStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_router_agent_proto_enumTypes[0].Descriptor()
+}
+
+func (NeighborStatus) Type() protoreflect.EnumType {
+	return &file_router_agent_proto_enumTypes[0]
+}
+
+func (x NeighborStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use NeighborStatus.Descriptor instead.
+func (NeighborStatus) EnumDescriptor() ([]byte, []int) {
+	return file_router_agent_proto_rawDescGZIP(), []int{0}
+}
+
 type RouterAgentMessage struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Message:
@@ -555,6 +601,8 @@ type NetworkClient struct {
 	DhcpVendorClass *string                `protobuf:"bytes,5,opt,name=dhcp_vendor_class,json=dhcpVendorClass,proto3,oneof" json:"dhcp_vendor_class,omitempty"`
 	DhcpPrlHash     *string                `protobuf:"bytes,6,opt,name=dhcp_prl_hash,json=dhcpPrlHash,proto3,oneof" json:"dhcp_prl_hash,omitempty"`
 	DhcpHostname    *string                `protobuf:"bytes,7,opt,name=dhcp_hostname,json=dhcpHostname,proto3,oneof" json:"dhcp_hostname,omitempty"`
+	NeighborStatus  *NeighborStatus        `protobuf:"varint,8,opt,name=neighbor_status,json=neighborStatus,proto3,enum=cz.grimir.wifimanager.captive.routeragent.grpc.NeighborStatus,oneof" json:"neighbor_status,omitempty"`
+	LastSeenAt      *string                `protobuf:"bytes,9,opt,name=last_seen_at,json=lastSeenAt,proto3,oneof" json:"last_seen_at,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -634,6 +682,20 @@ func (x *NetworkClient) GetDhcpPrlHash() string {
 func (x *NetworkClient) GetDhcpHostname() string {
 	if x != nil && x.DhcpHostname != nil {
 		return *x.DhcpHostname
+	}
+	return ""
+}
+
+func (x *NetworkClient) GetNeighborStatus() NeighborStatus {
+	if x != nil && x.NeighborStatus != nil {
+		return *x.NeighborStatus
+	}
+	return NeighborStatus_NEIGHBOR_STATUS_LIVE
+}
+
+func (x *NetworkClient) GetLastSeenAt() string {
+	if x != nil && x.LastSeenAt != nil {
+		return *x.LastSeenAt
 	}
 	return ""
 }
@@ -889,7 +951,7 @@ const file_router_agent_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12#\n" +
 	"\rmac_addresses\x18\x02 \x03(\tR\fmacAddresses\"$\n" +
 	"\x12ListNetworkClients\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xd9\x02\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x93\x04\n" +
 	"\rNetworkClient\x12\x1f\n" +
 	"\vmac_address\x18\x01 \x01(\tR\n" +
 	"macAddress\x12!\n" +
@@ -898,11 +960,16 @@ const file_router_agent_proto_rawDesc = "" +
 	"\aallowed\x18\x04 \x01(\bR\aallowed\x12/\n" +
 	"\x11dhcp_vendor_class\x18\x05 \x01(\tH\x01R\x0fdhcpVendorClass\x88\x01\x01\x12'\n" +
 	"\rdhcp_prl_hash\x18\x06 \x01(\tH\x02R\vdhcpPrlHash\x88\x01\x01\x12(\n" +
-	"\rdhcp_hostname\x18\a \x01(\tH\x03R\fdhcpHostname\x88\x01\x01B\v\n" +
+	"\rdhcp_hostname\x18\a \x01(\tH\x03R\fdhcpHostname\x88\x01\x01\x12l\n" +
+	"\x0fneighbor_status\x18\b \x01(\x0e2>.cz.grimir.wifimanager.captive.routeragent.grpc.NeighborStatusH\x04R\x0eneighborStatus\x88\x01\x01\x12%\n" +
+	"\flast_seen_at\x18\t \x01(\tH\x05R\n" +
+	"lastSeenAt\x88\x01\x01B\v\n" +
 	"\t_hostnameB\x14\n" +
 	"\x12_dhcp_vendor_classB\x10\n" +
 	"\x0e_dhcp_prl_hashB\x10\n" +
-	"\x0e_dhcp_hostname\"\xcf\x03\n" +
+	"\x0e_dhcp_hostnameB\x12\n" +
+	"\x10_neighbor_statusB\x0f\n" +
+	"\r_last_seen_at\"\xcf\x03\n" +
 	"\x18AuthorizedClientObserved\x12\x1f\n" +
 	"\vmac_address\x18\x01 \x01(\tR\n" +
 	"macAddress\x12!\n" +
@@ -937,7 +1004,10 @@ const file_router_agent_proto_rawDesc = "" +
 	"\t_hostnameB\x14\n" +
 	"\x12_dhcp_vendor_classB\x10\n" +
 	"\x0e_dhcp_prl_hashB\x10\n" +
-	"\x0e_dhcp_hostname2\xac\x01\n" +
+	"\x0e_dhcp_hostname*E\n" +
+	"\x0eNeighborStatus\x12\x18\n" +
+	"\x14NEIGHBOR_STATUS_LIVE\x10\x00\x12\x19\n" +
+	"\x15NEIGHBOR_STATUS_STALE\x10\x012\xac\x01\n" +
 	"\x12RouterAgentService\x12\x95\x01\n" +
 	"\aConnect\x12B.cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage\x1aB.cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand(\x010\x01B\xe2\x02\n" +
 	"2com.cz.grimir.wifimanager.captive.routeragent.grpcB\x10RouterAgentProtoP\x01Z:github.com/wifi-manager/routeragent/internal/routeragentpb\xa2\x02\x06CGWCRG\xaa\x02.Cz.Grimir.Wifimanager.Captive.Routeragent.Grpc\xca\x02.Cz\\Grimir\\Wifimanager\\Captive\\Routeragent\\Grpc\xe2\x02:Cz\\Grimir\\Wifimanager\\Captive\\Routeragent\\Grpc\\GPBMetadata\xea\x023Cz::Grimir::Wifimanager::Captive::Routeragent::Grpcb\x06proto3"
@@ -954,37 +1024,40 @@ func file_router_agent_proto_rawDescGZIP() []byte {
 	return file_router_agent_proto_rawDescData
 }
 
+var file_router_agent_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_router_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_router_agent_proto_goTypes = []any{
-	(*RouterAgentMessage)(nil),       // 0: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage
-	(*RouterAgentCommand)(nil),       // 1: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand
-	(*Synchronize)(nil),              // 2: cz.grimir.wifimanager.captive.routeragent.grpc.Synchronize
-	(*GetClientInfo)(nil),            // 3: cz.grimir.wifimanager.captive.routeragent.grpc.GetClientInfo
-	(*AllowClientAccess)(nil),        // 4: cz.grimir.wifimanager.captive.routeragent.grpc.AllowClientAccess
-	(*RevokeClientAccess)(nil),       // 5: cz.grimir.wifimanager.captive.routeragent.grpc.RevokeClientAccess
-	(*SetAllowedClients)(nil),        // 6: cz.grimir.wifimanager.captive.routeragent.grpc.SetAllowedClients
-	(*ListNetworkClients)(nil),       // 7: cz.grimir.wifimanager.captive.routeragent.grpc.ListNetworkClients
-	(*NetworkClient)(nil),            // 8: cz.grimir.wifimanager.captive.routeragent.grpc.NetworkClient
-	(*AuthorizedClientObserved)(nil), // 9: cz.grimir.wifimanager.captive.routeragent.grpc.AuthorizedClientObserved
-	(*CommandAck)(nil),               // 10: cz.grimir.wifimanager.captive.routeragent.grpc.CommandAck
+	(NeighborStatus)(0),              // 0: cz.grimir.wifimanager.captive.routeragent.grpc.NeighborStatus
+	(*RouterAgentMessage)(nil),       // 1: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage
+	(*RouterAgentCommand)(nil),       // 2: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand
+	(*Synchronize)(nil),              // 3: cz.grimir.wifimanager.captive.routeragent.grpc.Synchronize
+	(*GetClientInfo)(nil),            // 4: cz.grimir.wifimanager.captive.routeragent.grpc.GetClientInfo
+	(*AllowClientAccess)(nil),        // 5: cz.grimir.wifimanager.captive.routeragent.grpc.AllowClientAccess
+	(*RevokeClientAccess)(nil),       // 6: cz.grimir.wifimanager.captive.routeragent.grpc.RevokeClientAccess
+	(*SetAllowedClients)(nil),        // 7: cz.grimir.wifimanager.captive.routeragent.grpc.SetAllowedClients
+	(*ListNetworkClients)(nil),       // 8: cz.grimir.wifimanager.captive.routeragent.grpc.ListNetworkClients
+	(*NetworkClient)(nil),            // 9: cz.grimir.wifimanager.captive.routeragent.grpc.NetworkClient
+	(*AuthorizedClientObserved)(nil), // 10: cz.grimir.wifimanager.captive.routeragent.grpc.AuthorizedClientObserved
+	(*CommandAck)(nil),               // 11: cz.grimir.wifimanager.captive.routeragent.grpc.CommandAck
 }
 var file_router_agent_proto_depIdxs = []int32{
-	2,  // 0: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage.synchronize:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.Synchronize
-	10, // 1: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage.ack:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.CommandAck
-	9,  // 2: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage.authorized_client_observed:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.AuthorizedClientObserved
-	3,  // 3: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.get_client_info:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.GetClientInfo
-	4,  // 4: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.allow_client_access:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.AllowClientAccess
-	5,  // 5: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.revoke_client_access:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.RevokeClientAccess
-	6,  // 6: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.set_allowed_clients:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.SetAllowedClients
-	7,  // 7: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.list_network_clients:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.ListNetworkClients
-	8,  // 8: cz.grimir.wifimanager.captive.routeragent.grpc.CommandAck.clients:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.NetworkClient
-	0,  // 9: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentService.Connect:input_type -> cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage
-	1,  // 10: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentService.Connect:output_type -> cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand
-	10, // [10:11] is the sub-list for method output_type
-	9,  // [9:10] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	3,  // 0: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage.synchronize:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.Synchronize
+	11, // 1: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage.ack:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.CommandAck
+	10, // 2: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage.authorized_client_observed:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.AuthorizedClientObserved
+	4,  // 3: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.get_client_info:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.GetClientInfo
+	5,  // 4: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.allow_client_access:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.AllowClientAccess
+	6,  // 5: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.revoke_client_access:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.RevokeClientAccess
+	7,  // 6: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.set_allowed_clients:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.SetAllowedClients
+	8,  // 7: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand.list_network_clients:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.ListNetworkClients
+	0,  // 8: cz.grimir.wifimanager.captive.routeragent.grpc.NetworkClient.neighbor_status:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.NeighborStatus
+	9,  // 9: cz.grimir.wifimanager.captive.routeragent.grpc.CommandAck.clients:type_name -> cz.grimir.wifimanager.captive.routeragent.grpc.NetworkClient
+	1,  // 10: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentService.Connect:input_type -> cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentMessage
+	2,  // 11: cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentService.Connect:output_type -> cz.grimir.wifimanager.captive.routeragent.grpc.RouterAgentCommand
+	11, // [11:12] is the sub-list for method output_type
+	10, // [10:11] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_router_agent_proto_init() }
@@ -1012,13 +1085,14 @@ func file_router_agent_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_router_agent_proto_rawDesc), len(file_router_agent_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_router_agent_proto_goTypes,
 		DependencyIndexes: file_router_agent_proto_depIdxs,
+		EnumInfos:         file_router_agent_proto_enumTypes,
 		MessageInfos:      file_router_agent_proto_msgTypes,
 	}.Build()
 	File_router_agent_proto = out.File
