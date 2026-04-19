@@ -26,6 +26,10 @@ class CurrentClientResolver(
                 logger.warn { "Could not find client info for $ip" }
                 error("Unable to identify client based on provided IP address")
             }
+            if (clientInfo.macAddress.isBlank()) {
+                logger.warn { "Mac address is blank" }
+                error("Mac address is blank")
+            }
 
             val tlsFingerprint =
                 deviceFingerprintService.trustedTlsFingerprint(
