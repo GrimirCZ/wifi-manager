@@ -35,6 +35,10 @@ dependencies {
     implementation(libs.flywayCore)
     implementation(libs.flywayDbPostgresql)
 
+    testImplementation(platform(libs.junitBom))
+    testImplementation(libs.springBootStarterTest)
+    testRuntimeOnly(libs.bundles.testRuntime)
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 }

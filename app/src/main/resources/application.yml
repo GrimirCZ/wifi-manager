@@ -22,6 +22,9 @@ app:
 
 wifimanager:
   captive:
+    request-routing:
+      ipv4-subnets: ${CAPTIVE_PORTAL_IPV4_SUBNET:[]}
+      ipv6-subnets: ${CAPITVE_PORTAL_IPV6_SUBNET:[]}
     portal:
       public-base-url: ${CAPTIVE_PORTAL_PUBLIC_BASE_URL:https://localhost}
     fingerprinting:
