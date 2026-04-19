@@ -102,7 +102,7 @@
                                  data-script="on load make a QRCode from me, @data-payload then set (<img/> in me)'s @alt to my @data-alt"></div>
                         </div>
                         <div class="w-full rounded-[1.5rem] bg-white px-4 py-5">
-                            <svg th:data-payload="${ticket.accessCode}"
+                            <svg th:data-payload="${@AccessCodeFormatter.createBarcodePayload(ticket.accessCode)}"
                                  class="h-20 w-full"
                                  data-script="on load call JsBarcode(me, @data-payload, { format: 'CODE128', displayValue: false, margin: 0})"></svg>
                         </div>

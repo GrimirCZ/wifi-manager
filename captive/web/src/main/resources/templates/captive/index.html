@@ -9,7 +9,14 @@
         if #scanner-toggle exists
           set #scanner-toggle.textContent to #scanner-toggle.dataset.startText
         end
-        call Quagga.onDetected(window.wmQuaggaDetected)
+        call window.wmRefreshScannerAvailability()
+      end
+
+      on htmx:afterSwap from body
+        if #scanner-toggle exists
+          set #scanner-toggle.textContent to #scanner-toggle.dataset.startText
+        end
+        call window.wmRefreshScannerAvailability()
       end
 
       on click from #scanner-toggle
@@ -27,7 +34,7 @@
               }
             },
             decoder: {
-              readers: ['code_128_reader', 'ean_reader', 'ean_8_reader']
+              readers: ['code_128_reader']
             },
             locate: true
           }, window.wmQuaggaInit)
@@ -49,10 +56,13 @@
 
       on quaggaDetected
         if #access-code exists
-          set #access-code.value to event.detail.code
-          call window.wmQuaggaStopSafe()
-          send scannerReset to me
-          call #access-code.focus()
+          set scannedCode to window.wmFormatAccessCode(event.detail.code)
+          if scannedCode is not empty
+            set #access-code.value to scannedCode
+            call window.wmQuaggaStopSafe()
+            send scannerReset to me
+            call #access-code.focus()
+          end
         end
       end
 
@@ -205,6 +215,11 @@
             class="input w-full captive-code-input"
             th:field="*{accessCode}"
             th:placeholder="#{captive.access.placeholder}"
+            inputmode="text"
+            maxlength="10"
+            pattern="[A-Za-z0-9]{3}-[A-Za-z0-9]{3}-[A-Za-z0-9]{2}"
+            title="XXX-XXX-XX"
+            autocomplete="off"
             required
           />
           <div class="text-xs text-red-600" th:if="${#fields.hasErrors('accessCode')}"
@@ -233,7 +248,7 @@
         </div>
 
         <!-- Scanner section -->
-        <div class="captive-scanner-section" th:classappend="${requireUserNameStep == true} ? ' hidden' : ''">
+        <div id="scanner-section" class="captive-scanner-section" th:classappend="${requireUserNameStep == true} ? ' hidden' : ''">
           <div class="captive-scanner-header">
             <div>
               <div class="text-sm font-medium" th:text="#{captive.scan.title}">Scan barcode</div>
@@ -297,7 +312,114 @@
     </main>
 
     <script th:src="@{/assets/shared/quagga.min.js}" defer></script>
-    <script>
+    <script th:inline="javascript">
+      window.wmScannerSupported = () =>
+        typeof window.Quagga !== "undefined" &&
+        typeof navigator !== "undefined" &&
+        !!navigator.mediaDevices &&
+        typeof navigator.mediaDevices.getUserMedia === "function" &&
+        typeof navigator.mediaDevices.enumerateDevices === "function";
+
+      window.wmScannerDetectedHandlerBound = false;
+
+      window.wmSetScannerVisible = (visible) => {
+        const section = document.getElementById("scanner-section");
+        if (!section) return;
+        section.classList.toggle("hidden", !visible);
+      };
+
+      window.wmRefreshScannerAvailability = async () => {
+        if (!window.wmScannerSupported()) {
+          window.wmSetScannerVisible(false);
+          return false;
+        }
+
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const hasVideoInput = devices.some((device) => device.kind === "videoinput");
+          window.wmSetScannerVisible(hasVideoInput);
+          if (hasVideoInput && !window.wmScannerDetectedHandlerBound) {
+            Quagga.onDetected(window.wmQuaggaDetected);
+            window.wmScannerDetectedHandlerBound = true;
+          }
+          return hasVideoInput;
+        } catch (_error) {
+          window.wmSetScannerVisible(false);
+          return false;
+        }
+      };
+
+      window.wmFormatAccessCode = (value) => {
+        const normalized = (value || "")
+          .toString()
+          .trim()
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, "")
+          .slice(0, 8);
+        if (normalized.length !== 8) return "";
+        return `${normalized.slice(0, 3)}-${normalized.slice(3, 6)}-${normalized.slice(6, 8)}`;
+      };
+
+      window.wmBarcodePrefix = /*[[${@AccessCodeFormatter.barcodePrefix}]]*/ "W";
+
+      window.wmBarcodeCharValue = (char) => {
+        if (char >= "0" && char <= "9") return char.charCodeAt(0) - "0".charCodeAt(0);
+        if (char >= "A" && char <= "Z") return 10 + char.charCodeAt(0) - "A".charCodeAt(0);
+        return -1;
+      };
+
+      window.wmBarcodeChecksum = (code) => {
+        let checksum = 0;
+        for (let index = 0; index < code.length; index += 1) {
+          const value = window.wmBarcodeCharValue(code[index]);
+          if (value < 0) return "";
+          checksum = (checksum + ((index + 1) * value)) % 36;
+        }
+        return checksum < 10
+          ? String.fromCharCode("0".charCodeAt(0) + checksum)
+          : String.fromCharCode("A".charCodeAt(0) + checksum - 10);
+      };
+
+      window.wmDecodeBarcodePayload = (value) => {
+        const payload = (value || "")
+          .toString()
+          .trim()
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, "");
+        if (!payload.startsWith(window.wmBarcodePrefix)) return "";
+
+        const encodedCode = payload.slice(window.wmBarcodePrefix.length);
+        if (encodedCode.length !== 9) return "";
+
+        const accessCode = encodedCode.slice(0, 8);
+        const checksum = encodedCode.slice(8);
+
+        if (!/^[A-Z0-9]{8}$/.test(accessCode)) return "";
+
+        if (window.wmBarcodeChecksum(accessCode) !== checksum) return "";
+        return window.wmFormatAccessCode(accessCode);
+      };
+
+      window.wmBindAccessCodeInput = () => {
+        const input = document.getElementById("access-code");
+        if (!input || input.dataset.codeFormatBound === "true" || input.type === "hidden") return;
+        input.dataset.codeFormatBound = "true";
+        const syncValue = () => {
+          const raw = (input.value || "")
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, "")
+            .slice(0, 8);
+          input.value = raw
+            ? `${raw.slice(0, 3)}${raw.length > 3 ? `-${raw.slice(3, 6)}` : ""}${raw.length > 6 ? `-${raw.slice(6, 8)}` : ""}`
+            : "";
+        };
+        input.addEventListener("input", syncValue);
+        input.addEventListener("blur", syncValue);
+        syncValue();
+      };
+
+      window.wmBindAccessCodeInput();
+
       window.wmQuaggaStopSafe = () => {
         if (!window.Quagga || typeof Quagga.stop !== "function") return;
         try {
@@ -317,11 +439,18 @@
 
       window.wmQuaggaDetected = (data) => {
         const code = data && data.codeResult && data.codeResult.code;
-        if (!code) return;
+        const formattedCode = window.wmDecodeBarcodePayload(code);
+        if (!formattedCode) return;
         document.body.dispatchEvent(
-          new CustomEvent("quaggaDetected", { detail: { code } }),
+          new CustomEvent("quaggaDetected", { detail: { code: formattedCode } }),
         );
       };
+
+      document.body.addEventListener("htmx:afterSwap", (event) => {
+        if (event.target && event.target.id === "captive-content") {
+          window.wmBindAccessCodeInput();
+        }
+      });
     </script>
   </body>
 </html>

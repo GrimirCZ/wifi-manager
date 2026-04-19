@@ -99,6 +99,41 @@ class CaptivePortalControllerTest {
     }
 
     @Test
+    fun `access code with invalid format is rejected before lookup`() {
+        val form = CaptiveAccessCodeForm(accessCode = "ABC-DEF-G", acceptTerms = true)
+        val bindingResult = BeanPropertyBindingResult(form, "form")
+        val model = ExtendedModelMap()
+        given(htmxRequest.isHtmxRequest).willReturn(true)
+        given(clientAccessStatusService.resolve(clientInfo))
+            .willReturn(CaptiveClientAccessStatus(CaptiveClientAccessState.UNAUTHORIZED))
+
+        val view = controller.submit(clientInfo, form, bindingResult, request(), model, htmxRequest)
+
+        assertEquals("captive/index :: captiveContent", view)
+        assertEquals("ABC-DEF-G", form.accessCode)
+        assertTrue(bindingResult.hasFieldErrors("accessCode"))
+        assertEquals("captive.error.code.format", bindingResult.getFieldError("accessCode")?.code)
+        verifyNoInteractions(findAuthorizationTokenPort, authorizeDeviceWithCodeUsecase)
+    }
+
+    @Test
+    fun `dashed access code is normalized for lookup`() {
+        val form = CaptiveAccessCodeForm(accessCode = "abc-def-gh", acceptTerms = true)
+        val bindingResult = BeanPropertyBindingResult(form, "form")
+        val model = ExtendedModelMap()
+        given(htmxRequest.isHtmxRequest).willReturn(true)
+        given(clientAccessStatusService.resolve(clientInfo))
+            .willReturn(CaptiveClientAccessStatus(CaptiveClientAccessState.UNAUTHORIZED))
+        given(findAuthorizationTokenPort.findByAccessCode("ABCDEFGH")).willReturn(token(requireUserNameOnLogin = false))
+
+        controller.submit(clientInfo, form, bindingResult, request(), model, htmxRequest)
+
+        verify(findAuthorizationTokenPort).findByAccessCode("ABCDEFGH")
+        verify(authorizeDeviceWithCodeUsecase).authorize(org.mockito.kotlin.any())
+        assertEquals("ABC-DEF-GH", form.accessCode)
+    }
+
+    @Test
     fun `valid three character name authorizes required name ticket`() {
         val form = CaptiveAccessCodeForm(accessCode = "ABCDEFGH", name = "  abc  ", acceptTerms = true)
         val bindingResult = BeanPropertyBindingResult(form, "form")

@@ -78,13 +78,16 @@ class CaptivePortalController(
         model: Model,
         htmxRequest: HtmxRequest,
     ): String {
-        val accessCode = form.accessCode?.let(accessCodeFormatter::normalize).orEmpty()
+        val rawAccessCode = form.accessCode.orEmpty()
+        val accessCode = accessCodeFormatter.normalize(rawAccessCode)
         val trimmedName = form.name?.trim().orEmpty()
-        form.accessCode = accessCode
+        form.accessCode = accessCodeFormatter.formatForInput(rawAccessCode)
         form.name = trimmedName.ifBlank { null }
 
         if (accessCode.isBlank()) {
             bindingResult.rejectValue("accessCode", "captive.error.code.required")
+        } else if (!accessCodeFormatter.isValid(rawAccessCode)) {
+            bindingResult.rejectValue("accessCode", "captive.error.code.format")
         }
         if (!form.acceptTerms) {
             bindingResult.rejectValue("acceptTerms", "captive.error.terms.required")
