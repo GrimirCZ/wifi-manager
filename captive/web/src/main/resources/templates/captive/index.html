@@ -248,7 +248,12 @@
         </div>
 
         <!-- Scanner section -->
-        <div id="scanner-section" class="captive-scanner-section" th:classappend="${requireUserNameStep == true} ? ' hidden' : ''">
+        <div
+          id="scanner-section"
+          class="captive-scanner-section"
+          th:classappend="${requireUserNameStep == true} ? ' hidden' : ''"
+          th:attr="data-scanner-allowed=${requireUserNameStep != true}"
+        >
           <div class="captive-scanner-header">
             <div>
               <div class="text-sm font-medium" th:text="#{captive.scan.title}">Scan barcode</div>
@@ -325,7 +330,8 @@
       window.wmSetScannerVisible = (visible) => {
         const section = document.getElementById("scanner-section");
         if (!section) return;
-        section.classList.toggle("hidden", !visible);
+        const allowed = section.dataset.scannerAllowed === "true";
+        section.classList.toggle("hidden", !visible || !allowed);
       };
 
       window.wmRefreshScannerAvailability = async () => {
