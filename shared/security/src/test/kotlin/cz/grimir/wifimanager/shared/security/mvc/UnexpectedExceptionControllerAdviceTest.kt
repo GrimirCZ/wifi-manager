@@ -11,7 +11,7 @@ import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.ModelAndView
 
 class UnexpectedExceptionControllerAdviceTest {
-    private val advice = UnexpectedExceptionControllerAdvice()
+    private val advice = UnexpectedExceptionControllerAdvice("School Wi-Fi")
 
     @Test
     fun `returns admin full-page error for unexpected admin exception`() {
@@ -38,6 +38,19 @@ class UnexpectedExceptionControllerAdviceTest {
         assertThat(modelAndView.viewName).isEqualTo("captive/fragments/error :: errorContent")
         assertThat(modelAndView.status).isEqualTo(HttpStatus.OK)
         assertThat(modelAndView.model["returnHref"]).isEqualTo("/captive")
+    }
+
+    @Test
+    fun `returns captive error copy for missing client mac`() {
+        val request = request("POST", "/captive/login")
+
+        val response = advice.handle(MissingClientMacException(), request)
+
+        val modelAndView = response as ModelAndView
+        assertThat(modelAndView.viewName).isEqualTo("captive/error")
+        assertThat(modelAndView.status).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
+        assertThat(modelAndView.model["missingClientMac"]).isEqualTo(true)
+        assertThat(modelAndView.model["errorNetworkName"]).isEqualTo("School Wi-Fi")
     }
 
     @Test

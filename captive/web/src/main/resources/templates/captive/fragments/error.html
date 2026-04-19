@@ -4,23 +4,33 @@
         <div class="captive-icon-ring captive-icon-ring-danger">
             <img th:src="@{/assets/shared/icons/outline/wifi-off.svg}" alt="" class="captive-icon" />
         </div>
-        <h1 class="captive-title" th:text="#{captive.error.heading}">Something went wrong</h1>
-        <p class="captive-subtitle" th:text="#{captive.error.body}">
+        <h1 class="captive-title" th:if="${missingClientMac == true}" th:text="#{captive.error.missing-mac.heading(${errorNetworkName})}">Connect to School Wi-Fi first</h1>
+        <h1 class="captive-title" th:if="${missingClientMac != true}" th:text="#{captive.error.heading}">Something went wrong</h1>
+        <p class="captive-subtitle" th:if="${missingClientMac == true}" th:text="#{captive.error.missing-mac.body(${errorNetworkName})}">
+            We could not verify that this device is connected to School Wi-Fi.
+        </p>
+        <p class="captive-subtitle" th:if="${missingClientMac != true}" th:text="#{captive.error.body}">
             We could not finish that request. Please try again.
         </p>
     </div>
 
     <div class="captive-card">
         <div class="alert alert-danger" role="alert">
-            <div class="font-semibold" th:text="#{captive.error.detail.title}">
+            <div class="font-semibold" th:if="${missingClientMac == true}" th:text="#{captive.error.missing-mac.detail.title(${errorNetworkName})}">
+                This device is probably using a different connection than School Wi-Fi.
+            </div>
+            <div class="font-semibold" th:if="${missingClientMac != true}" th:text="#{captive.error.detail.title}">
                 The portal hit an unexpected error.
             </div>
-            <div class="text-sm" th:text="#{captive.error.detail.body}">
+            <div class="text-sm" th:if="${missingClientMac == true}" th:text="#{captive.error.missing-mac.detail.body(${errorNetworkName})}">
+                Join School Wi-Fi and turn off mobile data or any other network before trying ticket or account authorization again.
+            </div>
+            <div class="text-sm" th:if="${missingClientMac != true}" th:text="#{captive.error.detail.body}">
                 Refresh the page or return to the portal home and try again.
             </div>
         </div>
 
-        <div class="mt-5">
+        <div class="mt-5 flex justify-center">
             <a class="btn btn-primary" th:href="${returnHref}" th:text="#{captive.error.cta}">
                 Return to portal
             </a>

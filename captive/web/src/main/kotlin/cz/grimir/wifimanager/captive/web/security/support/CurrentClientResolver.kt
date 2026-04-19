@@ -3,6 +3,7 @@ package cz.grimir.wifimanager.captive.web.security.support
 import cz.grimir.wifimanager.captive.application.devicefingerprint.CaptiveFingerprintingProperties
 import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
 import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
+import cz.grimir.wifimanager.shared.security.mvc.MissingClientMacException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.stereotype.Component
@@ -26,8 +27,8 @@ class CurrentClientResolver(
                 error("Unable to identify client based on provided IP address")
             }
             if (clientInfo.macAddress.isBlank()) {
-                logger.warn { "Mac address is blank" }
-                error("Mac address is blank")
+                logger.warn { "Router agent returned blank mac address for ip=$ip" }
+                throw MissingClientMacException()
             }
 
             val tlsFingerprint =

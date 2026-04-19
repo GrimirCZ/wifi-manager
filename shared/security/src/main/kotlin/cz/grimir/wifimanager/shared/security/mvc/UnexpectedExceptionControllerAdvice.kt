@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.ErrorResponse
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -17,7 +18,10 @@ private val logger = KotlinLogging.logger {}
 
 @ControllerAdvice
 @Order(Ordered.LOWEST_PRECEDENCE)
-class UnexpectedExceptionControllerAdvice {
+class UnexpectedExceptionControllerAdvice(
+    @param:Value($$"${wifimanager.wifi.ssid:WiFi}")
+    private val wifiSsid: String,
+) {
     @ExceptionHandler(Exception::class)
     fun handle(exception: Exception, request: HttpServletRequest): Any {
         if (exception is ErrorResponse || exception is AccessDeniedException) {
@@ -44,6 +48,15 @@ class UnexpectedExceptionControllerAdvice {
         }
 
         val isCaptiveRequest = requestPath.startsWith("/captive")
+        val errorModel =
+            if (isCaptiveRequest && exception is MissingClientMacException) {
+                mapOf(
+                    "missingClientMac" to true,
+                    "errorNetworkName" to wifiSsid,
+                )
+            } else {
+                emptyMap()
+            }
         val viewName =
             when {
                 isCaptiveRequest && isHtmx -> "captive/fragments/error :: errorContent"
@@ -56,7 +69,7 @@ class UnexpectedExceptionControllerAdvice {
 
         return ModelAndView(
             viewName,
-            mapOf("returnHref" to returnHref),
+            mapOf("returnHref" to returnHref) + errorModel,
             status,
         )
     }
