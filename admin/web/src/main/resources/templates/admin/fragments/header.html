@@ -3,7 +3,7 @@
         th:fragment="header(appName)"
         xmlns:th="http://www.thymeleaf.org"
         xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-        class="app-topbar"
+        class="app-topbar print:hidden"
 >
     <wm-confirm-dialog
             th:attr="title-text=#{admin.confirm.title},confirm-text=#{admin.confirm.confirm},cancel-text=#{admin.confirm.cancel}">
