@@ -12,6 +12,7 @@ dependencies {
     implementation(libs.springBootStarterOauth2Client)
     implementation(libs.springSecurityOauth2Jose)
     implementation(libs.bundles.htmx)
+    implementation(libs.zxingCore)
 
     testImplementation(platform(libs.junitBom))
     testImplementation(libs.bundles.testBase)

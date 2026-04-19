@@ -9,66 +9,53 @@
         if #scanner-toggle exists
           set #scanner-toggle.textContent to #scanner-toggle.dataset.startText
         end
-        call window.wmRefreshScannerAvailability()
+        call window.wmInitScannerVisibility()
       end
 
       on htmx:afterSwap from body
         if #scanner-toggle exists
           set #scanner-toggle.textContent to #scanner-toggle.dataset.startText
         end
-        call window.wmRefreshScannerAvailability()
+        call window.wmInitScannerVisibility()
       end
 
       on click from #scanner-toggle
         if :scannerActive
-          call window.wmQuaggaStopSafe()
+          call window.wmScannerStopSafe()
           send scannerReset to me
         else
-          remove .hidden from #scanner-panel
-          call Quagga.init({
-            inputStream: {
-              type: 'LiveStream',
-              target: document.getElementById('scanner'),
-              constraints: {
-                facingMode: 'environment'
-              }
-            },
-            decoder: {
-              readers: ['code_128_reader']
-            },
-            locate: true
-          }, window.wmQuaggaInit)
+          call window.wmStartScanner()
         end
       end
 
-      on quaggaInit
+      on scannerStart
         if event.detail.error
           send scannerReset to me
-          remove .hidden from #scanner-alert
+          call window.wmHandleScannerUnavailable()
         else
           add .hidden to #scanner-alert
-          call Quagga.start()
+          remove .hidden from #scanner-panel
           set :scannerActive to true
           set #scanner-toggle.textContent to #scanner-toggle.dataset.stopText
           go to the top of #scanner-panel smoothly
         end
       end
 
-      on quaggaDetected
+      on scannerDetected
         if #access-code exists
           set scannedCode to window.wmFormatAccessCode(event.detail.code)
           if scannedCode is not empty
             set #access-code.value to scannedCode
-            call window.wmQuaggaStopSafe()
+            call window.wmScannerStopSafe()
             send scannerReset to me
             call #access-code.focus()
           end
         end
       end
 
-      on quaggaStopFailed
+      on scannerStopFailed
         send scannerReset to me
-        remove .hidden from #scanner-alert
+        call window.wmHandleScannerUnavailable()
       end
 
       on scannerReset
@@ -254,7 +241,7 @@
           th:classappend="${requireUserNameStep == true} ? ' hidden' : ''"
           th:attr="data-scanner-allowed=${requireUserNameStep != true}"
         >
-          <div class="captive-scanner-header">
+          <div id="scanner-header" class="captive-scanner-header">
             <div>
               <div class="text-sm font-medium" th:text="#{captive.scan.title}">Scan barcode</div>
               <div class="text-xs text-text-muted" th:text="#{captive.scan.subtitle}">
@@ -282,8 +269,14 @@
           </div>
 
           <div id="scanner-panel" class="hidden captive-scanner-viewport">
-            <div id="scanner" class="relative flex justify-center w-full bg-black"
-                 role="region" aria-label="Barcode scanner"></div>
+            <video
+              id="scanner-video"
+              class="block max-h-[22rem] w-full bg-black object-cover"
+              autoplay
+              playsinline
+              muted
+              aria-label="Data Matrix scanner"
+            ></video>
             <div class="captive-scanner-hint" th:text="#{captive.scan.hint}">
               Point the camera at the barcode. The scanner will fill the code automatically.
             </div>
@@ -303,7 +296,7 @@
         <input th:if="${requireUserNameStep == true}" type="hidden" th:field="*{acceptTerms}"/>
 
         <button class="btn btn-primary w-full" type="submit">
-          <span class="btn-text" th:text="${requireUserNameStep == true} ? #{captive.action.authorize} : #{captive.action.continue}">Continue</span>
+          <span class="btn-text" th:text="${requireUserNameStep == true} ? #{captive.action.complete} : #{captive.action.continue}">Continue</span>
           <span class="spinner"></span>
         </button>
         </form>
@@ -316,16 +309,20 @@
       </div>
     </main>
 
-    <script th:src="@{/assets/shared/quagga.min.js}" defer></script>
     <script th:inline="javascript">
+      window.wmScannerState = {
+        reader: null,
+        controls: null,
+        stream: null,
+        active: false,
+      };
+
       window.wmScannerSupported = () =>
-        typeof window.Quagga !== "undefined" &&
+        typeof window.ZXingBrowser !== "undefined" &&
+        typeof window.ZXingBrowser.BrowserDatamatrixCodeReader === "function" &&
         typeof navigator !== "undefined" &&
         !!navigator.mediaDevices &&
-        typeof navigator.mediaDevices.getUserMedia === "function" &&
-        typeof navigator.mediaDevices.enumerateDevices === "function";
-
-      window.wmScannerDetectedHandlerBound = false;
+        typeof navigator.mediaDevices.getUserMedia === "function";
 
       window.wmSetScannerVisible = (visible) => {
         const section = document.getElementById("scanner-section");
@@ -334,24 +331,49 @@
         section.classList.toggle("hidden", !visible || !allowed);
       };
 
-      window.wmRefreshScannerAvailability = async () => {
-        if (!window.wmScannerSupported()) {
-          window.wmSetScannerVisible(false);
-          return false;
+      window.wmSetScannerControlsVisible = (visible) => {
+        const header = document.getElementById("scanner-header");
+        const panel = document.getElementById("scanner-panel");
+        if (header) {
+          header.classList.toggle("hidden", !visible);
         }
+        if (panel) {
+          panel.classList.toggle("hidden", !visible);
+        }
+      };
 
-        try {
-          const devices = await navigator.mediaDevices.enumerateDevices();
-          const hasVideoInput = devices.some((device) => device.kind === "videoinput");
-          window.wmSetScannerVisible(hasVideoInput);
-          if (hasVideoInput && !window.wmScannerDetectedHandlerBound) {
-            Quagga.onDetected(window.wmQuaggaDetected);
-            window.wmScannerDetectedHandlerBound = true;
-          }
-          return hasVideoInput;
-        } catch (_error) {
-          window.wmSetScannerVisible(false);
-          return false;
+      window.wmInitScannerVisibility = () => {
+        window.wmSetScannerVisible(window.wmScannerSupported());
+        const header = document.getElementById("scanner-header");
+        if (header) {
+          header.classList.remove("hidden");
+        }
+        const panel = document.getElementById("scanner-panel");
+        if (panel) {
+          panel.classList.add("hidden");
+        }
+        const alert = document.getElementById("scanner-alert");
+        if (alert) {
+          alert.classList.add("hidden");
+        }
+      };
+
+      window.wmHandleScannerUnavailable = () => {
+        const alert = document.getElementById("scanner-alert");
+        const section = document.getElementById("scanner-section");
+        if (alert) {
+          alert.classList.remove("hidden");
+        }
+        if (section && section.dataset.scannerAllowed === "true") {
+          section.classList.remove("hidden");
+        }
+        const header = document.getElementById("scanner-header");
+        if (header) {
+          header.classList.add("hidden");
+        }
+        const panel = document.getElementById("scanner-panel");
+        if (panel) {
+          panel.classList.add("hidden");
         }
       };
 
@@ -426,36 +448,108 @@
 
       window.wmBindAccessCodeInput();
 
-      window.wmQuaggaStopSafe = () => {
-        if (!window.Quagga || typeof Quagga.stop !== "function") return;
+      window.wmScannerStopSafe = () => {
         try {
-          Quagga.stop();
+          window.wmScannerState.active = false;
+          if (window.wmScannerState.controls && typeof window.wmScannerState.controls.stop === "function") {
+            window.wmScannerState.controls.stop();
+            window.wmScannerState.controls = null;
+          }
+          if (window.wmScannerState.stream) {
+            window.wmScannerState.stream.getTracks().forEach((track) => track.stop());
+            window.wmScannerState.stream = null;
+          }
+          if (window.wmScannerState.reader && typeof window.wmScannerState.reader.reset === "function") {
+            window.wmScannerState.reader.reset();
+          }
+          const video = document.getElementById("scanner-video");
+          if (video) {
+            video.pause();
+            video.srcObject = null;
+          }
         } catch (err) {
           document.body.dispatchEvent(
-            new CustomEvent("quaggaStopFailed", { detail: { error: err } }),
+            new CustomEvent("scannerStopFailed", { detail: { error: err } }),
           );
         }
       };
 
-      window.wmQuaggaInit = (err) => {
-        document.body.dispatchEvent(
-          new CustomEvent("quaggaInit", { detail: { error: err } }),
-        );
-      };
+      window.wmStartScanner = async () => {
+        if (!window.wmScannerSupported()) {
+          document.body.dispatchEvent(
+            new CustomEvent("scannerStart", { detail: { error: new Error("Scanner unavailable") } }),
+          );
+          return;
+        }
 
-      window.wmQuaggaDetected = (data) => {
-        const code = data && data.codeResult && data.codeResult.code;
-        const formattedCode = window.wmDecodeBarcodePayload(code);
-        if (!formattedCode) return;
-        document.body.dispatchEvent(
-          new CustomEvent("quaggaDetected", { detail: { code: formattedCode } }),
-        );
+        const video = document.getElementById("scanner-video");
+        if (!video) {
+          document.body.dispatchEvent(
+            new CustomEvent("scannerStart", { detail: { error: new Error("Scanner video missing") } }),
+          );
+          return;
+        }
+
+        try {
+          window.wmScannerStopSafe();
+          if (!window.wmScannerState.reader) {
+            window.wmScannerState.reader = new window.ZXingBrowser.BrowserDatamatrixCodeReader();
+          }
+
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: {
+              facingMode: { ideal: "environment" },
+            },
+          });
+          window.wmScannerState.stream = stream;
+          video.srcObject = stream;
+          await video.play();
+
+          const controls = await window.wmScannerState.reader.decodeFromVideoElement(
+            video,
+            (result, _error, activeControls) => {
+              if (!result) return;
+              const rawText = typeof result.getText === "function" ? result.getText() : (result.text || "");
+              const formattedCode = window.wmDecodeBarcodePayload(rawText);
+              if (!formattedCode) return;
+              if (activeControls && typeof activeControls.stop === "function") {
+                activeControls.stop();
+              }
+              document.body.dispatchEvent(
+                new CustomEvent("scannerDetected", { detail: { code: formattedCode } }),
+              );
+            },
+          );
+
+          window.wmScannerState.controls = controls;
+          window.wmScannerState.active = true;
+          document.body.dispatchEvent(
+            new CustomEvent("scannerStart", { detail: { error: null } }),
+          );
+        } catch (error) {
+          window.wmScannerStopSafe();
+          document.body.dispatchEvent(
+            new CustomEvent("scannerStart", { detail: { error } }),
+          );
+        }
       };
 
       document.body.addEventListener("htmx:afterSwap", (event) => {
         if (event.target && event.target.id === "captive-content") {
           window.wmBindAccessCodeInput();
+          window.wmInitScannerVisibility();
         }
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          window.wmScannerStopSafe();
+        }
+      });
+
+      window.addEventListener("beforeunload", () => {
+        window.wmScannerStopSafe();
       });
     </script>
   </body>
