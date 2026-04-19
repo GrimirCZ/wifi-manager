@@ -57,6 +57,9 @@ class CaptiveAuthSessionLoginHandler(
         val networkUser = upsertNetworkUserOnLoginUsecase.upsert(result.identity, result.allowedDeviceCount)
         val effectiveLimit = resolveNetworkUserLimitUsecase.resolve(networkUser)
         if (effectiveLimit <= 0) {
+            logger.warn {
+                "User authentication denied email=${result.identity.email} userId=${result.identity.userId.id} reason=no_device_access"
+            }
             return LdapLoginResult(success = false, failureReason = LdapLoginFailureReason.NO_DEVICE_ACCESS)
         }
 
@@ -79,6 +82,10 @@ class CaptiveAuthSessionLoginHandler(
                 .toSet()
         val authentication = UsernamePasswordAuthenticationToken(result.identity, null, authorities)
         SecurityContextHolder.getContext().authentication = authentication
+
+        logger.info {
+            "User authentication succeeded email=${result.identity.email} userId=${result.identity.userId.id} roles=${result.identity.roles}"
+        }
 
         return LdapLoginResult(success = true, userId = result.identity.userId)
     }

@@ -16,6 +16,10 @@ spring:
 server:
   forward-headers-strategy: framework
 
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%thread] %logger{36}%replace(%X{principal}){'^(.+)$',' principal=$1'}%replace(%X{clientMac}){'^(.+)$',' clientMac=$1'} - %msg%n%wEx"
+
 app:
   locale:
     default: en

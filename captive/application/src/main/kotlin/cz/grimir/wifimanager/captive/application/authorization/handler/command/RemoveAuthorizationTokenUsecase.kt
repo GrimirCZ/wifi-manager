@@ -36,6 +36,6 @@ class RemoveAuthorizationTokenUsecase(
             localRouterAgentPort.revokeClientAccess(macsToRevoke)
         }
 
-        logger.info { "Removed authorization token for ticket id=${command.ticketId}" }
+        logger.debug { "Removed authorization token for ticket id=${command.ticketId}" }
     }
 }

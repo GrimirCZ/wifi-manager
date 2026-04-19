@@ -9,12 +9,14 @@ import cz.grimir.wifimanager.captive.web.security.support.ClientInfo
 import cz.grimir.wifimanager.captive.web.security.support.CurrentClientResolver
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
+import org.slf4j.MDC
 
 class CaptiveDeviceSessionFingerprintInterceptorTest {
     private val currentClientResolver: CurrentClientResolver = mock()
@@ -24,6 +26,11 @@ class CaptiveDeviceSessionFingerprintInterceptorTest {
             currentClientResolver = currentClientResolver,
             authorizedClientFingerprintGuard = authorizedClientFingerprintGuard,
         )
+
+    @AfterEach
+    fun tearDown() {
+        MDC.clear()
+    }
 
     @Test
     fun `matching request continues and processes guard`() {
@@ -35,6 +42,7 @@ class CaptiveDeviceSessionFingerprintInterceptorTest {
         val allowed = interceptor.preHandle(request, response, Any())
 
         assertTrue(allowed)
+        org.junit.jupiter.api.Assertions.assertEquals("aa:bb:cc:dd:ee:ff", MDC.get("clientMac"))
         verify(authorizedClientFingerprintGuard).refreshAuthenticatedClientFingerprint(current.macAddress, current.fingerprintProfile)
         verifyNoInteractions(response)
     }

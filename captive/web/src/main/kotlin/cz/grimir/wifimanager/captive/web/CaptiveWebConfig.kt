@@ -17,6 +17,6 @@ class CaptiveWebConfig(
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry
             .addInterceptor(captiveDeviceSessionFingerprintInterceptor)
-            .addPathPatterns("/captive/device", "/captive/device/**")
+            .addPathPatterns("/captive", "/captive/**")
     }
 }
