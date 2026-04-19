@@ -20,7 +20,6 @@ class CurrentClientResolver(
         cache.getOrLoad(request) {
             val ip = request.remoteAddr
 
-            // TODO: maybe cache
             val clientInfo = routerAgentPort.getClientInfo(ip)
             if (clientInfo == null) {
                 logger.warn { "Could not find client info for $ip" }
