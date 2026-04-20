@@ -1,3 +1,3 @@
 package cz.grimir.wifimanager.shared.security.mvc
 
-class ClientIdentityUnavailableException : RuntimeException("Client identity is unavailable")
+class ClientIdentityUnavailableException(ip: String) : RuntimeException("Client identity is unavailable for $ip")

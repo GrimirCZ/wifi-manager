@@ -18,7 +18,7 @@ class CurrentClientArgumentResolverTest {
         val request = mock<HttpServletRequest>()
         val webRequest = mock<NativeWebRequest>()
         given(webRequest.getNativeRequest(HttpServletRequest::class.java)).willReturn(request)
-        given(currentClientResolver.resolve(request)).willThrow(ClientIdentityUnavailableException())
+        given(currentClientResolver.resolve(request)).willThrow(ClientIdentityUnavailableException("111"))
 
         assertThrows(ClientIdentityUnavailableException::class.java) {
             argumentResolver.resolveArgument(parameter(), null, webRequest, null)

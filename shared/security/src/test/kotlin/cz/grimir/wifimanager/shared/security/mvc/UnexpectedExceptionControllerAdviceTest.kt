@@ -44,7 +44,7 @@ class UnexpectedExceptionControllerAdviceTest {
     fun `returns captive error copy for missing client mac`() {
         val request = request("POST", "/captive/login")
 
-        val response = advice.handle(MissingClientMacException(), request)
+        val response = advice.handle(MissingClientMacException("123"), request)
 
         val modelAndView = response as ModelAndView
         assertThat(modelAndView.viewName).isEqualTo("captive/error")

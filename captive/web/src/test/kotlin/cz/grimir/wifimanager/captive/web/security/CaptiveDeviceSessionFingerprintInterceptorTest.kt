@@ -67,7 +67,7 @@ class CaptiveDeviceSessionFingerprintInterceptorTest {
     fun `missing client identity continues without refreshing fingerprint`() {
         val request = mock<HttpServletRequest>()
         val response = mock<HttpServletResponse>()
-        given(currentClientResolver.resolve(request)).willThrow(ClientIdentityUnavailableException())
+        given(currentClientResolver.resolve(request)).willThrow(ClientIdentityUnavailableException("222"))
 
         val allowed = interceptor.preHandle(request, response, Any())
 
@@ -79,7 +79,7 @@ class CaptiveDeviceSessionFingerprintInterceptorTest {
     fun `blank client mac continues without refreshing fingerprint`() {
         val request = mock<HttpServletRequest>()
         val response = mock<HttpServletResponse>()
-        given(currentClientResolver.resolve(request)).willThrow(MissingClientMacException())
+        given(currentClientResolver.resolve(request)).willThrow(MissingClientMacException("111"))
 
         val allowed = interceptor.preHandle(request, response, Any())
 

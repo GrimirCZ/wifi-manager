@@ -25,11 +25,11 @@ class CurrentClientResolver(
             val clientInfo = routerAgentPort.getClientInfo(ip)
             if (clientInfo == null) {
                 logger.warn { "Could not find client info for $ip" }
-                throw ClientIdentityUnavailableException()
+                throw ClientIdentityUnavailableException(ip)
             }
             if (clientInfo.macAddress.isBlank()) {
                 logger.warn { "Router agent returned blank mac address for ip=$ip" }
-                throw MissingClientMacException()
+                throw MissingClientMacException(ip)
             }
 
             val tlsFingerprint =

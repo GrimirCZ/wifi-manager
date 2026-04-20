@@ -19,7 +19,7 @@ class MaybeCurrentClientArgumentResolverTest {
         val request = mock<HttpServletRequest>()
         val webRequest = mock<NativeWebRequest>()
         given(webRequest.getNativeRequest(HttpServletRequest::class.java)).willReturn(request)
-        given(currentClientResolver.resolve(request)).willThrow(ClientIdentityUnavailableException())
+        given(currentClientResolver.resolve(request)).willThrow(ClientIdentityUnavailableException("222"))
 
         val result = argumentResolver.resolveArgument(parameter(), null, webRequest, null)
 
@@ -31,7 +31,7 @@ class MaybeCurrentClientArgumentResolverTest {
         val request = mock<HttpServletRequest>()
         val webRequest = mock<NativeWebRequest>()
         given(webRequest.getNativeRequest(HttpServletRequest::class.java)).willReturn(request)
-        given(currentClientResolver.resolve(request)).willThrow(MissingClientMacException())
+        given(currentClientResolver.resolve(request)).willThrow(MissingClientMacException("aaa"))
 
         val result = argumentResolver.resolveArgument(parameter(), null, webRequest, null)
 
