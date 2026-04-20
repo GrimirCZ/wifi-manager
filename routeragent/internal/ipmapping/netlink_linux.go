@@ -75,7 +75,7 @@ func (n *NetlinkProvider) Start() error {
 					continue
 				}
 				n.handleRawEvent(event)
-				log.Printf("Handled event: %+v (%+v)", event, update)
+				// 				log.Printf("Handled event: %+v (%+v)", event, update)
 			}
 		}
 	}()
