@@ -1,19 +1,19 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
 import cz.grimir.wifimanager.captive.application.authorization.command.AuthorizeDeviceWithCodeCommand
-import cz.grimir.wifimanager.captive.application.identity.port.CaptiveUserIdentityPort
-import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.authorization.handler.command.AuthorizeDeviceWithCodeUsecase
+import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.identity.port.CaptiveUserIdentityPort
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.TouchNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.captive.core.exceptions.InvalidAccessCodeException
 import cz.grimir.wifimanager.captive.core.exceptions.KickedAddressAttemptedLoginException
 import cz.grimir.wifimanager.captive.core.value.Device
-import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessState
-import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessStatus
-import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessStatusService
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveAccessCodeForm
+import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessState
+import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessStatusService
 import cz.grimir.wifimanager.captive.web.security.support.ClientInfo
 import cz.grimir.wifimanager.captive.web.security.support.CurrentClient
+import cz.grimir.wifimanager.captive.web.security.support.MaybeCurrentClient
 import cz.grimir.wifimanager.shared.ui.AccessCodeFormatter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HtmxRequest
@@ -44,8 +44,8 @@ class CaptivePortalController(
 
     @GetMapping("/captive", "/captive/")
     fun index(
-        @CurrentClient
-        clientInfo: ClientInfo,
+        @MaybeCurrentClient
+        clientInfo: ClientInfo?,
         request: HttpServletRequest,
         model: Model,
     ): String {
@@ -53,9 +53,11 @@ class CaptivePortalController(
             model.addAttribute("form", CaptiveAccessCodeForm())
         }
         model.addAttribute("requireUserNameStep", false)
-        if (applyClientAuthorization(clientInfo, model, request)) {
+
+        if (clientInfo != null && applyClientAuthorization(clientInfo, model, request)) {
             return "redirect:/captive/login"
         }
+
         return "captive/index"
     }
 

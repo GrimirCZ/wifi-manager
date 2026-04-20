@@ -89,7 +89,7 @@ func TestNormalizeNeighborAcceptsIPv4AndIPv6WithLinkIndexPreservedExternally(t *
 	if !ok {
 		t.Fatal("expected ipv6 update to normalize")
 	}
-	if !reflect.DeepEqual(ipv6, rawEvent{IP: "fe80::11:22ff:fe33:4455", MAC: "02:11:22:33:44:55", InterfaceName: "wlan0", Status: NeighborStatusLive, LastSeenAt: nowUTC()}) {
+	if !reflect.DeepEqual(ipv6, rawEvent{IP: "fe80::211:22ff:fe33:4455", MAC: "02:11:22:33:44:55", InterfaceName: "wlan0", Status: NeighborStatusLive, LastSeenAt: nowUTC()}) {
 		t.Fatalf("unexpected ipv6 event: %#v", ipv6)
 	}
 }
@@ -140,6 +140,13 @@ func TestNormalizeNeighborIncludesStaleBootstrapState(t *testing.T) {
 }
 
 func TestNormalizeRawUpdateMarksStaleDeletesFailedAndIgnoresIncomplete(t *testing.T) {
+	nowUTC = func() time.Time {
+		return time.Date(2026, time.April, 19, 12, 0, 0, 0, time.UTC)
+	}
+	defer func() {
+		nowUTC = func() time.Time { return time.Now().UTC() }
+	}()
+
 	stale, ok := normalizeRawUpdate(netlink.NeighUpdate{
 		Type: unix.RTM_NEWNEIGH,
 		Neigh: netlink.Neigh{
@@ -152,7 +159,13 @@ func TestNormalizeRawUpdateMarksStaleDeletesFailedAndIgnoresIncomplete(t *testin
 	if !ok {
 		t.Fatal("expected stale update to normalize")
 	}
-	if !reflect.DeepEqual(stale, rawEvent{IP: "192.0.2.10", InterfaceName: "br-lan", Status: NeighborStatusStale}) {
+	if !reflect.DeepEqual(stale, rawEvent{
+		IP:            "192.0.2.10",
+		MAC:           "aa:bb:cc:dd:ee:ff",
+		InterfaceName: "br-lan",
+		Status:        NeighborStatusStale,
+		LastSeenAt:    nowUTC(),
+	}) {
 		t.Fatalf("unexpected stale event: %#v", stale)
 	}
 
@@ -245,6 +258,7 @@ func TestLiveStateTransitionRetainsStaleAndReaddsLiveState(t *testing.T) {
 		t.Fatal("expected live neighbor to normalize")
 	}
 	provider.handleRawEvent(upsert)
+	provider.store.applySync(func(state *writerState) {})
 
 	if mac, ok := provider.store.lookupMAC("192.0.2.10"); !ok || mac != "aa:bb:cc:dd:ee:ff" {
 		t.Fatalf("expected live entry to exist, got %q %v", mac, ok)
@@ -263,6 +277,7 @@ func TestLiveStateTransitionRetainsStaleAndReaddsLiveState(t *testing.T) {
 		t.Fatal("expected stale update to normalize")
 	}
 	provider.handleRawEvent(remove)
+	provider.store.applySync(func(state *writerState) {})
 
 	entry, ok := provider.store.lookupEntry("192.0.2.10")
 	if !ok {
@@ -288,6 +303,7 @@ func TestLiveStateTransitionRetainsStaleAndReaddsLiveState(t *testing.T) {
 		t.Fatal("expected probe update to normalize")
 	}
 	provider.handleRawEvent(readd)
+	provider.store.applySync(func(state *writerState) {})
 
 	if mac, ok := provider.store.lookupMAC("192.0.2.10"); !ok || mac != "aa:bb:cc:dd:ee:ff" {
 		t.Fatalf("expected entry to reappear, got %q %v", mac, ok)
@@ -295,5 +311,43 @@ func TestLiveStateTransitionRetainsStaleAndReaddsLiveState(t *testing.T) {
 	entry, ok = provider.store.lookupEntry("192.0.2.10")
 	if !ok || entry.Status != NeighborStatusLive || !entry.LastSeenAt.Equal(nowUTC()) {
 		t.Fatalf("expected live refreshed entry, got %#v %v", entry, ok)
+	}
+}
+
+func TestStaleFirstLiveUpdateCreatesStaleEntry(t *testing.T) {
+	provider := &NetlinkProvider{
+		ctx:   context.Background(),
+		store: newStore(context.Background(), nil),
+		live:  true,
+	}
+	nowUTC = func() time.Time {
+		return time.Date(2026, time.April, 19, 12, 0, 0, 0, time.UTC)
+	}
+	defer func() {
+		nowUTC = func() time.Time { return time.Now().UTC() }
+	}()
+
+	stale, ok := normalizeRawUpdate(netlink.NeighUpdate{
+		Type: unix.RTM_NEWNEIGH,
+		Neigh: netlink.Neigh{
+			LinkIndex:    3,
+			State:        netlink.NUD_STALE,
+			IP:           []byte{192, 0, 2, 10},
+			HardwareAddr: []byte{0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff},
+		},
+	}, map[int]string{3: "br-lan"})
+	if !ok {
+		t.Fatal("expected stale update to normalize")
+	}
+
+	provider.handleRawEvent(stale)
+	provider.store.applySync(func(state *writerState) {})
+
+	entry, ok := provider.store.lookupEntry("192.0.2.10")
+	if !ok {
+		t.Fatal("expected stale-first update to create entry")
+	}
+	if entry.MAC != "aa:bb:cc:dd:ee:ff" || entry.Status != NeighborStatusStale || !entry.LastSeenAt.Equal(nowUTC()) {
+		t.Fatalf("unexpected stale-first entry: %#v", entry)
 	}
 }

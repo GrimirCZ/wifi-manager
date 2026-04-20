@@ -113,15 +113,7 @@ func (n *NetlinkProvider) handleRawEvent(event rawEvent) {
 	n.bufferMu.Unlock()
 
 	n.store.enqueue(func(state *writerState) {
-		if event.Deleted {
-			state.applyDelete(event.IP)
-			return
-		}
-		if event.Status == NeighborStatusStale {
-			state.applyMarkStale(event.IP)
-			return
-		}
-		state.applyUpsert(event.IP, event.MAC, event.InterfaceName)
+		state.applyEvent(event)
 	})
 }
 
@@ -163,10 +155,13 @@ func normalizeRawUpdate(update netlink.NeighUpdate, managedIfIndexes map[int]str
 		return rawEvent{IP: ip, InterfaceName: linkNameForIndex(update.Neigh.LinkIndex, managedIfIndexes), Deleted: true}, true
 	}
 	if update.Neigh.State&netlink.NUD_STALE != 0 {
+		mac, _ := normalize.MACFromNet(update.Neigh.HardwareAddr)
 		return rawEvent{
 			IP:            ip,
+			MAC:           mac,
 			InterfaceName: linkNameForIndex(update.Neigh.LinkIndex, managedIfIndexes),
 			Status:        NeighborStatusStale,
+			LastSeenAt:    nowUTC(),
 		}, true
 	}
 	if !isLiveNeighborState(update.Neigh.State) {

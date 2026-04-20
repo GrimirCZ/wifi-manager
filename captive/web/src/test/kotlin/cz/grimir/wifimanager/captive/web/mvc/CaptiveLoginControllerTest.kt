@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.springframework.ui.ExtendedModelMap
 import org.springframework.validation.BeanPropertyBindingResult
 import java.time.Instant
@@ -46,6 +47,20 @@ class CaptiveLoginControllerTest {
             dhcpHostname = null,
             fingerprintProfile = null,
         )
+
+    @Test
+    fun `login page renders when client identity is unavailable`() {
+        val session = mock<HttpSession>()
+        val model = ExtendedModelMap()
+        given(session.getAttribute(CaptivePortalController.ACCOUNT_REAUTH_SESSION_KEY)).willReturn(false)
+
+        val view = controller.login(null, session, model, htmxRequest)
+
+        assertEquals("captive/login", view)
+        assertEquals(false, model["deviceVerificationRequired"])
+        assertTrue(model["form"] is CaptiveLdapLoginForm)
+        verifyNoInteractions(findNetworkUserDeviceByMacUsecase)
+    }
 
     @Test
     fun `login page shows verification banner when session marker is present`() {

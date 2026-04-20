@@ -8,6 +8,7 @@ import cz.grimir.wifimanager.captive.web.security.CaptiveAuthSessionLoginHandler
 import cz.grimir.wifimanager.captive.web.security.LdapLoginFailureReason
 import cz.grimir.wifimanager.captive.web.security.support.ClientInfo
 import cz.grimir.wifimanager.captive.web.security.support.CurrentClient
+import cz.grimir.wifimanager.captive.web.security.support.MaybeCurrentClient
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HtmxRequest
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpSession
@@ -26,16 +27,18 @@ class CaptiveLoginController(
 ) {
     @GetMapping("/captive/login")
     fun login(
-        @CurrentClient
-        clientInfo: ClientInfo,
+        @MaybeCurrentClient
+        clientInfo: ClientInfo?,
         session: HttpSession,
         model: Model,
         htmxRequest: HtmxRequest,
     ): String {
-        val existingDevice = findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)
-        if (existingDevice != null && existingDevice.reauthRequiredAt == null) {
-            session.removeAttribute(CaptivePortalController.ACCOUNT_REAUTH_SESSION_KEY)
-            return if (htmxRequest.isHtmxRequest) "redirect:htmx:/captive" else "redirect:/captive"
+        if (clientInfo != null) {
+            val existingDevice = findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)
+            if (existingDevice != null && existingDevice.reauthRequiredAt == null) {
+                session.removeAttribute(CaptivePortalController.ACCOUNT_REAUTH_SESSION_KEY)
+                return if (htmxRequest.isHtmxRequest) "redirect:htmx:/captive" else "redirect:/captive"
+            }
         }
 
         if (!model.containsAttribute("form")) {

@@ -2,6 +2,8 @@ package cz.grimir.wifimanager.captive.web.security
 
 import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedClientFingerprintGuard
 import cz.grimir.wifimanager.captive.web.security.support.CurrentClientResolver
+import cz.grimir.wifimanager.shared.security.mvc.ClientIdentityUnavailableException
+import cz.grimir.wifimanager.shared.security.mvc.MissingClientMacException
 import cz.grimir.wifimanager.shared.security.mvc.RequestMdc
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -18,7 +20,14 @@ class CaptiveDeviceSessionFingerprintInterceptor(
         response: HttpServletResponse,
         handler: Any,
     ): Boolean {
-        val clientInfo = currentClientResolver.resolve(request)
+        val clientInfo =
+            try {
+                currentClientResolver.resolve(request)
+            } catch (_: ClientIdentityUnavailableException) {
+                return true
+            } catch (_: MissingClientMacException) {
+                return true
+            }
         RequestMdc.putDevice(clientInfo.macAddress)
         authorizedClientFingerprintGuard.refreshAuthenticatedClientFingerprint(clientInfo.macAddress, clientInfo.fingerprintProfile)
         return true

@@ -61,6 +61,19 @@ class CaptivePortalControllerTest {
         )
 
     @Test
+    fun `index renders captive page when client identity is unavailable`() {
+        val request = request()
+        val model = ExtendedModelMap()
+
+        val view = controller.index(null, request, model)
+
+        assertEquals("captive/index", view)
+        assertEquals(false, model["requireUserNameStep"])
+        assertTrue(model["form"] is CaptiveAccessCodeForm)
+        verifyNoInteractions(clientAccessStatusService, touchNetworkUserDeviceUsecase, userIdentityPort)
+    }
+
+    @Test
     fun `required name ticket returns htmx name step when name is missing`() {
         val form = CaptiveAccessCodeForm(accessCode = "abc-def", acceptTerms = true)
         val bindingResult = BeanPropertyBindingResult(form, "form")

@@ -7,6 +7,8 @@ import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintSignal
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintSignalStrength
 import cz.grimir.wifimanager.captive.web.security.support.ClientInfo
 import cz.grimir.wifimanager.captive.web.security.support.CurrentClientResolver
+import cz.grimir.wifimanager.shared.security.mvc.ClientIdentityUnavailableException
+import cz.grimir.wifimanager.shared.security.mvc.MissingClientMacException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.junit.jupiter.api.AfterEach
@@ -59,6 +61,30 @@ class CaptiveDeviceSessionFingerprintInterceptorTest {
         assertTrue(allowed)
         verify(authorizedClientFingerprintGuard).refreshAuthenticatedClientFingerprint(current.macAddress, current.fingerprintProfile)
         verifyNoInteractions(response)
+    }
+
+    @Test
+    fun `missing client identity continues without refreshing fingerprint`() {
+        val request = mock<HttpServletRequest>()
+        val response = mock<HttpServletResponse>()
+        given(currentClientResolver.resolve(request)).willThrow(ClientIdentityUnavailableException())
+
+        val allowed = interceptor.preHandle(request, response, Any())
+
+        assertTrue(allowed)
+        verifyNoInteractions(authorizedClientFingerprintGuard, response)
+    }
+
+    @Test
+    fun `blank client mac continues without refreshing fingerprint`() {
+        val request = mock<HttpServletRequest>()
+        val response = mock<HttpServletResponse>()
+        given(currentClientResolver.resolve(request)).willThrow(MissingClientMacException())
+
+        val allowed = interceptor.preHandle(request, response, Any())
+
+        assertTrue(allowed)
+        verifyNoInteractions(authorizedClientFingerprintGuard, response)
     }
 
     private fun matchingClientInfo(): ClientInfo =

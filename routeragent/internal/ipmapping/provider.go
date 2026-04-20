@@ -190,6 +190,10 @@ func (s *store) lookupMAC(ip string) (string, bool) {
 	return s.load().lookupMAC(ip)
 }
 
+func (s *store) lookupEntry(ip string) (ipToMAC, bool) {
+	return s.load().lookupEntry(ip)
+}
+
 func (s *store) ipsForMAC(mac string) []string {
 	return s.load().ipsForMAC(mac)
 }
@@ -374,6 +378,22 @@ func (s *snapshot) withDelete(ipStr string) (*snapshot, Update, bool) {
 	}, true
 }
 
+func (s *snapshot) withEvent(event rawEvent) (*snapshot, Update, bool) {
+	if event.Deleted {
+		return s.withDelete(event.IP)
+	}
+
+	if event.Status == NeighborStatusStale {
+		next := s
+		if event.IP != "" && event.MAC != "" {
+			next, _, _ = next.withUpsert(event.IP, event.MAC, event.InterfaceName, event.LastSeenAt)
+		}
+		return next.withMarkStale(event.IP)
+	}
+
+	return s.withUpsert(event.IP, event.MAC, event.InterfaceName, event.LastSeenAt)
+}
+
 func upsertIPIntoClientTree(tree *btree.BTreeG[macToClient], mac, ip string) {
 	client, ok := tree.Get(macToClient{MAC: mac})
 	if !ok {
@@ -480,6 +500,16 @@ func (w *writerState) applyDelete(ipStr string) (string, bool) {
 	return update.MAC, true
 }
 
+func (w *writerState) applyEvent(event rawEvent) (Update, bool) {
+	next, update, changed := w.current.withEvent(event)
+	if !changed {
+		return Update{}, false
+	}
+	w.publish(next)
+	w.emit(update)
+	return update, true
+}
+
 // bootstrap installs the full scan result as the base snapshot, replays the
 // buffered gap events in order, then emits replayed deltas after publication.
 func (w *writerState) bootstrap(initial []rawEvent, replay []rawEvent) {
@@ -496,17 +526,8 @@ func (w *writerState) bootstrap(initial []rawEvent, replay []rawEvent) {
 
 	replayed := make([]Update, 0, len(replay))
 	for _, event := range replay {
-		var (
-			update  Update
-			changed bool
-		)
-		if event.Deleted {
-			next, update, changed = next.withDelete(event.IP)
-		} else if event.Status == NeighborStatusStale {
-			next, update, changed = next.withMarkStale(event.IP)
-		} else {
-			next, update, changed = next.withUpsert(event.IP, event.MAC, event.InterfaceName, event.LastSeenAt)
-		}
+		updateSnapshot, update, changed := next.withEvent(event)
+		next = updateSnapshot
 		if changed {
 			replayed = append(replayed, update)
 		}
