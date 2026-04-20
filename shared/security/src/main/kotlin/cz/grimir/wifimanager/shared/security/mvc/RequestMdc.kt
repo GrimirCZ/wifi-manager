@@ -7,6 +7,7 @@ object RequestMdc {
     private const val USER_ID_KEY = "userId"
     private const val PRINCIPAL_KEY = "principal"
     private const val CLIENT_MAC_KEY = "clientMac"
+    private const val REQUEST_PATH_KEY = "requestPath"
 
     fun putUser(sessionUserIdentity: SessionUserIdentity) {
         MDC.put(USER_EMAIL_KEY, sessionUserIdentity.email)
@@ -19,10 +20,16 @@ object RequestMdc {
         MDC.put(CLIENT_MAC_KEY, macAddress)
     }
 
+    fun putRequestPath(requestPath: String) {
+        if (requestPath.isBlank()) return
+        MDC.put(REQUEST_PATH_KEY, requestPath)
+    }
+
     fun clear() {
         MDC.remove(USER_EMAIL_KEY)
         MDC.remove(USER_ID_KEY)
         MDC.remove(PRINCIPAL_KEY)
         MDC.remove(CLIENT_MAC_KEY)
+        MDC.remove(REQUEST_PATH_KEY)
     }
 }

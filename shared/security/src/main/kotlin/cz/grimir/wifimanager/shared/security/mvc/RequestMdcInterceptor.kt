@@ -13,6 +13,7 @@ class RequestMdcInterceptor : HandlerInterceptor {
         handler: Any,
     ): Boolean {
         RequestMdc.clear()
+        RequestMdc.putRequestPath(request.requestURI)
         val sessionUser =
             request.getSession(false)
                 ?.getAttribute(SessionUserIdentity.SESSION_KEY) as? SessionUserIdentity

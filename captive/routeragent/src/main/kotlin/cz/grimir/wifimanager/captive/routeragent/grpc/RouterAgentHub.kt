@@ -106,6 +106,11 @@ class RouterAgentHub(
                 ).build()
         logger.debug { "Getting mac for ip=$ipAddress, commandId=$commandId" }
         return waitForFirstSuccessfulAck(sendToAll(command), commandId(command))
+            .also {
+                logger.debug {
+                    "Got mac=${it?.macAddress} for ip=${ipAddress}, commandId=$commandId"
+                }
+            }
     }
 
     fun broadcastListNetworkClients(): CommandAck? {

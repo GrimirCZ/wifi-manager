@@ -18,7 +18,7 @@ class RequestMdcInterceptorTest {
 
     @Test
     fun `adds user identity fields to mdc from session`() {
-        val request = MockHttpServletRequest()
+        val request = MockHttpServletRequest("GET", "/admin/users")
         request.getSession(true)!!.setAttribute(
             SessionUserIdentity.SESSION_KEY,
             SessionUserIdentity(
@@ -33,6 +33,7 @@ class RequestMdcInterceptorTest {
 
         interceptor.preHandle(request, MockHttpServletResponse(), Any())
 
+        assertEquals("/admin/users", org.slf4j.MDC.get("requestPath"))
         assertEquals("alice@example.com", org.slf4j.MDC.get("userEmail"))
         assertEquals("00000000-0000-0000-0000-000000000101", org.slf4j.MDC.get("userId"))
         assertEquals(
@@ -43,7 +44,7 @@ class RequestMdcInterceptorTest {
 
     @Test
     fun `clears mdc when request finishes`() {
-        val request = MockHttpServletRequest()
+        val request = MockHttpServletRequest("GET", "/captive/login")
         request.getSession(true)!!.setAttribute(
             SessionUserIdentity.SESSION_KEY,
             SessionUserIdentity(
@@ -63,5 +64,6 @@ class RequestMdcInterceptorTest {
         assertNull(org.slf4j.MDC.get("userId"))
         assertNull(org.slf4j.MDC.get("principal"))
         assertNull(org.slf4j.MDC.get("clientMac"))
+        assertNull(org.slf4j.MDC.get("requestPath"))
     }
 }
