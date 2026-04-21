@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestLoadAllowsObserveModeWithoutGrpcTarget(t *testing.T) {
@@ -47,6 +48,77 @@ func TestLoadParsesManagedInterfaces(t *testing.T) {
 	want := []string{"br-lan", "wlan0", "vlan20"}
 	if !reflect.DeepEqual(cfg.ManagedInterfaces, want) {
 		t.Fatalf("unexpected managed interfaces: %#v", cfg.ManagedInterfaces)
+	}
+}
+
+func TestLoadParsesClientLoggingDefaults(t *testing.T) {
+	t.Setenv("ROUTERAGENT_OBSERVE_MODE", "true")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("expected load to succeed, got error: %v", err)
+	}
+	if cfg.ClientInactiveAfter != 15*time.Minute {
+		t.Fatalf("unexpected inactive duration: %s", cfg.ClientInactiveAfter)
+	}
+	if cfg.ClientLifecycleLogScope != ClientLifecycleLogScopeAllowed {
+		t.Fatalf("unexpected lifecycle log scope: %q", cfg.ClientLifecycleLogScope)
+	}
+}
+
+func TestLoadParsesClientLoggingOverrides(t *testing.T) {
+	t.Setenv("ROUTERAGENT_OBSERVE_MODE", "true")
+	t.Setenv("ROUTERAGENT_CLIENT_INACTIVE_AFTER", "30m")
+	t.Setenv("ROUTERAGENT_CLIENT_LIFECYCLE_LOG_SCOPE", "all")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("expected load to succeed, got error: %v", err)
+	}
+	if cfg.ClientInactiveAfter != 30*time.Minute {
+		t.Fatalf("unexpected inactive duration: %s", cfg.ClientInactiveAfter)
+	}
+	if cfg.ClientLifecycleLogScope != ClientLifecycleLogScopeAll {
+		t.Fatalf("unexpected lifecycle log scope: %q", cfg.ClientLifecycleLogScope)
+	}
+}
+
+func TestLoadFallsBackForInvalidClientInactiveDuration(t *testing.T) {
+	t.Setenv("ROUTERAGENT_OBSERVE_MODE", "true")
+	t.Setenv("ROUTERAGENT_CLIENT_INACTIVE_AFTER", "not-a-duration")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("expected load to succeed, got error: %v", err)
+	}
+	if cfg.ClientInactiveAfter != 15*time.Minute {
+		t.Fatalf("unexpected inactive duration: %s", cfg.ClientInactiveAfter)
+	}
+}
+
+func TestLoadAcceptsAllowedLifecycleLogScope(t *testing.T) {
+	t.Setenv("ROUTERAGENT_OBSERVE_MODE", "true")
+	t.Setenv("ROUTERAGENT_CLIENT_LIFECYCLE_LOG_SCOPE", "allowed")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("expected load to succeed, got error: %v", err)
+	}
+	if cfg.ClientLifecycleLogScope != ClientLifecycleLogScopeAllowed {
+		t.Fatalf("unexpected lifecycle log scope: %q", cfg.ClientLifecycleLogScope)
+	}
+}
+
+func TestLoadRejectsUnknownLifecycleLogScope(t *testing.T) {
+	t.Setenv("ROUTERAGENT_OBSERVE_MODE", "true")
+	t.Setenv("ROUTERAGENT_CLIENT_LIFECYCLE_LOG_SCOPE", "allowed-only")
+
+	_, err := Load()
+	if err == nil {
+		t.Fatal("expected invalid lifecycle log scope to fail")
+	}
+	if !strings.Contains(err.Error(), "ROUTERAGENT_CLIENT_LIFECYCLE_LOG_SCOPE must be one of") {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 

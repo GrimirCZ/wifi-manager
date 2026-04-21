@@ -66,6 +66,7 @@ func run(ctx context.Context, cfg config.Config, firewallBackend firewall.Backen
 	}
 	allowedIPs := allowedip.NewMemoryRepository()
 	routerAgent := agent.New(firewallBackend, ipProvider, hostnameProvider, allowedIPs, dhcpFingerprintProvider, cfg.ActionTimeout)
+	routerAgent.SetClientLifecycleLogScope(cfg.ClientLifecycleLogScope)
 	startObservedStateDumpOnSignal(ctx, ipProvider, hostnameProvider, dhcpFingerprintProvider)
 
 	// Start consuming provider updates before ipProvider.Start so replayed
@@ -91,6 +92,7 @@ func run(ctx context.Context, cfg config.Config, firewallBackend firewall.Backen
 	if err := ipProvider.Start(); err != nil {
 		return errRuntime("ip mapping provider", err)
 	}
+	routerAgent.StartClientActivityLogger(ctx, cfg.ClientInactiveAfter)
 
 	if err := hostnameProvider.Start(); err != nil {
 		return errRuntime("hostname provider", err)

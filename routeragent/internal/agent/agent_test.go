@@ -2,11 +2,14 @@ package agent
 
 import (
 	"context"
+	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/allowedip"
+	"github.com/GrimirCZ/wifi-manager/routeragent/internal/config"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/dhcpfingerprint"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/firewall"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/hostname"
@@ -309,6 +312,224 @@ func TestIPMoveToDifferentMACRemovesOldAllowedIP(t *testing.T) {
 	if got := agent.allowedIPs.List(); len(got) != 0 {
 		t.Fatalf("expected moved ip to be removed from allowed set, got %#v", got)
 	}
+}
+
+func TestAuthorizationLogsAllowedAndDisallowedStateChangesOnce(t *testing.T) {
+	lines := captureClientLogs(t)
+	provider := &stubIPMappingProvider{
+		ipsByMAC: map[string][]string{
+			"aa:aa:aa:aa:aa:aa": {"192.0.2.10", "192.0.2.11"},
+			"bb:bb:bb:bb:bb:bb": {"192.0.2.20"},
+		},
+	}
+	agent := New(firewall.NewDummyBackend(), provider, &stubHostnameProvider{}, allowedip.NewMemoryRepository(), &stubDHCPFingerprintProvider{}, time.Second)
+	disallowedUpdate := ipmapping.Update{
+		IP:            "192.0.2.20",
+		MAC:           "bb:bb:bb:bb:bb:bb",
+		InterfaceName: "br-lan",
+		Status:        ipmapping.NeighborStatusLive,
+	}
+
+	if err := agent.allowMACs(context.Background(), []string{"aa:aa:aa:aa:aa:aa"}); err != nil {
+		t.Fatalf("unexpected allow error: %v", err)
+	}
+	if err := agent.allowMACs(context.Background(), []string{"aa:aa:aa:aa:aa:aa"}); err != nil {
+		t.Fatalf("unexpected repeated allow error: %v", err)
+	}
+	agent.OnIPMappingUpdate(context.Background(), disallowedUpdate)
+	agent.OnIPMappingUpdate(context.Background(), disallowedUpdate)
+
+	if got := countLogLinesWithPrefix(*lines, "client ips allowed mac=aa:aa:aa:aa:aa:aa ips=[192.0.2.10 192.0.2.11]"); got != 1 {
+		t.Fatalf("expected one allowed log, got %d in %#v", got, *lines)
+	}
+	if got := countLogLinesWithPrefix(*lines, "client ips disallowed mac=bb:bb:bb:bb:bb:bb ips=[192.0.2.20]"); got != 1 {
+		t.Fatalf("expected one disallowed log, got %d in %#v", got, *lines)
+	}
+}
+
+func TestAuthorizationLogsRemovalWhenMappingDeletedOrPolicyRevoked(t *testing.T) {
+	lines := captureClientLogs(t)
+	provider := &stubIPMappingProvider{
+		ipsByMAC: map[string][]string{
+			"aa:aa:aa:aa:aa:aa": {"192.0.2.10"},
+			"bb:bb:bb:bb:bb:bb": {"192.0.2.20", "192.0.2.21"},
+		},
+	}
+	agent := New(firewall.NewDummyBackend(), provider, &stubHostnameProvider{}, allowedip.NewMemoryRepository(), &stubDHCPFingerprintProvider{}, time.Second)
+	agent.allowedMACs["aa:aa:aa:aa:aa:aa"] = struct{}{}
+	agent.allowedMACs["bb:bb:bb:bb:bb:bb"] = struct{}{}
+
+	agent.OnIPMappingUpdate(context.Background(), ipmapping.Update{
+		IP:            "192.0.2.10",
+		MAC:           "aa:aa:aa:aa:aa:aa",
+		InterfaceName: "br-lan",
+		Status:        ipmapping.NeighborStatusLive,
+	})
+	if err := agent.allowMACs(context.Background(), []string{"bb:bb:bb:bb:bb:bb"}); err != nil {
+		t.Fatalf("unexpected allow error: %v", err)
+	}
+	provider.ipsByMAC["aa:aa:aa:aa:aa:aa"] = nil
+	agent.OnIPMappingUpdate(context.Background(), ipmapping.Update{
+		IP:      "192.0.2.10",
+		MAC:     "aa:aa:aa:aa:aa:aa",
+		Deleted: true,
+	})
+
+	if err := agent.revokeMACs(context.Background(), []string{"bb:bb:bb:bb:bb:bb"}); err != nil {
+		t.Fatalf("unexpected revoke error: %v", err)
+	}
+
+	if !containsLogLine(*lines, "client ips disallowed mac=aa:aa:aa:aa:aa:aa ips=[192.0.2.10] reason=deleted") {
+		t.Fatalf("expected delete removal log in %#v", *lines)
+	}
+	if !containsLogLine(*lines, "client ips disallowed mac=bb:bb:bb:bb:bb:bb ips=[192.0.2.20 192.0.2.21] reason=policy_revoked") {
+		t.Fatalf("expected revoke removal log in %#v", *lines)
+	}
+}
+
+func TestLifecycleLogsAppearanceInactiveAndActiveAgain(t *testing.T) {
+	lines := captureClientLogs(t)
+	base := time.Date(2026, time.April, 19, 12, 0, 0, 0, time.UTC)
+	nowUTC = func() time.Time { return base }
+	defer func() {
+		nowUTC = func() time.Time { return time.Now().UTC() }
+	}()
+
+	provider := &stubIPMappingProvider{
+		ipsByMAC: map[string][]string{
+			"aa:aa:aa:aa:aa:aa": {"192.0.2.10"},
+		},
+		clients: []ipmapping.ClientView{
+			{
+				MAC:        "aa:aa:aa:aa:aa:aa",
+				IPs:        []string{"192.0.2.10"},
+				Status:     ipmapping.NeighborStatusLive,
+				LastSeenAt: base,
+			},
+		},
+	}
+	agent := New(firewall.NewDummyBackend(), provider, &stubHostnameProvider{}, allowedip.NewMemoryRepository(), &stubDHCPFingerprintProvider{}, time.Second)
+	agent.allowedMACs["aa:aa:aa:aa:aa:aa"] = struct{}{}
+
+	agent.OnIPMappingUpdate(context.Background(), ipmapping.Update{
+		IP:            "192.0.2.10",
+		MAC:           "aa:aa:aa:aa:aa:aa",
+		InterfaceName: "br-lan",
+		Status:        ipmapping.NeighborStatusLive,
+		LastSeenAt:    base,
+	})
+	agent.OnIPMappingUpdate(context.Background(), ipmapping.Update{
+		IP:            "192.0.2.11",
+		MAC:           "aa:aa:aa:aa:aa:aa",
+		InterfaceName: "br-lan",
+		Status:        ipmapping.NeighborStatusLive,
+		LastSeenAt:    base.Add(time.Minute),
+	})
+	agent.logInactiveClients(base.Add(16*time.Minute), 15*time.Minute)
+	agent.logInactiveClients(base.Add(17*time.Minute), 15*time.Minute)
+	agent.OnIPMappingUpdate(context.Background(), ipmapping.Update{
+		IP:            "192.0.2.10",
+		MAC:           "aa:aa:aa:aa:aa:aa",
+		InterfaceName: "br-lan",
+		Status:        ipmapping.NeighborStatusLive,
+		LastSeenAt:    base.Add(18 * time.Minute),
+	})
+
+	if got := countLogLinesWithPrefix(*lines, "client appeared mac=aa:aa:aa:aa:aa:aa first_ip=192.0.2.10"); got != 1 {
+		t.Fatalf("expected one appeared log, got %d in %#v", got, *lines)
+	}
+	if got := countLogLinesWithPrefix(*lines, "client inactive mac=aa:aa:aa:aa:aa:aa"); got != 1 {
+		t.Fatalf("expected one inactive log, got %d in %#v", got, *lines)
+	}
+	if got := countLogLinesWithPrefix(*lines, "client active again mac=aa:aa:aa:aa:aa:aa ip=192.0.2.10"); got != 1 {
+		t.Fatalf("expected one active-again log, got %d in %#v", got, *lines)
+	}
+}
+
+func TestLifecycleLogScopeAllowedSuppressesNonAllowedMACs(t *testing.T) {
+	lines := captureClientLogs(t)
+	agent := New(
+		firewall.NewDummyBackend(),
+		&stubIPMappingProvider{ipsByMAC: map[string][]string{"aa:aa:aa:aa:aa:aa": {"192.0.2.10"}}},
+		&stubHostnameProvider{},
+		allowedip.NewMemoryRepository(),
+		&stubDHCPFingerprintProvider{},
+		time.Second,
+	)
+
+	agent.OnIPMappingUpdate(context.Background(), ipmapping.Update{
+		IP:            "192.0.2.10",
+		MAC:           "aa:aa:aa:aa:aa:aa",
+		InterfaceName: "br-lan",
+		Status:        ipmapping.NeighborStatusLive,
+	})
+
+	if containsLogLineWithPrefix(*lines, "client appeared mac=aa:aa:aa:aa:aa:aa") {
+		t.Fatalf("unexpected lifecycle log for non-allowed mac: %#v", *lines)
+	}
+	if !containsLogLineWithPrefix(*lines, "client ips disallowed mac=aa:aa:aa:aa:aa:aa ips=[192.0.2.10]") {
+		t.Fatalf("expected authorization log to remain visible: %#v", *lines)
+	}
+}
+
+func TestLifecycleLogScopeAllLogsNonAllowedMACs(t *testing.T) {
+	lines := captureClientLogs(t)
+	agent := New(
+		firewall.NewDummyBackend(),
+		&stubIPMappingProvider{ipsByMAC: map[string][]string{"aa:aa:aa:aa:aa:aa": {"192.0.2.10"}}},
+		&stubHostnameProvider{},
+		allowedip.NewMemoryRepository(),
+		&stubDHCPFingerprintProvider{},
+		time.Second,
+	)
+	agent.SetClientLifecycleLogScope(config.ClientLifecycleLogScopeAll)
+
+	agent.OnIPMappingUpdate(context.Background(), ipmapping.Update{
+		IP:            "192.0.2.10",
+		MAC:           "aa:aa:aa:aa:aa:aa",
+		InterfaceName: "br-lan",
+		Status:        ipmapping.NeighborStatusLive,
+	})
+
+	if !containsLogLineWithPrefix(*lines, "client appeared mac=aa:aa:aa:aa:aa:aa first_ip=192.0.2.10") {
+		t.Fatalf("expected lifecycle log for non-allowed mac: %#v", *lines)
+	}
+}
+
+func captureClientLogs(t *testing.T) *[]string {
+	t.Helper()
+	var lines []string
+	previous := logClientEventf
+	logClientEventf = func(format string, args ...any) {
+		lines = append(lines, fmt.Sprintf(format, args...))
+	}
+	t.Cleanup(func() {
+		logClientEventf = previous
+	})
+	return &lines
+}
+
+func containsLogLine(lines []string, want string) bool {
+	for _, line := range lines {
+		if line == want {
+			return true
+		}
+	}
+	return false
+}
+
+func containsLogLineWithPrefix(lines []string, prefix string) bool {
+	return countLogLinesWithPrefix(lines, prefix) > 0
+}
+
+func countLogLinesWithPrefix(lines []string, prefix string) int {
+	count := 0
+	for _, line := range lines {
+		if strings.HasPrefix(line, prefix) {
+			count++
+		}
+	}
+	return count
 }
 
 type stubIPMappingProvider struct {

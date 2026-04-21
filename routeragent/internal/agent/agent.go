@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/allowedip"
+	"github.com/GrimirCZ/wifi-manager/routeragent/internal/config"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/dhcpfingerprint"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/firewall"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/hostname"
@@ -17,6 +18,11 @@ import (
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/normalize"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/routeragentgrpc"
 	"github.com/GrimirCZ/wifi-manager/routeragent/internal/routeragentpb"
+)
+
+var (
+	logClientEventf = log.Printf
+	nowUTC          = func() time.Time { return time.Now().UTC() }
 )
 
 // Agent combines three state domains: observed MAC/IP state from ipmapping,
@@ -37,6 +43,11 @@ type Agent struct {
 	observationSender observationSender
 	actionTimeout     time.Duration
 	observationDelay  time.Duration
+	logScope          config.ClientLifecycleLogScope
+
+	activityMu            sync.Mutex
+	ipAuthorizationStates map[string]ipAuthorizationState
+	clientActivityStates  map[string]clientActivityState
 }
 
 type pendingObservation struct {
@@ -44,6 +55,19 @@ type pendingObservation struct {
 	interfaceName string
 	ready         bool
 	sending       bool
+}
+
+type ipAuthorizationState struct {
+	mac     string
+	allowed bool
+}
+
+type clientActivityState struct {
+	seen           bool
+	inactiveLogged bool
+	lastSeenAt     time.Time
+	inactiveSince  time.Time
+	ips            []string
 }
 
 type ackSender interface {
@@ -72,7 +96,20 @@ func New(
 		pendingObserved:  make(map[string]*pendingObservation),
 		actionTimeout:    actionTimeout,
 		observationDelay: 30 * time.Second,
+		logScope:         config.ClientLifecycleLogScopeAllowed,
+
+		ipAuthorizationStates: make(map[string]ipAuthorizationState),
+		clientActivityStates:  make(map[string]clientActivityState),
 	}
+}
+
+func (a *Agent) SetClientLifecycleLogScope(scope config.ClientLifecycleLogScope) {
+	if scope == "" {
+		scope = config.ClientLifecycleLogScopeAllowed
+	}
+	a.activityMu.Lock()
+	defer a.activityMu.Unlock()
+	a.logScope = scope
 }
 
 // OnIPMappingUpdate bridges observed-state changes into derived whitelist
@@ -80,12 +117,12 @@ func New(
 func (a *Agent) OnIPMappingUpdate(ctx context.Context, update ipmapping.Update) {
 	if update.IP == "" || update.MAC == "" {
 		if update.Deleted && update.IP != "" {
-			a.removeAllowedIP(ctx, update.IP)
+			a.removeAllowedIP(ctx, update.IP, update.MAC, "deleted")
 		}
 		return
 	}
 	if update.Deleted {
-		a.removeAllowedIP(ctx, update.IP)
+		a.removeAllowedIP(ctx, update.IP, update.MAC, "deleted")
 		if len(a.ipMapping.IPsForMAC(update.MAC)) == 0 {
 			a.cancelPendingObservation(update.MAC)
 		}
@@ -94,10 +131,13 @@ func (a *Agent) OnIPMappingUpdate(ctx context.Context, update ipmapping.Update) 
 	if update.Status != ipmapping.NeighborStatusLive {
 		return
 	}
+	a.recordClientActivity(update)
 	if !a.isMACAllowed(update.MAC) {
+		a.logIPAuthorizations([]string{update.IP}, update.MAC, update.InterfaceName, false)
 		return
 	}
 	added := a.allowedIPs.Add([]string{update.IP})
+	a.logIPAuthorizations([]string{update.IP}, update.MAC, update.InterfaceName, true)
 	if len(added) == 0 {
 		return
 	}
@@ -113,16 +153,23 @@ func (a *Agent) OnIPMappingUpdate(ctx context.Context, update ipmapping.Update) 
 	a.refreshPendingObservation(update.MAC, update.InterfaceName)
 }
 
-func (a *Agent) removeAllowedIP(ctx context.Context, ip string) {
+func (a *Agent) removeAllowedIP(ctx context.Context, ip string, mac string, reason string) {
 	removed := a.allowedIPs.Remove([]string{ip})
 	if len(removed) == 0 {
+		a.clearIPAuthorization(ip)
 		return
 	}
 	if err := a.withTimeout(ctx, func(ctx context.Context) error {
 		return a.removeIPs(ctx, removed)
 	}); err != nil {
 		log.Printf("failed to revoke ip=%s: %v", ip, err)
+		return
 	}
+	if mac != "" {
+		a.logIPAuthorizationsRemoved([]string{ip}, mac, reason)
+		return
+	}
+	a.clearIPAuthorization(ip)
 }
 
 func (a *Agent) HandleCommand(ctx context.Context, stream *routeragentgrpc.Stream, cmd *routeragentpb.RouterAgentCommand) error {
@@ -232,6 +279,7 @@ func (a *Agent) handleListNetworkClients(stream ackSender, cmd *routeragentpb.Li
 // whitelist from the current observed snapshot before rebuilding the firewall.
 func (a *Agent) setAllowedMACs(ctx context.Context, macs []string) error {
 	removed := a.removedAllowedMACs(macs)
+	removedIPsByMAC := a.collectIPsByMAC(removed)
 	a.mu.Lock()
 	a.allowedMACs = make(map[string]struct{}, len(macs))
 	for _, mac := range macs {
@@ -249,6 +297,10 @@ func (a *Agent) setAllowedMACs(ctx context.Context, macs []string) error {
 	if err := a.allowIPs(ctx, a.allowedIPs.List()); err != nil {
 		return err
 	}
+	for _, mac := range macs {
+		a.logIPAuthorizations(a.ipMapping.IPsForMAC(mac), mac, "", true)
+	}
+	a.logAuthorizationRemovedByMAC(removedIPsByMAC, "policy_removed")
 	return nil
 }
 
@@ -266,12 +318,16 @@ func (a *Agent) allowMACs(ctx context.Context, macs []string) error {
 	if err := a.allowIPs(ctx, added); err != nil {
 		return err
 	}
+	for _, mac := range macs {
+		a.logIPAuthorizations(a.ipMapping.IPsForMAC(mac), mac, "", true)
+	}
 	return nil
 }
 
 // revokeMACs removes policy entries and derives only the IPs that should no
 // longer be present based on the current observed snapshot.
 func (a *Agent) revokeMACs(ctx context.Context, macs []string) error {
+	removedIPsByMAC := a.collectIPsByMAC(macs)
 	a.mu.Lock()
 	for _, mac := range macs {
 		delete(a.allowedMACs, mac)
@@ -284,6 +340,7 @@ func (a *Agent) revokeMACs(ctx context.Context, macs []string) error {
 	if err := a.removeIPs(ctx, removed); err != nil {
 		return err
 	}
+	a.logAuthorizationRemovedByMAC(removedIPsByMAC, "policy_revoked")
 	return nil
 }
 
@@ -293,6 +350,18 @@ func (a *Agent) collectIPsForMACs(macs []string) []string {
 		ips = append(ips, a.ipMapping.IPsForMAC(mac)...)
 	}
 	return ips
+}
+
+func (a *Agent) collectIPsByMAC(macs []string) map[string][]string {
+	ipsByMAC := make(map[string][]string, len(macs))
+	for _, mac := range macs {
+		ips := a.ipMapping.IPsForMAC(mac)
+		if len(ips) == 0 {
+			continue
+		}
+		ipsByMAC[mac] = slices.Clone(ips)
+	}
+	return ipsByMAC
 }
 
 func (a *Agent) buildListNetworkClientsAck(id string) *routeragentpb.CommandAck {
@@ -578,6 +647,227 @@ func (a *Agent) allowedMACSnapshot() map[string]bool {
 		allowed[mac] = true
 	}
 	return allowed
+}
+
+func (a *Agent) logIPAuthorizations(ips []string, mac, interfaceName string, allowed bool) {
+	if len(ips) == 0 || mac == "" {
+		return
+	}
+
+	changed := make([]string, 0, len(ips))
+	a.activityMu.Lock()
+	for _, ip := range ips {
+		if ip == "" {
+			continue
+		}
+		previous, ok := a.ipAuthorizationStates[ip]
+		if ok && previous.mac == mac && previous.allowed == allowed {
+			continue
+		}
+		a.ipAuthorizationStates[ip] = ipAuthorizationState{mac: mac, allowed: allowed}
+		changed = append(changed, ip)
+	}
+	a.activityMu.Unlock()
+
+	if len(changed) == 0 {
+		return
+	}
+	slices.Sort(changed)
+	if allowed {
+		logClientEventf("client ips allowed mac=%s ips=%s interface=%s", mac, formatIPList(changed), interfaceName)
+		return
+	}
+	logClientEventf("client ips disallowed mac=%s ips=%s interface=%s", mac, formatIPList(changed), interfaceName)
+}
+
+func (a *Agent) logIPAuthorizationsRemoved(ips []string, mac, reason string) {
+	if len(ips) == 0 || mac == "" {
+		return
+	}
+
+	changed := make([]string, 0, len(ips))
+	a.activityMu.Lock()
+	for _, ip := range ips {
+		if ip == "" {
+			continue
+		}
+		previous, ok := a.ipAuthorizationStates[ip]
+		delete(a.ipAuthorizationStates, ip)
+		if !ok || previous.mac != mac || !previous.allowed {
+			continue
+		}
+		changed = append(changed, ip)
+	}
+	a.activityMu.Unlock()
+
+	if len(changed) == 0 {
+		return
+	}
+	slices.Sort(changed)
+	logClientEventf("client ips disallowed mac=%s ips=%s reason=%s", mac, formatIPList(changed), reason)
+}
+
+func (a *Agent) clearIPAuthorization(ip string) {
+	if ip == "" {
+		return
+	}
+	a.activityMu.Lock()
+	defer a.activityMu.Unlock()
+	delete(a.ipAuthorizationStates, ip)
+}
+
+func (a *Agent) logAuthorizationRemovedByMAC(ipsByMAC map[string][]string, reason string) {
+	for mac, ips := range ipsByMAC {
+		a.logIPAuthorizationsRemoved(ips, mac, reason)
+	}
+}
+
+func (a *Agent) recordClientActivity(update ipmapping.Update) {
+	if update.MAC == "" || update.IP == "" {
+		return
+	}
+	if !a.shouldLogLifecycleForMAC(update.MAC) {
+		return
+	}
+
+	lastSeenAt := update.LastSeenAt
+	if lastSeenAt.IsZero() {
+		lastSeenAt = nowUTC()
+	}
+	ips := a.ipMapping.IPsForMAC(update.MAC)
+
+	a.activityMu.Lock()
+	state := a.clientActivityStates[update.MAC]
+	if !state.seen {
+		state.seen = true
+		state.lastSeenAt = lastSeenAt
+		state.ips = slices.Clone(ips)
+		a.clientActivityStates[update.MAC] = state
+		a.activityMu.Unlock()
+		logClientEventf(
+			"client appeared mac=%s first_ip=%s interface=%s status=%s last_seen_at=%s",
+			update.MAC,
+			update.IP,
+			update.InterfaceName,
+			update.Status,
+			formatTimestamp(lastSeenAt),
+		)
+		return
+	}
+
+	wasInactive := state.inactiveLogged
+	inactiveSince := state.inactiveSince
+	state.inactiveLogged = false
+	state.inactiveSince = time.Time{}
+	state.lastSeenAt = lastSeenAt
+	state.ips = slices.Clone(ips)
+	a.clientActivityStates[update.MAC] = state
+	a.activityMu.Unlock()
+
+	if wasInactive {
+		logClientEventf(
+			"client active again mac=%s ip=%s interface=%s last_seen_at=%s inactive_since=%s",
+			update.MAC,
+			update.IP,
+			update.InterfaceName,
+			formatTimestamp(lastSeenAt),
+			formatTimestamp(inactiveSince),
+		)
+	}
+}
+
+func (a *Agent) shouldLogLifecycleForMAC(mac string) bool {
+	a.activityMu.Lock()
+	scope := a.logScope
+	a.activityMu.Unlock()
+
+	if scope == config.ClientLifecycleLogScopeAll {
+		return true
+	}
+	return a.isMACAllowed(mac)
+}
+
+// StartClientActivityLogger starts the periodic lifecycle scan that logs when
+// previously observed live clients cross the configured inactivity threshold.
+func (a *Agent) StartClientActivityLogger(ctx context.Context, inactiveAfter time.Duration) {
+	if inactiveAfter <= 0 {
+		return
+	}
+
+	go func() {
+		ticker := time.NewTicker(clientActivityScanInterval(inactiveAfter))
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				a.logInactiveClients(nowUTC(), inactiveAfter)
+			}
+		}
+	}()
+}
+
+func clientActivityScanInterval(inactiveAfter time.Duration) time.Duration {
+	interval := inactiveAfter / 4
+	if interval < 30*time.Second {
+		return 30 * time.Second
+	}
+	if interval > 5*time.Minute {
+		return 5 * time.Minute
+	}
+	return interval
+}
+
+func (a *Agent) logInactiveClients(now time.Time, inactiveAfter time.Duration) {
+	cutoff := now.Add(-inactiveAfter)
+	for _, client := range a.ipMapping.ListClients() {
+		if client.MAC == "" || client.LastSeenAt.IsZero() || client.LastSeenAt.After(cutoff) {
+			continue
+		}
+		if !a.shouldLogLifecycleForMAC(client.MAC) {
+			continue
+		}
+
+		a.activityMu.Lock()
+		state := a.clientActivityStates[client.MAC]
+		if !state.seen {
+			state.seen = true
+		}
+		if state.inactiveLogged {
+			a.activityMu.Unlock()
+			continue
+		}
+		state.inactiveLogged = true
+		state.inactiveSince = now
+		state.lastSeenAt = client.LastSeenAt
+		state.ips = slices.Clone(client.IPs)
+		a.clientActivityStates[client.MAC] = state
+		a.activityMu.Unlock()
+
+		logClientEventf(
+			"client inactive mac=%s last_seen_at=%s inactive_after=%s ips=%s",
+			client.MAC,
+			formatTimestamp(client.LastSeenAt),
+			inactiveAfter.String(),
+			formatIPList(client.IPs),
+		)
+	}
+}
+
+func formatIPList(values []string) string {
+	if len(values) == 0 {
+		return "[]"
+	}
+	result := "["
+	for i, value := range values {
+		if i > 0 {
+			result += " "
+		}
+		result += value
+	}
+	return result + "]"
 }
 
 func (a *Agent) removedAllowedMACs(nextAllowed []string) []string {

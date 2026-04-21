@@ -2,8 +2,6 @@ package ipmapping
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"reflect"
 	"testing"
 	"time"
@@ -82,37 +80,5 @@ func TestStoreMoveAndDeleteKeepSnapshotsIsolated(t *testing.T) {
 	}
 	if got := store.ipsForMAC("bb:bb:bb:bb:bb:bb"); !reflect.DeepEqual(got, []string{"192.0.2.20"}) {
 		t.Fatalf("unexpected ips after remove: %#v", got)
-	}
-}
-
-func TestStoreLogsMacLifecycleOnlyOnFirstCreateAndLastDelete(t *testing.T) {
-	nowUTC = func() time.Time {
-		return time.Date(2026, time.April, 19, 12, 0, 0, 0, time.UTC)
-	}
-	defer func() {
-		nowUTC = func() time.Time { return time.Now().UTC() }
-	}()
-
-	var lines []string
-	logMACLifecyclef = func(format string, args ...any) {
-		lines = append(lines, fmt.Sprintf(format, args...))
-	}
-	defer func() {
-		logMACLifecyclef = log.Printf
-	}()
-
-	store := newStore(context.Background(), nil)
-
-	store.update("192.0.2.10", "aa:aa:aa:aa:aa:aa", "br-lan")
-	store.update("192.0.2.11", "aa:aa:aa:aa:aa:aa", "br-lan")
-	store.removeByIP("192.0.2.10")
-	store.removeByIP("192.0.2.11")
-
-	want := []string{
-		"observed client created mac=aa:aa:aa:aa:aa:aa first_ip=192.0.2.10 interface=br-lan status=live last_seen_at=2026-04-19T12:00:00Z",
-		"observed client deleted mac=aa:aa:aa:aa:aa:aa last_ip=192.0.2.11 interface=br-lan status=live last_seen_at=2026-04-19T12:00:00Z",
-	}
-	if !reflect.DeepEqual(lines, want) {
-		t.Fatalf("unexpected lifecycle logs: %#v", lines)
 	}
 }

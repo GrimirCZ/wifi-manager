@@ -8,28 +8,37 @@ import (
 	"time"
 )
 
+type ClientLifecycleLogScope string
+
+const (
+	ClientLifecycleLogScopeAllowed ClientLifecycleLogScope = "allowed"
+	ClientLifecycleLogScopeAll     ClientLifecycleLogScope = "all"
+)
+
 type Config struct {
-	GrpcTarget             string
-	ManagedInterfaces      []string
-	ObserveMode            bool
-	TLSEnabled             bool
-	TLSCAFile              string
-	TLSCertFile            string
-	TLSKeyFile             string
-	TLSServerName          string
-	DummyMode              bool
-	NftFamily              string
-	NftTable               string
-	NftSetV4               string
-	NftSetV6               string
-	DnsmasqLeasesPath      string
-	DnsmasqDHCPSource      string
-	DnsmasqDHCPLogPath     string
-	DnsmasqDHCPJournalUnit string
-	ReconnectDelay         time.Duration
-	ActionTimeout          time.Duration
-	SyncInterval           time.Duration
-	ReconcileInterval      time.Duration
+	GrpcTarget              string
+	ManagedInterfaces       []string
+	ObserveMode             bool
+	TLSEnabled              bool
+	TLSCAFile               string
+	TLSCertFile             string
+	TLSKeyFile              string
+	TLSServerName           string
+	DummyMode               bool
+	NftFamily               string
+	NftTable                string
+	NftSetV4                string
+	NftSetV6                string
+	DnsmasqLeasesPath       string
+	DnsmasqDHCPSource       string
+	DnsmasqDHCPLogPath      string
+	DnsmasqDHCPJournalUnit  string
+	ReconnectDelay          time.Duration
+	ActionTimeout           time.Duration
+	SyncInterval            time.Duration
+	ReconcileInterval       time.Duration
+	ClientInactiveAfter     time.Duration
+	ClientLifecycleLogScope ClientLifecycleLogScope
 }
 
 func Load() (Config, error) {
@@ -59,6 +68,20 @@ func Load() (Config, error) {
 		ActionTimeout:     envDuration("ROUTERAGENT_ACTION_TIMEOUT", 5*time.Second),
 		SyncInterval:      envDuration("ROUTERAGENT_SYNC_INTERVAL", 5*time.Minute),
 		ReconcileInterval: envDuration("ROUTERAGENT_RECONCILE_INTERVAL", time.Minute),
+		ClientInactiveAfter: envDuration(
+			"ROUTERAGENT_CLIENT_INACTIVE_AFTER",
+			15*time.Minute,
+		),
+		ClientLifecycleLogScope: ClientLifecycleLogScopeAllowed,
+	}
+
+	var err error
+	cfg.ClientLifecycleLogScope, err = envClientLifecycleLogScope(
+		"ROUTERAGENT_CLIENT_LIFECYCLE_LOG_SCOPE",
+		ClientLifecycleLogScopeAllowed,
+	)
+	if err != nil {
+		return cfg, err
 	}
 
 	if !cfg.ObserveMode && cfg.GrpcTarget == "" {
@@ -86,6 +109,20 @@ func Load() (Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func envClientLifecycleLogScope(key string, fallback ClientLifecycleLogScope) (ClientLifecycleLogScope, error) {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return fallback, nil
+	}
+
+	switch scope := ClientLifecycleLogScope(value); scope {
+	case ClientLifecycleLogScopeAllowed, ClientLifecycleLogScopeAll:
+		return scope, nil
+	default:
+		return "", fmt.Errorf("%s must be one of: allowed, all", key)
+	}
 }
 
 func envString(key, fallback string) string {

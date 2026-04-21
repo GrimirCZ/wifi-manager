@@ -2,7 +2,6 @@ package ipmapping
 
 import (
 	"context"
-	"log"
 	"slices"
 	"sync/atomic"
 	"time"
@@ -20,8 +19,6 @@ const (
 var nowUTC = func() time.Time {
 	return time.Now().UTC()
 }
-
-var logMACLifecyclef = log.Printf
 
 type Update struct {
 	IP            string
@@ -449,23 +446,12 @@ func (w *writerState) emit(update Update) {
 }
 
 func (w *writerState) applyUpsert(ipStr, macStr, interfaceName string) (string, string, bool) {
-	createdMAC := !w.current.hasMAC(macStr)
 	next, update, changed := w.current.withUpsert(ipStr, macStr, interfaceName, nowUTC())
 	if !changed {
 		return "", "", false
 	}
 	w.publish(next)
 	w.emit(update)
-	if createdMAC {
-		logMACLifecyclef(
-			"observed client created mac=%s first_ip=%s interface=%s status=%s last_seen_at=%s",
-			update.MAC,
-			update.IP,
-			update.InterfaceName,
-			update.Status,
-			update.LastSeenAt.UTC().Format(time.RFC3339),
-		)
-	}
 	return update.IP, update.MAC, true
 }
 
@@ -480,23 +466,12 @@ func (w *writerState) applyMarkStale(ipStr string) (string, bool) {
 }
 
 func (w *writerState) applyDelete(ipStr string) (string, bool) {
-	current, existed := w.current.lookupEntry(ipStr)
 	next, update, changed := w.current.withDelete(ipStr)
 	if !changed {
 		return "", false
 	}
 	w.publish(next)
 	w.emit(update)
-	if existed && !next.hasMAC(current.MAC) {
-		logMACLifecyclef(
-			"observed client deleted mac=%s last_ip=%s interface=%s status=%s last_seen_at=%s",
-			update.MAC,
-			update.IP,
-			update.InterfaceName,
-			update.Status,
-			update.LastSeenAt.UTC().Format(time.RFC3339),
-		)
-	}
 	return update.MAC, true
 }
 
