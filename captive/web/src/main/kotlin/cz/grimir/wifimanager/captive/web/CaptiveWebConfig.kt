@@ -10,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
 @ComponentScan
-@EnableConfigurationProperties(CaptivePortalApiProperties::class)
+@EnableConfigurationProperties(CaptivePortalApiProperties::class, CaptiveLoginProperties::class)
 class CaptiveWebConfig(
     private val captiveDeviceSessionFingerprintInterceptor: CaptiveDeviceSessionFingerprintInterceptor,
 ) : WebMvcConfigurer {

@@ -39,6 +39,8 @@ wifimanager:
       ipv6-subnets: ${CAPITVE_PORTAL_IPV6_SUBNET:[]}
     portal:
       public-base-url: ${CAPTIVE_PORTAL_PUBLIC_BASE_URL:https://localhost}
+    login:
+      account-name-format: ${CAPTIVE_LOGIN_ACCOUNT_NAME_FORMAT:me@example.com}
     fingerprinting:
       enabled: true
       enforce-threshold: ${CAPTIVE_FINGERPRINTING_ENFORCE_THRESHOLD:70}

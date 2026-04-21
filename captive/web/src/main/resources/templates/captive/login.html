@@ -44,7 +44,7 @@
               autocomplete="username"
               class="input w-full"
               th:field="*{username}"
-              th:placeholder="#{captive.login.username.placeholder}"
+              th:placeholder="${usernamePlaceholder} ?: #{captive.login.username.placeholder}"
               required
             />
             <div class="text-xs text-red-600" th:if="${#fields.hasErrors('username')}"

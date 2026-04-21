@@ -4,6 +4,7 @@ import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.comma
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.query.FindNetworkUserDeviceByMacUsecase
 import cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintStatus
+import cz.grimir.wifimanager.captive.web.CaptiveLoginProperties
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveLdapLoginForm
 import cz.grimir.wifimanager.captive.web.security.CaptiveAuthSessionLoginHandler
 import cz.grimir.wifimanager.captive.web.security.LdapLoginResult
@@ -35,6 +36,7 @@ class CaptiveLoginControllerTest {
             captiveAuthSessionLoginHandler = captiveAuthSessionLoginHandler,
             findNetworkUserDeviceByMacUsecase = findNetworkUserDeviceByMacUsecase,
             completeNetworkUserDeviceReauthUsecase = completeNetworkUserDeviceReauthUsecase,
+            captiveLoginProperties = CaptiveLoginProperties(accountNameFormat = "me@example.com"),
         )
 
     private val clientInfo =
@@ -58,8 +60,28 @@ class CaptiveLoginControllerTest {
 
         assertEquals("captive/login", view)
         assertEquals(false, model["deviceVerificationRequired"])
+        assertEquals("me@example.com", model["usernamePlaceholder"])
         assertTrue(model["form"] is CaptiveLdapLoginForm)
         verifyNoInteractions(findNetworkUserDeviceByMacUsecase)
+    }
+
+    @Test
+    fun `login page omits username placeholder override when account name format is blank`() {
+        val controller =
+            CaptiveLoginController(
+                captiveAuthSessionLoginHandler = captiveAuthSessionLoginHandler,
+                findNetworkUserDeviceByMacUsecase = findNetworkUserDeviceByMacUsecase,
+                completeNetworkUserDeviceReauthUsecase = completeNetworkUserDeviceReauthUsecase,
+                captiveLoginProperties = CaptiveLoginProperties(accountNameFormat = " "),
+            )
+        val session = mock<HttpSession>()
+        val model = ExtendedModelMap()
+        given(session.getAttribute(CaptivePortalController.ACCOUNT_REAUTH_SESSION_KEY)).willReturn(false)
+
+        val view = controller.login(null, session, model, htmxRequest)
+
+        assertEquals("captive/login", view)
+        assertFalse(model.containsAttribute("usernamePlaceholder"))
     }
 
     @Test
@@ -94,7 +116,7 @@ class CaptiveLoginControllerTest {
         )
             .willReturn(LdapLoginResult(success = true, userId = cz.grimir.wifimanager.shared.core.UserId(UUID.fromString("00000000-0000-0000-0000-000000000111"))))
 
-        val view = controller.submit(clientInfo, form, bindingResult, request, htmxRequest)
+        val view = controller.submit(clientInfo, form, bindingResult, ExtendedModelMap(), request, htmxRequest)
 
         assertEquals("redirect:/captive/device", view)
         assertFalse(bindingResult.hasErrors())
@@ -146,7 +168,7 @@ class CaptiveLoginControllerTest {
         )
             .willReturn(LdapLoginResult(success = true, userId = existingDevice.userId))
 
-        val view = controller.submit(clientInfo, form, bindingResult, request, htmxRequest)
+        val view = controller.submit(clientInfo, form, bindingResult, ExtendedModelMap(), request, htmxRequest)
 
         assertEquals("redirect:/captive", view)
         verify(session).removeAttribute(CaptivePortalController.ACCOUNT_REAUTH_SESSION_KEY)

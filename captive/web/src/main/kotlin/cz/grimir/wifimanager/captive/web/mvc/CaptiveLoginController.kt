@@ -3,6 +3,7 @@ package cz.grimir.wifimanager.captive.web.mvc
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.CompleteNetworkUserDeviceReauthUsecase
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.query.FindNetworkUserDeviceByMacUsecase
 import cz.grimir.wifimanager.captive.application.auth.model.UserCredentials
+import cz.grimir.wifimanager.captive.web.CaptiveLoginProperties
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveLdapLoginForm
 import cz.grimir.wifimanager.captive.web.security.CaptiveAuthSessionLoginHandler
 import cz.grimir.wifimanager.captive.web.security.LdapLoginFailureReason
@@ -24,6 +25,7 @@ class CaptiveLoginController(
     private val captiveAuthSessionLoginHandler: CaptiveAuthSessionLoginHandler,
     private val findNetworkUserDeviceByMacUsecase: FindNetworkUserDeviceByMacUsecase,
     private val completeNetworkUserDeviceReauthUsecase: CompleteNetworkUserDeviceReauthUsecase,
+    private val captiveLoginProperties: CaptiveLoginProperties,
 ) {
     @GetMapping("/captive/login")
     fun login(
@@ -44,6 +46,7 @@ class CaptiveLoginController(
         if (!model.containsAttribute("form")) {
             model.addAttribute("form", CaptiveLdapLoginForm())
         }
+        addUsernamePlaceholder(model)
         model.addAttribute(
             "deviceVerificationRequired",
             session.getAttribute(CaptivePortalController.ACCOUNT_REAUTH_SESSION_KEY) == true,
@@ -58,6 +61,7 @@ class CaptiveLoginController(
         @ModelAttribute("form")
         form: CaptiveLdapLoginForm,
         bindingResult: BindingResult,
+        model: Model,
         request: HttpServletRequest,
         htmxRequest: HtmxRequest,
     ): String {
@@ -72,6 +76,7 @@ class CaptiveLoginController(
         }
         if (bindingResult.hasErrors()) {
             form.password = null
+            addUsernamePlaceholder(model)
             return "captive/login"
         }
 
@@ -93,6 +98,7 @@ class CaptiveLoginController(
                 else -> bindingResult.reject("captive.error.login.invalid")
             }
             form.password = null
+            addUsernamePlaceholder(model)
             return "captive/login"
         }
 
@@ -114,6 +120,12 @@ class CaptiveLoginController(
             "redirect:htmx:/captive/device"
         } else {
             "redirect:/captive/device"
+        }
+    }
+
+    private fun addUsernamePlaceholder(model: Model) {
+        captiveLoginProperties.resolvedAccountNameFormat?.let {
+            model.addAttribute("usernamePlaceholder", it)
         }
     }
 }
