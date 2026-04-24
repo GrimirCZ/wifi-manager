@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.web
 
 import cz.grimir.wifimanager.captive.web.security.CaptiveDeviceSessionFingerprintInterceptor
-import cz.grimir.wifimanager.captive.web.portal.CaptivePortalApiProperties
+import cz.grimir.wifimanager.shared.application.captive.CaptivePortalApiProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration

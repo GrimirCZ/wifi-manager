@@ -1,4 +1,4 @@
-package cz.grimir.wifimanager.captive.web.portal
+package cz.grimir.wifimanager.shared.application.captive
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 

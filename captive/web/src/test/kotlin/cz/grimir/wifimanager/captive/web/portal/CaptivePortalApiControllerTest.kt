@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.web.portal
 
+import cz.grimir.wifimanager.shared.application.captive.CaptivePortalApiProperties
 import cz.grimir.wifimanager.captive.application.allowedmac.model.AllowedMac
 import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedClientFingerprintGuard

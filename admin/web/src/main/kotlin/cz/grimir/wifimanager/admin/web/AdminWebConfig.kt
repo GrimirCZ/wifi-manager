@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.admin.web
 
+import cz.grimir.wifimanager.shared.application.captive.CaptivePortalApiProperties
 import cz.grimir.wifimanager.shared.security.UiSecurityProperties
 import cz.grimir.wifimanager.shared.ui.SharedUiConfig
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -13,5 +14,6 @@ import org.springframework.context.annotation.Import
 @EnableConfigurationProperties(
     UiSecurityProperties::class,
     AdminWifiProperties::class,
+    CaptivePortalApiProperties::class,
 )
 class AdminWebConfig

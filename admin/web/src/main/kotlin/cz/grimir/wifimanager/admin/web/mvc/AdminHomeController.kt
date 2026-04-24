@@ -20,6 +20,7 @@ import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.admin.core.exceptions.UserAlreadyHasActiveTickets
 import cz.grimir.wifimanager.admin.core.value.AuthorizedDevice
 import cz.grimir.wifimanager.admin.web.AdminWifiProperties
+import cz.grimir.wifimanager.shared.application.captive.CaptivePortalApiProperties
 import cz.grimir.wifimanager.admin.web.mvc.dto.CreateTicketRequestDto
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.TicketId
@@ -51,6 +52,7 @@ class AdminHomeController(
     private val countAuthorizedDevicesByTicketIdUsecase: CountAuthorizedDevicesByTicketIdUsecase,
     private val kickClientUsecase: KickClientUsecase,
     private val wifiProperties: AdminWifiProperties,
+    private val captivePortalApiProperties: CaptivePortalApiProperties,
 ) {
     @GetMapping("/admin", "/admin/")
     fun index(
@@ -235,6 +237,7 @@ class AdminHomeController(
         modelMap.addAttribute("canManageAllowedMacs", user.can(UserRole::canManageAllowedMacs))
         modelMap.addAttribute("currentSection", "tickets")
         modelMap.addAttribute("wifiSsid", wifiProperties.ssid)
+        modelMap.addAttribute("captivePortalUrl", captivePortalApiProperties.publicBaseUrl.trimEnd('/'))
     }
 
     private fun loadTicketForUser(
