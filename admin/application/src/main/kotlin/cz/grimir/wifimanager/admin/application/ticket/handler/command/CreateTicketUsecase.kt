@@ -2,9 +2,11 @@ package cz.grimir.wifimanager.admin.application.ticket.handler.command
 
 import cz.grimir.wifimanager.admin.application.ticket.command.CreateTicketCommand
 import cz.grimir.wifimanager.admin.application.shared.port.AdminEventPublisher
+import cz.grimir.wifimanager.admin.application.ticket.exception.InvalidTicketDurationException
 import cz.grimir.wifimanager.admin.application.ticket.port.FindTicketPort
 import cz.grimir.wifimanager.admin.application.ticket.port.SaveTicketPort
 import cz.grimir.wifimanager.admin.application.ticket.support.AccessCodeGenerator
+import cz.grimir.wifimanager.admin.application.ticket.support.TicketDurationPolicy
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.admin.core.exceptions.UserAlreadyHasActiveTickets
 import cz.grimir.wifimanager.shared.core.TicketId
@@ -27,6 +29,10 @@ class CreateTicketUsecase(
     @Transactional
     @Throws(UserAlreadyHasActiveTickets::class)
     fun create(command: CreateTicketCommand): Ticket {
+        if (!TicketDurationPolicy.isAllowed(command.duration, command.user)) {
+            throw InvalidTicketDurationException(command.duration)
+        }
+
         val existingUserTickets = findTicketPort.findByAuthorId(command.user.userId.id)
         val now = Instant.now()
         val activeUserTickets = existingUserTickets.filter { it.isActive(now) }

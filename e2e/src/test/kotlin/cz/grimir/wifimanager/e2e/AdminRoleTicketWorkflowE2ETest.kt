@@ -13,7 +13,7 @@ class AdminRoleTicketWorkflowE2ETest : BaseWorkflowE2ETest() {
         createTicketAndReturnCsrfToken(validityMinutes = "45")
         assertThat(page.getByText("Active ticket")).isVisible()
 
-        createTicketAndReturnCsrfToken(validityMinutes = "60")
+        createTicketAndReturnCsrfToken(validityMinutes = "10080")
 
         val deadline = System.currentTimeMillis() + 5_000
         while (System.currentTimeMillis() < deadline) {

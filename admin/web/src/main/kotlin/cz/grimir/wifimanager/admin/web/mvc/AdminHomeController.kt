@@ -11,6 +11,7 @@ import cz.grimir.wifimanager.admin.application.ticket.model.TicketWithDeviceCoun
 import cz.grimir.wifimanager.admin.application.ticket.handler.command.CancelTicketUsecase
 import cz.grimir.wifimanager.admin.application.ticket.handler.command.CreateTicketUsecase
 import cz.grimir.wifimanager.admin.application.ticket.handler.command.KickClientUsecase
+import cz.grimir.wifimanager.admin.application.ticket.exception.InvalidTicketDurationException
 import cz.grimir.wifimanager.admin.application.ticket.handler.query.CountAuthorizedDevicesByTicketIdUsecase
 import cz.grimir.wifimanager.admin.application.ticket.handler.query.FindAuthorizedDevicesByTicketIdUsecase
 import cz.grimir.wifimanager.admin.application.ticket.handler.query.FindTicketByIdUsecase
@@ -106,6 +107,8 @@ class AdminHomeController(
 
                 return "admin/fragments/ticket-panel :: ticketPanel"
             }
+        } catch (_: InvalidTicketDurationException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST)
         }
 
         return "redirect:/admin"
@@ -228,6 +231,7 @@ class AdminHomeController(
     ) {
         modelMap.addAttribute("activeTickets", findActiveTickets(user))
         modelMap.addAttribute("isAdmin", user.can(UserRole::canHaveMultipleTickets))
+        modelMap.addAttribute("canCreateExtendedTickets", user.can(UserRole::canCreateExtendedTickets))
         modelMap.addAttribute("canManageAllowedMacs", user.can(UserRole::canManageAllowedMacs))
         modelMap.addAttribute("currentSection", "tickets")
         modelMap.addAttribute("wifiSsid", wifiProperties.ssid)

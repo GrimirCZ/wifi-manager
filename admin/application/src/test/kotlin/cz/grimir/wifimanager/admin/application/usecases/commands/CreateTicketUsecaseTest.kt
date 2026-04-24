@@ -9,13 +9,16 @@ import cz.grimir.wifimanager.admin.application.ticket.support.AccessCodeGenerato
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.UserId
+import cz.grimir.wifimanager.shared.core.UserRole
 import cz.grimir.wifimanager.shared.events.TicketCreatedEvent
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.argumentCaptor
 import java.security.SecureRandom
@@ -84,13 +87,123 @@ class CreateTicketUsecaseTest {
         assertTrue(eventCaptor.firstValue.requireUserNameOnLogin)
     }
 
-    private fun testUser(): UserIdentitySnapshot =
+    @Test
+    fun `staff can create standard two hour ticket`() {
+        val user = testUser(roles = setOf(UserRole.WIFI_STAFF))
+        given(findTicketPort.findByAuthorId(user.userId.id)).willReturn(emptyList())
+
+        usecase.create(
+            CreateTicketCommand(
+                accessCode = null,
+                duration = Duration.ofMinutes(120),
+                user = user,
+                requireUserNameOnLogin = false,
+            ),
+        )
+
+        val ticketCaptor = argumentCaptor<Ticket>()
+        verify(saveTicketPort).save(ticketCaptor.capture())
+        assertEquals(120, Duration.between(ticketCaptor.firstValue.createdAt, ticketCaptor.firstValue.validUntil).toMinutes())
+    }
+
+    @Test
+    fun `staff cannot create extended four hour ticket`() {
+        val user = testUser(roles = setOf(UserRole.WIFI_STAFF))
+
+        assertThrows(IllegalArgumentException::class.java) {
+            usecase.create(
+                CreateTicketCommand(
+                    accessCode = null,
+                    duration = Duration.ofMinutes(240),
+                    user = user,
+                    requireUserNameOnLogin = false,
+                ),
+            )
+        }
+
+        verify(saveTicketPort, never()).save(org.mockito.kotlin.any())
+    }
+
+    @Test
+    fun `staff cannot create extended seven day ticket`() {
+        val user = testUser(roles = setOf(UserRole.WIFI_STAFF))
+
+        assertThrows(IllegalArgumentException::class.java) {
+            usecase.create(
+                CreateTicketCommand(
+                    accessCode = null,
+                    duration = Duration.ofMinutes(10080),
+                    user = user,
+                    requireUserNameOnLogin = false,
+                ),
+            )
+        }
+
+        verify(saveTicketPort, never()).save(org.mockito.kotlin.any())
+    }
+
+    @Test
+    fun `admin can create extended seven day ticket`() {
+        val user = testUser(roles = setOf(UserRole.WIFI_ADMIN))
+        given(findTicketPort.findByAuthorId(user.userId.id)).willReturn(emptyList())
+
+        usecase.create(
+            CreateTicketCommand(
+                accessCode = null,
+                duration = Duration.ofMinutes(10080),
+                user = user,
+                requireUserNameOnLogin = false,
+            ),
+        )
+
+        val ticketCaptor = argumentCaptor<Ticket>()
+        verify(saveTicketPort).save(ticketCaptor.capture())
+        assertEquals(10080, Duration.between(ticketCaptor.firstValue.createdAt, ticketCaptor.firstValue.validUntil).toMinutes())
+    }
+
+    @Test
+    fun `rejects unsupported duration`() {
+        val user = testUser(roles = setOf(UserRole.WIFI_ADMIN))
+
+        assertThrows(IllegalArgumentException::class.java) {
+            usecase.create(
+                CreateTicketCommand(
+                    accessCode = null,
+                    duration = Duration.ofMinutes(121),
+                    user = user,
+                    requireUserNameOnLogin = false,
+                ),
+            )
+        }
+
+        verify(saveTicketPort, never()).save(org.mockito.kotlin.any())
+    }
+
+    @Test
+    fun `rejects duration above seven days`() {
+        val user = testUser(roles = setOf(UserRole.WIFI_ADMIN))
+
+        assertThrows(IllegalArgumentException::class.java) {
+            usecase.create(
+                CreateTicketCommand(
+                    accessCode = null,
+                    duration = Duration.ofMinutes(10081),
+                    user = user,
+                    requireUserNameOnLogin = false,
+                ),
+            )
+        }
+
+        verify(saveTicketPort, never()).save(org.mockito.kotlin.any())
+    }
+
+    private fun testUser(roles: Set<UserRole> = emptySet()): UserIdentitySnapshot =
         UserIdentitySnapshot(
             userId = UserId(UUID.fromString("00000000-0000-0000-0000-000000000100")),
             identityId = UUID.fromString("00000000-0000-0000-0000-000000000101"),
             displayName = "Test User",
             email = "user@example.com",
             pictureUrl = null,
-            roles = emptySet(),
+            roles = roles,
         )
 }

@@ -19,13 +19,18 @@
             th:text="#{admin.ticket.create.validity.label}"
         >How long should the ticket be valid?</label>
         <div class="relative">
-            <select class="select appearance-none" id="validityMinutes" th:field="*{validityMinutes}">
-                <option value="15" th:text="#{admin.ticket.validity.minutes(15)}">15 minutes</option>
-                <option value="30" th:text="#{admin.ticket.validity.minutes(30)}">30 minutes</option>
-                <option value="45" selected th:text="#{admin.ticket.validity.minutes(45)}">45 minutes</option>
-                <option value="60" th:text="#{admin.ticket.validity.minutes(60)}">60 minutes</option>
-                <option value="90" th:text="#{admin.ticket.validity.minutes(90)}">90 minutes</option>
-                <option value="120" th:text="#{admin.ticket.validity.minutes(120)}">120 minutes</option>
+            <select class="select appearance-none" id="validityMinutes" name="validityMinutes">
+                <option value="15" th:selected="${createTicket.validityMinutes == 15}" th:text="#{admin.ticket.validity.minutes(15)}">15 minutes</option>
+                <option value="30" th:selected="${createTicket.validityMinutes == 30}" th:text="#{admin.ticket.validity.minutes(30)}">30 minutes</option>
+                <option value="45" th:selected="${createTicket.validityMinutes == 45}" th:text="#{admin.ticket.validity.minutes(45)}">45 minutes</option>
+                <option value="60" th:selected="${createTicket.validityMinutes == 60}" th:text="#{admin.ticket.validity.minutes(60)}">60 minutes</option>
+                <option value="90" th:selected="${createTicket.validityMinutes == 90}" th:text="#{admin.ticket.validity.minutes(90)}">90 minutes</option>
+                <option value="120" th:selected="${createTicket.validityMinutes == 120}" th:text="#{admin.ticket.validity.minutes(120)}">120 minutes</option>
+                <option th:if="${canCreateExtendedTickets}" value="240" th:selected="${createTicket.validityMinutes == 240}" th:text="#{admin.ticket.validity.240}">4 hours</option>
+                <option th:if="${canCreateExtendedTickets}" value="1440" th:selected="${createTicket.validityMinutes == 1440}" th:text="#{admin.ticket.validity.1440}">24 hours</option>
+                <option th:if="${canCreateExtendedTickets}" value="2880" th:selected="${createTicket.validityMinutes == 2880}" th:text="#{admin.ticket.validity.2880}">2 days</option>
+                <option th:if="${canCreateExtendedTickets}" value="4320" th:selected="${createTicket.validityMinutes == 4320}" th:text="#{admin.ticket.validity.4320}">3 days</option>
+                <option th:if="${canCreateExtendedTickets}" value="10080" th:selected="${createTicket.validityMinutes == 10080}" th:text="#{admin.ticket.validity.10080}">7 days</option>
             </select>
             <img
                 th:src="@{/assets/shared/icons/outline/chevron-down.svg}"
@@ -37,7 +42,13 @@
 
     <div class="space-y-2">
         <label class="checkbox-label">
-            <input class="checkbox" type="checkbox" th:field="*{requireUserNameOnLogin}"/>
+            <input
+                class="checkbox"
+                type="checkbox"
+                name="requireUserNameOnLogin"
+                value="true"
+                th:checked="${createTicket.requireUserNameOnLogin}"
+            />
             <span class="inline-flex items-center gap-2">
                 <span th:text="#{admin.ticket.create.requireName.label}">Require user name during login</span>
                 <span
