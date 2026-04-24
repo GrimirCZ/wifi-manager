@@ -23,14 +23,14 @@
                     </svg>
                 </span>
                 <div class="min-w-0 flex-1">
-                    <div class="truncate text-sm font-semibold"
+                    <div class="device-name"
                          th:text="${device.displayName != null and !#strings.isEmpty(device.displayName) ? device.displayName : ((device.deviceName != null and !#strings.isEmpty(device.deviceName)) ? device.deviceName : #messages.msg('admin.ticket.active.devices.unknown'))}">
                         Unknown device
                     </div>
                     <div class="font-mono text-[11px] text-text-muted" th:text="${device.mac}">AA:BB:CC:DD:EE:FF</div>
                 </div>
             </div>
-            <div class="flex shrink-0 items-center gap-2 pl-12 sm:pl-0">
+            <div class="flex justify-end shrink-0 items-center gap-2 sm:pl-0">
                 <span th:if="${kickedMacs != null and kickedMacs.contains(device.mac)}"
                       class="badge bg-danger/10 text-[10px] text-danger"
                       th:text="#{admin.ticket.active.devices.status.kicked}">

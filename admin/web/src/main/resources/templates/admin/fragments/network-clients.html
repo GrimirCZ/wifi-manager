@@ -9,9 +9,11 @@
                 th:hx-get="@{/admin/_network-clients}"
                 hx-target="#network-client-list"
                 hx-swap="outerHTML">
-            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M20 4v4h-4M4 20v-4h4"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.51 9a8 8 0 0 1 14.07-1.27M19.49 15a8 8 0 0 1-14.07 1.27"/>
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M4.51 9a8 8 0 0 1 14.07-1.27M19.49 15a8 8 0 0 1-14.07 1.27"/>
             </svg>
             <span class="btn-text" th:text="#{admin.networkClients.load}">Refresh</span>
             <span class="spinner"></span>
@@ -32,10 +34,10 @@
             data-script="on click
                            set #allowed-mac-input.value to my @data-mac
                            then set #allowed-mac-hostname.value to my @data-hostname
-                           then add .mac-input-highlight to #allowed-mac-input
-                           then wait 1.5s
-                           then remove .mac-input-highlight from #allowed-mac-input
-                           then call window.scrollTo({top:0, behavior:'smooth'})">
+                           then add .input-highlight to #allowed-mac-input
+                           then call #allowed-mac-input.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                           then wait 2s
+                           then remove .input-highlight from #allowed-mac-input">
             <div class="flex min-w-0 flex-1 items-start gap-3">
                 <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-colors sm:h-9 sm:w-9"
                       th:classappend="${client.allowed ? ' bg-success/10 text-success' : ' bg-[rgb(var(--surface-muted))] text-text-muted'}">
@@ -48,18 +50,19 @@
 
                 <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-baseline gap-2">
-                        <span class="truncate text-sm font-semibold"
+                        <span class="device-name"
                               th:text="${client.hostname != null ? client.hostname : #messages.msg('admin.networkClients.unknown')}">hostname</span>
                         <span th:if="${client.isLocalAdmin}"
                               class="badge shrink-0 bg-[rgb(var(--surface-muted))] text-[10px] font-semibold uppercase tracking-wide text-text-muted"
                               th:text="#{admin.allowedMacs.tag.localAdmin}">admin</span>
                     </div>
-                    <div class="mt-0.5 flex flex-wrap items-center gap-1.5">
+                    <div class="mt-0.5 flex flex-col sm:flex-row items-start sm:items-center sm:flex-wrap sm:gap-x-1.5">
                         <span class="font-mono text-[11px] text-text-muted" th:text="${client.macAddress}">AA:BB:CC:DD:EE:FF</span>
                         <span th:if="${client.ipAddresses != null and !client.ipAddresses.isEmpty()}"
-                              class="text-[10px] text-text-muted opacity-50">|</span>
+                              class="text-[10px] text-text-muted opacity-50 hidden sm:inline">·<span>
                         <span class="text-[11px] text-text-muted">
-                            <span th:each="ip, stat : ${client.ipAddresses}" th:text="${ip + (stat.last ? '' : ', ')}"></span>
+                            <span th:each="ip, stat : ${client.ipAddresses}"
+                                  th:text="${ip + (stat.last ? '' : ', ')}"></span>
                         </span>
                     </div>
                 </div>

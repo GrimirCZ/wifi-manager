@@ -453,3 +453,7 @@ canvas.drawingBuffer {
 canvas.drawingBuffer + br {
   display: none;
 }
+
+.device-name {
+  @apply truncate text-sm font-semibold max-w-[12ch] sm:max-w-none;
+}

@@ -6,6 +6,13 @@ module.exports = {
     "./shared/ui/src/**/*.html",
     "./shared/ui/src/**/*.js",
   ],
+  theme: {
+    extend: {
+      screens: {
+        md: "900px",
+      },
+    },
+  },
   safelist: [],
 };
 

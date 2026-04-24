@@ -39,7 +39,7 @@
 
                 <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-baseline gap-x-2">
-                        <span class="min-w-0 truncate text-sm font-semibold"
+                        <span class="min-w-0 device-name"
                               th:attr="title=${allowed.ownerEmail != null and !#strings.isEmpty(allowed.ownerEmail) ? allowed.ownerDisplayName + ' (' + allowed.ownerEmail + ')' : allowed.ownerDisplayName}"
                               th:text="${allowed.hostname != null ? allowed.hostname : #messages.msg('admin.allowedMacs.hostname.unknown')}">
                             Unknown

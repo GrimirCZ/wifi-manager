@@ -4,10 +4,32 @@ details[open] > summary .details-chevron {
   transform: rotate(180deg);
 }
 
-.mac-input-highlight {
-  outline: 2px solid rgb(var(--brand-500));
+.input-highlight {
+  outline: 2px solid transparent;
   outline-offset: 2px;
-  background-color: rgb(var(--surface-lowest));
+  animation: input-highlight 1.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes input-highlight {
+  0% {
+    outline-color: transparent;
+    outline-offset: 6px;
+  }
+
+  15% {
+    outline-color: rgb(var(--brand-500));
+    outline-offset: 2px;
+  }
+
+  65% {
+    outline-color: rgb(var(--brand-500));
+    outline-offset: 2px;
+  }
+
+  100% {
+    outline-color: transparent;
+    outline-offset: 5px;
+  }
 }
 
 @layer components {
