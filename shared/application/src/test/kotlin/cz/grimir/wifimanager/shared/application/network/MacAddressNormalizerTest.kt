@@ -1,6 +1,5 @@
-package cz.grimir.wifimanager.admin.web.mvc
+package cz.grimir.wifimanager.shared.application.network
 
-import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -17,5 +16,12 @@ class MacAddressNormalizerTest {
         val normalized = MacAddressNormalizer.normalize("aa:bb:cc:dd:ee:ff")
 
         assertEquals("aa:bb:cc:dd:ee:ff", normalized)
+    }
+
+    @Test
+    fun `keeps blank mac blank after trimming`() {
+        val normalized = MacAddressNormalizer.normalize("   ")
+
+        assertEquals("", normalized)
     }
 }

@@ -2,6 +2,7 @@ package cz.grimir.wifimanager.captive.events.local
 
 import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedClientFingerprintGuard
 import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
+import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import cz.grimir.wifimanager.shared.events.AuthorizedClientObservedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
@@ -16,7 +17,7 @@ class AuthorizedClientObservedEventListener(
     @EventListener
     fun on(event: AuthorizedClientObservedEvent) {
         authorizedClientFingerprintGuard.processAuthorizedClientObservation(
-            mac = event.macAddress,
+            mac = MacAddressNormalizer.normalize(event.macAddress),
             currentFingerprint =
                 deviceFingerprintService.createRouterObservation(
                     hostname = event.hostname,

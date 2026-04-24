@@ -13,6 +13,7 @@ import cz.grimir.wifimanager.captive.application.networkuser.handler.query.Resol
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveDeviceNameForm
 import cz.grimir.wifimanager.captive.web.security.support.ClientInfo
 import cz.grimir.wifimanager.captive.web.security.support.CurrentClient
+import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.security.mvc.CurrentUser
 import org.springframework.stereotype.Controller
@@ -142,12 +143,13 @@ class CaptiveDeviceController(
         @RequestParam("mac")
         mac: String,
     ): String {
+        val normalizedMac = MacAddressNormalizer.normalize(mac)
         val device =
-            findNetworkUserDevicesByUserIdUsecase.find(user.userId).firstOrNull { it.mac == mac }
+            findNetworkUserDevicesByUserIdUsecase.find(user.userId).firstOrNull { it.mac == normalizedMac }
                 ?: return "redirect:/captive/device"
 
-        removeNetworkUserDeviceUsecase.remove(user.userId, mac)
-        routerAgentPort.revokeClientAccess(listOf(mac))
+        removeNetworkUserDeviceUsecase.remove(user.userId, normalizedMac)
+        routerAgentPort.revokeClientAccess(listOf(normalizedMac))
 
         return "redirect:/captive/device"
     }

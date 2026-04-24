@@ -4,7 +4,9 @@ import cz.grimir.wifimanager.captive.application.authorization.command.Authorize
 import cz.grimir.wifimanager.captive.application.authorization.handler.command.AuthorizeDeviceWithCodeUsecase
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.identity.port.CaptiveUserIdentityPort
+import cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.TouchNetworkUserDeviceUsecase
+import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintStatus
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveAccessCodeForm
 import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessState
@@ -12,6 +14,7 @@ import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessStatus
 import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessStatusService
 import cz.grimir.wifimanager.captive.web.security.support.ClientInfo
 import cz.grimir.wifimanager.shared.core.TicketId
+import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.ui.AccessCodeFormatter
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HtmxRequest
 import jakarta.servlet.http.HttpServletRequest
@@ -71,6 +74,42 @@ class CaptivePortalControllerTest {
         assertEquals(false, model["requireUserNameStep"])
         assertTrue(model["form"] is CaptiveAccessCodeForm)
         verifyNoInteractions(clientAccessStatusService, touchNetworkUserDeviceUsecase, userIdentityPort)
+    }
+
+    @Test
+    fun `index renders connected state for active account device`() {
+        val request = request()
+        val model = ExtendedModelMap()
+        val device =
+            NetworkUserDevice(
+                userId = UserId(UUID.fromString("00000000-0000-0000-0000-000000000111")),
+                mac = clientInfo.macAddress,
+                name = "Work Laptop",
+                hostname = clientInfo.hostname,
+                isRandomized = false,
+                authorizedAt = Instant.parse("2025-01-01T10:00:00Z"),
+                lastSeenAt = Instant.parse("2025-01-01T10:05:00Z"),
+                fingerprintProfile = null,
+                fingerprintStatus = DeviceFingerprintStatus.NONE,
+                fingerprintVerifiedAt = null,
+                reauthRequiredAt = null,
+            )
+        given(clientAccessStatusService.resolve(clientInfo))
+            .willReturn(
+                CaptiveClientAccessStatus(
+                    state = CaptiveClientAccessState.ACTIVE_NETWORK_USER_DEVICE,
+                    networkUserDevice = device,
+                ),
+            )
+
+        val view = controller.index(clientInfo, request, model)
+
+        assertEquals("captive/index", view)
+        assertEquals(true, model["accountAuthorized"])
+        assertEquals(true, model["deviceLoggedIn"])
+        assertEquals(false, model["deviceVerificationRequired"])
+        assertEquals("Work Laptop", model["authorizedDeviceName"])
+        verify(touchNetworkUserDeviceUsecase).touch(device.userId, device.mac)
     }
 
     @Test

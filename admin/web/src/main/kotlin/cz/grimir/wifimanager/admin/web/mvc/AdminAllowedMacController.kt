@@ -10,6 +10,7 @@ import cz.grimir.wifimanager.admin.web.mvc.dto.AllowedMacRequestDto
 import cz.grimir.wifimanager.admin.web.mvc.dto.AllowedMacViewDto
 import cz.grimir.wifimanager.admin.web.mvc.dto.NetworkClientViewDto
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
+import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import cz.grimir.wifimanager.shared.application.network.NetworkClient
 import cz.grimir.wifimanager.shared.core.UserRole
 import cz.grimir.wifimanager.shared.security.mvc.CurrentUser

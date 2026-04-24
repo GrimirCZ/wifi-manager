@@ -2,6 +2,7 @@ package cz.grimir.wifimanager.captive.events.local
 
 import cz.grimir.wifimanager.captive.application.allowedmac.handler.command.CaptiveRemoveAllowedMacUsecase
 import cz.grimir.wifimanager.captive.application.allowedmac.handler.command.CaptiveUpsertAllowedMacUsecase
+import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import cz.grimir.wifimanager.shared.events.AllowedMacRemovedEvent
 import cz.grimir.wifimanager.shared.events.AllowedMacUpsertedEvent
 import org.springframework.context.event.EventListener
@@ -14,11 +15,11 @@ class AllowedMacEventListener(
 ) {
     @EventListener
     fun on(event: AllowedMacUpsertedEvent) {
-        upsertAllowedMacUsecase.upsert(event.macAddress, event.validUntil)
+        upsertAllowedMacUsecase.upsert(MacAddressNormalizer.normalize(event.macAddress), event.validUntil)
     }
 
     @EventListener
     fun on(event: AllowedMacRemovedEvent) {
-        removeAllowedMacUsecase.remove(event.macAddress)
+        removeAllowedMacUsecase.remove(MacAddressNormalizer.normalize(event.macAddress))
     }
 }

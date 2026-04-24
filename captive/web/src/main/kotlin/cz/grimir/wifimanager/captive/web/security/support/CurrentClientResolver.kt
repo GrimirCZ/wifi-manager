@@ -3,6 +3,7 @@ package cz.grimir.wifimanager.captive.web.security.support
 import cz.grimir.wifimanager.captive.application.devicefingerprint.CaptiveFingerprintingProperties
 import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
 import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
+import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import cz.grimir.wifimanager.shared.security.mvc.ClientIdentityUnavailableException
 import cz.grimir.wifimanager.shared.security.mvc.MissingClientMacException
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -27,7 +28,8 @@ class CurrentClientResolver(
                 logger.warn { "Could not find client info for $ip" }
                 throw ClientIdentityUnavailableException(ip)
             }
-            if (clientInfo.macAddress.isBlank()) {
+            val macAddress = MacAddressNormalizer.normalize(clientInfo.macAddress)
+            if (macAddress.isBlank()) {
                 logger.warn { "Router agent returned blank mac address for ip=$ip" }
                 throw MissingClientMacException(ip)
             }
@@ -48,7 +50,7 @@ class CurrentClientResolver(
 
             ClientInfo(
                 ipAddress = ip,
-                macAddress = clientInfo.macAddress,
+                macAddress = macAddress,
                 hostname = clientInfo.hostname,
                 dhcpVendorClass = clientInfo.dhcpVendorClass,
                 dhcpPrlHash = clientInfo.dhcpPrlHash,
