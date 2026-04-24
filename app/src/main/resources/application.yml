@@ -24,7 +24,7 @@ logging:
 
 app:
   locale:
-    default: en
+    default: ${APP_LOCALE_DEFAULT:cs}
 
 wifimanager:
   google:
