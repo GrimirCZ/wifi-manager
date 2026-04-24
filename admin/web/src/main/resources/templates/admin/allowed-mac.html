@@ -5,13 +5,8 @@
 <div th:replace="~{admin/fragments/header :: header('WiFi Manager')}"></div>
 <main class="app-main">
     <div class="mb-7">
-        <div class="hero-kicker" th:text="#{admin.nav.admin}">Admin</div>
         <h1 class="text-3xl font-semibold tracking-[-0.03em] md:text-4xl"
             th:text="#{admin.allowedMacs.panel.title}">Network allowlist</h1>
-        <p class="mt-2 max-w-2xl text-sm leading-relaxed text-text-muted"
-           th:text="#{admin.allowedMacs.panel.subtitle}">
-            Manage allowlisted devices and inspect the live router view from one workspace.
-        </p>
     </div>
 
     <div class="space-y-4">

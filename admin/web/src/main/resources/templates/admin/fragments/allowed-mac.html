@@ -39,7 +39,7 @@
 
                 <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-baseline gap-x-2">
-                        <span class="truncate text-sm font-semibold"
+                        <span class="min-w-0 truncate text-sm font-semibold"
                               th:attr="title=${allowed.ownerEmail != null and !#strings.isEmpty(allowed.ownerEmail) ? allowed.ownerDisplayName + ' (' + allowed.ownerEmail + ')' : allowed.ownerDisplayName}"
                               th:text="${allowed.hostname != null ? allowed.hostname : #messages.msg('admin.allowedMacs.hostname.unknown')}">
                             Unknown
@@ -57,7 +57,7 @@
                     </div>
                 </div>
 
-                <div class="flex shrink-0 items-center gap-2">
+                <div class="flex shrink-0 flex-col items-end gap-1.5">
                     <span class="badge whitespace-nowrap px-2 py-0.5 text-[11px]"
                           th:classappend="${allowed.validUntil != null ? ' bg-warning/10 text-text' : ' bg-brand-100 text-brand-700'}"
                           th:text="${allowed.validUntil != null ? @DateFormatter.timeRelativeNow(allowed.validUntil) : #messages.msg('admin.allowedMacs.permanent')}">

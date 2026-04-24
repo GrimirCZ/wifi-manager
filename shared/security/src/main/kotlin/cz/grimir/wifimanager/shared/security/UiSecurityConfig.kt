@@ -2,6 +2,7 @@ package cz.grimir.wifimanager.shared.security
 
 import cz.grimir.wifimanager.shared.security.oidc.PromptLoginAuthorizationRequestResolver
 import cz.grimir.wifimanager.shared.security.oidc.UiOidcUserService
+import io.github.wimdeblauwe.htmx.spring.boot.security.HxRefreshHeaderAuthenticationEntryPoint
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
@@ -13,6 +14,9 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern
 import org.springframework.security.web.util.matcher.OrRequestMatcher
+import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher
+
+
 
 @Configuration
 @ComponentScan(basePackages = ["cz.grimir.wifimanager.shared.security"])
@@ -27,6 +31,10 @@ class UiSecurityConfig(
         http: HttpSecurity,
         clientRegistrationRepository: ClientRegistrationRepository,
     ): SecurityFilterChain {
+        val entryPoint = HxRefreshHeaderAuthenticationEntryPoint()
+        val requestMatcher = RequestHeaderRequestMatcher("HX-Request")
+
+
         val logoutSuccessHandler =
             OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository).also {
                 it.setPostLogoutRedirectUri("{baseUrl}/")
@@ -69,8 +77,12 @@ class UiSecurityConfig(
                     .invalidateHttpSession(true)
                     .clearAuthentication(true)
                     .deleteCookies("JSESSIONID")
-            }.exceptionHandling { exceptions ->
-                exceptions
+            }.exceptionHandling { configurer ->
+                configurer
+                    .defaultAuthenticationEntryPointFor(
+                        entryPoint,
+                        requestMatcher
+                    )
                     .defaultAuthenticationEntryPointFor(
                         LoginUrlAuthenticationEntryPoint("/admin/login"),
                         pathPattern("/admin/**"),

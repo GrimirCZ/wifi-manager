@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <div
-    id="ticket-panel"
-    th:fragment="ticketPanel"
-    xmlns:th="http://www.thymeleaf.org"
-    class="space-y-8"
+        id="ticket-panel"
+        th:fragment="ticketPanel"
+        xmlns:th="http://www.thymeleaf.org"
+        class="space-y-8"
 >
     <div th:if="${alreadyHasOpen}" class="alert alert-warning" th:text="#{admin.ticket.active.alreadyOpen}">
         You already have an active ticket.
@@ -17,7 +17,8 @@
         <div th:if="${isAdmin}" class="surface-panel print:hidden">
             <details class="space-y-4">
                 <summary class="btn btn-primary inline-flex cursor-pointer list-none gap-2">
-                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                     </svg>
                     <span th:text="#{admin.ticket.create.button}">Create ticket</span>
@@ -55,7 +56,8 @@
                         <div class="space-y-4">
                             <div class="flex items-start gap-4">
                                 <span class="step-badge">1</span>
-                                <p class="pt-1 text-base leading-8 text-text" th:utext="#{admin.ticket.active.step1(${wifiSsid})}">
+                                <p class="pt-1 text-base leading-8 text-text"
+                                   th:utext="#{admin.ticket.active.step1(${wifiSsid})}">
                                     Connect to WiFi network <strong>SSID</strong>.
                                 </p>
                             </div>
@@ -68,7 +70,8 @@
                         </div>
 
                         <div class="code-card max-w-2xl space-y-3">
-                            <div class="label !mb-0" th:text="#{admin.ticket.active.code.label}">Verification code:</div>
+                            <div class="label !mb-0" th:text="#{admin.ticket.active.code.label}">Verification code:
+                            </div>
                             <div class="flex flex-wrap items-center gap-3">
                                 <span class="block cursor-pointer text-4xl font-semibold leading-none tracking-[-0.06em] text-brand-700 md:text-6xl"
                                       data-script="on click
@@ -94,63 +97,58 @@
                         </div>
                     </div>
 
-                    <div class="surface-panel flex flex-col print:flex-row items-center gap-5 self-center lg:self-stretch">
-                        <div class="w-full rounded-[1.75rem] bg-white px-3 py-4 shadow-[0_18px_40px_-30px_rgba(0,105,109,0.2)] md:p-6">
-                            <div th:data-payload="${@QrCodeBuilder.createWifiQrCode(wifiSsid)}"
-                                 class="ticket-qr-frame mx-auto aspect-square w-full max-w-[13rem] overflow-hidden"
-                                 th:data-alt="#{admin.ticket.active.wifi-qr-code}"
-                                 data-script="on load make a QRCode from me, @data-payload then set (<img/> in me)'s @alt to my @data-alt"></div>
-                        </div>
-                        <div class="w-full rounded-[1.5rem] bg-white px-4 py-5">
-                            <img
-                                th:src="${@DataMatrixBuilder.createAccessCodeDataMatrix(ticket.accessCode)}"
-                                th:alt="${'Data Matrix for access code ' + @AccessCodeFormatter.format(ticket.accessCode)}"
-                                class="mx-auto block w-full max-w-[13rem]"
-                            />
+                    <div class=" flex flex-col justify-center print:flex-row items-center gap-5 self-center lg:self-stretch">
+                        <!--                        TODO: instead add helper for the entry page did not open? that would show captive portal QR code + url-->
+                        <div class="p-6 surface-panel">
+                            <div class="w-full rounded-[1.5rem] bg-white px-4 py-5">
+                                <img
+                                        th:src="${@DataMatrixBuilder.createAccessCodeDataMatrix(ticket.accessCode)}"
+                                        th:alt="${'Data Matrix for access code ' + @AccessCodeFormatter.format(ticket.accessCode)}"
+                                        class="mx-auto block w-full max-w-[13rem]"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="surface-panel space-y-5 print:hidden">
-                <div class="flex items-center justify-between gap-4">
-                    <div>
-                        <h2 class="text-2xl font-semibold tracking-[-0.03em]" th:text="#{admin.ticket.active.devices}">Connected devices</h2>
-                        <p class="mt-1 text-sm text-text-muted" th:text="#{admin.ticket.active.devices.toggle}">
-                            Manage devices
-                        </p>
-                    </div>
-                    <span class="badge bg-brand-500 px-4 py-2 text-white font-semibold tabular-nums">
+                <div class="print:hidden">
+                    <div class="flex items-center justify-between gap-4 my-5">
+                        <div>
+                            <h2 class="text-2xl font-semibold tracking-[-0.03em]"
+                                th:text="#{admin.ticket.active.devices}">Connected devices</h2>
+                            <p class="mt-1 text-sm text-text-muted" th:text="#{admin.ticket.active.devices.toggle}">
+                                Manage devices
+                            </p>
+                        </div>
+                        <span class="badge bg-brand-500 px-4 py-2 text-white font-semibold tabular-nums">
                         <span th:attr="id=${'ticket-device-count-' + ticket.id}" th:text="${deviceCount}">0</span>
                     </span>
-                </div>
-
-                <div th:attr="id=${'ticket-device-list-' + ticket.id}" class="grid gap-3 md:grid-cols-2">
-                    <div class="admin-empty-state md:col-span-2 text-sm text-text-muted" th:text="#{admin.ticket.active.devices.empty}">
-                        No connected devices yet.
                     </div>
-                </div>
 
-                <div class="hidden"
-                     th:hx-get="@{/admin/ticket/{ticketId}/_devices(ticketId=${ticket.id})}"
-                     hx-trigger="load, every 30s"
-                     hx-swap="none"
-                     hx-vals='js:{includeDeviceList: true}'></div>
+                    <div th:attr="id=${'ticket-device-list-' + ticket.id}" class="grid gap-3 md:grid-cols-2">
+                        <div class="admin-empty-state md:col-span-2 text-sm text-text-muted"
+                             th:text="#{admin.ticket.active.devices.empty}">
+                            No connected devices yet.
+                        </div>
+                    </div>
+
+                    <div class="hidden"
+                         th:hx-get="@{/admin/ticket/{ticketId}/_devices(ticketId=${ticket.id})}"
+                         hx-trigger="load, every 30s"
+                         hx-swap="none"
+                         hx-vals='js:{includeDeviceList: true}'></div>
+                </div>
             </div>
         </section>
     </div>
 
     <div th:if="${activeTickets == null or activeTickets.isEmpty()}" class="hero-shell space-y-5">
         <div class="space-y-2">
-            <div class="hero-kicker" th:text="#{admin.ticket.create.kicker}">Session setup</div>
             <h1 class="hero-title" th:text="#{admin.ticket.create.title}">Create ticket</h1>
-            <p class="hero-copy max-w-2xl" th:text="#{admin.ticket.create.help}">
-                Choose a duration and generate a fresh access code for the network.
-            </p>
         </div>
 
-        <div class="rounded-[1.75rem] bg-white p-6">
-                <div th:replace="~{admin/fragments/ticket-form :: ticketForm(' print:hidden')}"></div>
+        <div class="rounded-[1.75rem] bg-white pt-2 pb-6">
+            <div th:replace="~{admin/fragments/ticket-form :: ticketForm(' print:hidden')}"></div>
         </div>
     </div>
 

@@ -7,50 +7,47 @@
     <div
             th:attr="id=${'ticket-device-list-' + ticketId}"
             hx-swap-oob="true"
-            class="grid gap-4 md:grid-cols-2">
+            class="grid gap-3 md:grid-cols-2">
         <div th:if="${devices == null or devices.isEmpty()}" class="admin-empty-state md:col-span-2 text-sm text-text-muted"
              th:text="#{admin.ticket.active.devices.empty}">
             No connected devices yet.
         </div>
 
-        <div th:if="${devices != null and !devices.isEmpty()}" th:each="device : ${devices}" class="device-row">
-            <div class="flex items-start justify-between gap-4">
-                <div class="flex items-start gap-4">
-                    <span class="flex h-12 w-12 items-center justify-center rounded-[1.25rem] bg-brand-100 text-brand-700">
-                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 16h6"/>
-                        </svg>
-                    </span>
-                    <div class="space-y-2">
-                        <div class="text-lg font-semibold tracking-[-0.03em]"
-                             th:text="${device.displayName != null and !#strings.isEmpty(device.displayName) ? device.displayName : ((device.deviceName != null and !#strings.isEmpty(device.deviceName)) ? device.deviceName : #messages.msg('admin.ticket.active.devices.unknown'))}">
-                            Unknown device name
-                        </div>
-                        <div class="font-mono text-xs text-text-muted" th:text="${device.mac}">AA:BB:CC:DD:EE:FF</div>
+        <div th:if="${devices != null and !devices.isEmpty()}" th:each="device : ${devices}"
+             class="flex flex-col gap-2 rounded-2xl border border-border/50 bg-[rgb(var(--surface-muted))] px-4 py-3.5 sm:flex-row sm:items-center sm:gap-3">
+            <div class="flex min-w-0 flex-1 items-center gap-3">
+                <span class="admin-device-icon shrink-0">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 16h6"/>
+                    </svg>
+                </span>
+                <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-semibold"
+                         th:text="${device.displayName != null and !#strings.isEmpty(device.displayName) ? device.displayName : ((device.deviceName != null and !#strings.isEmpty(device.deviceName)) ? device.deviceName : #messages.msg('admin.ticket.active.devices.unknown'))}">
+                        Unknown device
                     </div>
+                    <div class="font-mono text-[11px] text-text-muted" th:text="${device.mac}">AA:BB:CC:DD:EE:FF</div>
                 </div>
-
+            </div>
+            <div class="flex shrink-0 items-center gap-2 pl-12 sm:pl-0">
                 <span th:if="${kickedMacs != null and kickedMacs.contains(device.mac)}"
-                      class="badge bg-danger/10 text-danger"
+                      class="badge bg-danger/10 text-[10px] text-danger"
                       th:text="#{admin.ticket.active.devices.status.kicked}">
                     Disconnected
                 </span>
                 <span th:if="${(kickedMacs == null or !kickedMacs.contains(device.mac)) and device.wasAccessRevoked}"
-                      class="badge bg-warning/10 text-text"
+                      class="badge bg-warning/10 text-[10px] text-text"
                       th:text="#{admin.ticket.active.devices.status.canceled}">
                     Canceled
                 </span>
                 <span th:if="${(kickedMacs == null or !kickedMacs.contains(device.mac)) and !device.wasAccessRevoked}"
-                      class="badge bg-success/10 text-success"
+                      class="badge bg-success/10 text-[10px] text-success"
                       th:text="#{admin.ticket.active.devices.status.active}">
                     Active
                 </span>
-            </div>
-
-            <div class="mt-5 flex items-center justify-end">
                 <button th:if="${!device.wasAccessRevoked and (kickedMacs == null or !kickedMacs.contains(device.mac))}"
-                        class="btn btn-secondary"
+                        class="btn btn-danger shrink-0 px-3 py-1.5 text-xs"
                         type="button"
                         th:hx-post="@{/admin/ticket/{ticketId}/device/_kick(ticketId=${ticketId},mac=${device.mac})}"
                         th:hx-confirm="#{admin.ticket.active.devices.kick.confirm}"

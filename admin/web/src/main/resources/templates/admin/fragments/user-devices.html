@@ -3,11 +3,7 @@
     <div class="relative z-10 space-y-6">
         <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div class="space-y-2">
-                <div class="hero-kicker" th:text="#{admin.nav.devices}">Devices</div>
                 <h1 class="hero-title" th:text="#{admin.devices.title}">My devices</h1>
-                <p class="hero-copy max-w-2xl" th:text="#{admin.devices.subtitle}">
-                    Manage authorized user devices.
-                </p>
             </div>
             <span class="badge self-start bg-brand-500 px-4 py-2 text-white"
                   th:text="${devices != null ? devices.size() : 0} + ' ' + #{admin.devices.count}">
@@ -40,8 +36,10 @@
 
         <div th:if="${devices == null or devices.isEmpty()}" class="admin-empty-state">
             <span class="admin-empty-icon">
-                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/>
+                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M7 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 16h6"/>
                 </svg>
             </span>
@@ -50,47 +48,56 @@
 
         <ul th:if="${devices != null and !devices.isEmpty()}"
             class="overflow-hidden rounded-2xl border border-border/50 divide-y divide-border/40">
-            <li th:each="device : ${devices}" class="device-row">
-                <span class="admin-device-icon">
-                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 16h6"/>
-                    </svg>
-                </span>
-                <div class="min-w-0 flex-1">
-                    <div class="flex flex-wrap items-baseline gap-2">
-                        <span class="truncate text-sm font-semibold"
-                              th:text="${device.name != null and !#strings.isEmpty(device.name) ? device.name : #messages.msg('admin.devices.unknown.name')}">
-                            Unknown device
-                        </span>
-                        <span class="badge bg-brand-100 text-[10px] font-semibold uppercase tracking-wide text-brand-700"
-                              th:if="${device.isRandomized}"
-                              th:text="#{admin.devices.randomized}">
-                            Randomized
-                        </span>
+            <li th:each="device : ${devices}"
+                class="device-row flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-3.5">
+                <div class="flex min-w-0 flex-1 items-center gap-3.5">
+                    <span class="admin-device-icon shrink-0">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                             aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M7 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 16h6"/>
+                        </svg>
+                    </span>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-baseline gap-2">
+                            <span class="min-w-0 truncate text-sm font-semibold"
+                                  th:text="${device.name != null and !#strings.isEmpty(device.name) ? device.name : #messages.msg('admin.devices.unknown.name')}">
+                                Unknown device
+                            </span>
+                            <span class="badge bg-brand-100 text-[10px] font-semibold uppercase tracking-wide text-brand-700"
+                                  th:if="${device.isRandomized}"
+                                  th:text="#{admin.devices.randomized}">
+                                Randomized
+                            </span>
+                        </div>
+                        <div class="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                            <span class="font-mono text-[11px] text-text-muted" th:text="${device.mac}">AA:BB:CC:DD:EE:FF</span>
+                            <span class="text-[10px] text-text-muted opacity-50">·</span>
+                            <span class="text-[11px] text-text-muted"
+                                  th:if="${device.hostname != null && device.hostname != ''}"
+                                  th:text="#{admin.devices.hostname.label(${device.hostname != null ? device.hostname : '-'})}">Hostname: -</span>
+                            <span class="text-[10px] text-text-muted opacity-50"
+                                  th:if="${device.hostname != null && device.hostname != ''}"
+                            >·</span>
+                            <span class="text-[11px] text-text-muted"
+                                  th:text="#{admin.devices.authorizedAt.label(${@DateFormatter.absolute(device.authorizedAt)})}">Authorized: -</span>
+                            <span class="text-[10px] text-text-muted opacity-50">·</span>
+                            <span class="text-[11px] text-text-muted"
+                                  th:text="#{admin.devices.lastSeenAt.label(${@DateFormatter.timeRelativeNow(device.lastSeenAt)})}">Last seen: -</span>
+                            <span th:if="${deviceScope == 'all'}"
+                                  class="text-[10px] text-text-muted opacity-50">·</span>
+                            <span th:if="${deviceScope == 'all'}"
+                                  class="text-[11px] text-text-muted"
+                                  th:text="#{admin.devices.owner.label(${device.userId})}">Owner: -</span>
+                        </div>
+                        <p class="mt-0.5 text-xs text-danger" th:if="${device.disconnectError}"
+                           th:text="#{admin.devices.deauthorize.error}">
+                            Failed to disconnect device.
+                        </p>
                     </div>
-                    <div class="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                        <span class="font-mono text-[11px] text-text-muted" th:text="${device.mac}">AA:BB:CC:DD:EE:FF</span>
-                        <span class="text-[10px] text-text-muted opacity-50">·</span>
-                        <span class="text-[11px] text-text-muted"
-                              th:text="#{admin.devices.hostname.label(${device.hostname != null ? device.hostname : '-'})}">Hostname: -</span>
-                        <span class="text-[10px] text-text-muted opacity-50">·</span>
-                        <span class="text-[11px] text-text-muted"
-                              th:text="#{admin.devices.authorizedAt.label(${@DateFormatter.absolute(device.authorizedAt)})}">Authorized: -</span>
-                        <span class="text-[10px] text-text-muted opacity-50">·</span>
-                        <span class="text-[11px] text-text-muted"
-                              th:text="#{admin.devices.lastSeenAt.label(${@DateFormatter.timeRelativeNow(device.lastSeenAt)})}">Last seen: -</span>
-                        <span th:if="${deviceScope == 'all'}" class="text-[10px] text-text-muted opacity-50">·</span>
-                        <span th:if="${deviceScope == 'all'}"
-                              class="text-[11px] text-text-muted"
-                              th:text="#{admin.devices.owner.label(${device.userId})}">Owner: -</span>
-                    </div>
-                    <p class="mt-0.5 text-xs text-danger" th:if="${device.disconnectError}"
-                       th:text="#{admin.devices.deauthorize.error}">
-                        Failed to disconnect device.
-                    </p>
                 </div>
-                <button class="btn btn-danger shrink-0 px-3 py-1.5 text-xs"
+                <button class="btn btn-danger shrink-0 self-end px-3 py-1.5 text-xs sm:self-auto"
                         type="button"
                         th:hx-post="@{/admin/devices/{mac}/_deauthorize(mac=${device.mac},userId=${device.userId},scope=${deviceScope})}"
                         th:hx-confirm="#{admin.devices.deauthorize.confirm}"

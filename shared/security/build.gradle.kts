@@ -9,6 +9,7 @@ dependencies {
     implementation(libs.springSecurityOauth2Jose)
     implementation(libs.springBootStarterWeb)
     implementation(libs.springSecurityWeb)
+    implementation(libs.htmxSpringBoot)
     implementation(libs.kotlinCoroutinesCore)
     implementation(libs.kotlinLogging)
 
