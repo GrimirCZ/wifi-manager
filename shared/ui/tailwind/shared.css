@@ -318,7 +318,7 @@
   }
 
   .device-row {
-    @apply rounded-[1.75rem] bg-[rgb(var(--surface-lowest))] p-4 shadow-[0_20px_40px_-32px_rgba(22,29,31,0.22)] md:p-5;
+    @apply flex items-center gap-3.5 bg-[rgb(var(--surface-lowest))] px-4 py-3.5 transition-colors duration-100;
   }
 
   .admin-side-link {
@@ -354,7 +354,7 @@
   /* ── Admin: device icon ring ── */
 
   .admin-device-icon {
-    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] bg-brand-100 text-brand-700;
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-700;
   }
 
   /* ── Admin: add form section (collapsible) ── */

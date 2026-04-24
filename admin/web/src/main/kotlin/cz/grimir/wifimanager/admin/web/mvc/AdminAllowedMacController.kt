@@ -154,6 +154,11 @@ class AdminAllowedMacController(
                     isLocalAdmin = isLocallyAdministered(it.macAddress),
                 )
             }
+            .sortedWith(
+                Comparator.comparing(NetworkClientViewDto::allowed)
+                    .reversed()
+                    .thenComparing(NetworkClientViewDto::macAddress)
+            )
 
     private fun validateMac(mac: String): String? {
         if (mac.isBlank()) {

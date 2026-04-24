@@ -69,24 +69,22 @@
             </p>
           </div>
 
-          <div class="space-y-3">
-            <div class="device-row" th:each="device : ${devices}">
-              <div class="flex items-center justify-between gap-4">
-                <div class="space-y-0.5 min-w-0">
-                  <div class="text-sm font-semibold truncate" th:text="${device.name}">Device name</div>
-                  <div class="text-xs text-text-muted captive-mono" th:text="${device.mac}">00:00:00:00:00:00</div>
-                </div>
-                <form th:action="@{/captive/device/remove}" method="post" class="shrink-0">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                  <input type="hidden" name="mac" th:value="${device.mac}" />
-                  <button class="btn btn-danger" type="submit">
-                    <span class="btn-text" th:text="#{captive.device.remove}">Remove</span>
-                    <span class="spinner"></span>
-                  </button>
-                </form>
+          <ul class="overflow-hidden rounded-2xl border border-border/50 divide-y divide-border/40">
+            <li class="device-row" th:each="device : ${devices}">
+              <div class="min-w-0 flex-1">
+                <div class="truncate text-sm font-semibold" th:text="${device.name}">Device name</div>
+                <div class="font-mono text-[11px] text-text-muted" th:text="${device.mac}">00:00:00:00:00:00</div>
               </div>
-            </div>
-          </div>
+              <form th:action="@{/captive/device/remove}" method="post" class="shrink-0">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="mac" th:value="${device.mac}" />
+                <button class="btn btn-danger px-3 py-1.5 text-xs" type="submit">
+                  <span class="btn-text" th:text="#{captive.device.remove}">Remove</span>
+                  <span class="spinner"></span>
+                </button>
+              </form>
+            </li>
+          </ul>
         </div>
 
         <!-- Step 2: name + authorize form -->
