@@ -115,14 +115,16 @@ func (a *Agent) SetClientLifecycleLogScope(scope config.ClientLifecycleLogScope)
 // OnIPMappingUpdate bridges observed-state changes into derived whitelist
 // updates so newly seen allowed devices are whitelisted incrementally.
 func (a *Agent) OnIPMappingUpdate(ctx context.Context, update ipmapping.Update) {
+	// ignore malformed updates
 	if update.IP == "" || update.MAC == "" {
 		if update.Deleted && update.IP != "" {
-			a.removeAllowedIP(ctx, update.IP, update.MAC, "deleted")
+			a.removeAllowedIP(ctx, update.IP, update.MAC, "mapping-deleted")
 		}
 		return
 	}
+
 	if update.Deleted {
-		a.removeAllowedIP(ctx, update.IP, update.MAC, "deleted")
+		a.removeAllowedIP(ctx, update.IP, update.MAC, "mapping-deleted")
 		if len(a.ipMapping.IPsForMAC(update.MAC)) == 0 {
 			a.cancelPendingObservation(update.MAC)
 		}
@@ -133,7 +135,6 @@ func (a *Agent) OnIPMappingUpdate(ctx context.Context, update ipmapping.Update) 
 	}
 	a.recordClientActivity(update)
 	if !a.isMACAllowed(update.MAC) {
-		a.logIPAuthorizations([]string{update.IP}, update.MAC, update.InterfaceName, false)
 		return
 	}
 	added := a.allowedIPs.Add([]string{update.IP})
