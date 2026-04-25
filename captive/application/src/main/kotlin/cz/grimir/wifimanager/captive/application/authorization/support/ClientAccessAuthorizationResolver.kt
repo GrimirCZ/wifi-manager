@@ -24,6 +24,8 @@ class ClientAccessAuthorizationResolver(
         return !token.kickedMacAddresses.contains(macAddress) && device.reauthRequiredAt == null
     }
 
-    fun isAuthorizedByAccountDevice(macAddress: String): Boolean =
-        networkUserDeviceReadPort.findByMac(macAddress)?.reauthRequiredAt == null
+    fun isAuthorizedByAccountDevice(macAddress: String): Boolean {
+        val device = networkUserDeviceReadPort.findByMac(macAddress) ?: return false
+        return device.reauthRequiredAt == null
+    }
 }

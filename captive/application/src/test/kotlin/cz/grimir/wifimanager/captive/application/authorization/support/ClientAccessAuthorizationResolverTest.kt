@@ -57,6 +57,13 @@ class ClientAccessAuthorizationResolverTest {
     }
 
     @Test
+    fun `active account device returns false when no row exists`() {
+        given(networkUserDeviceReadPort.findByMac(mac)).willReturn(null)
+
+        assertFalse(resolver.isAuthorizedByAccountDevice(mac))
+    }
+
+    @Test
     fun `allowed mac excludes expired rows`() {
         given(timeProvider.get()).willReturn(now)
         given(allowedMacReadPort.findByMac(mac)).willReturn(AllowedMac(mac = mac, validUntil = now))
