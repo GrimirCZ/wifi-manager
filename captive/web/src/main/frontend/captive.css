@@ -77,6 +77,10 @@
     @apply font-mono text-xs;
   }
 
+  .captive-detail-secondary {
+    @apply font-mono text-xs text-text-muted;
+  }
+
   /* Big access-code input */
   .captive-code-input {
     @apply text-center text-xl tracking-widest font-medium;
