@@ -19,7 +19,7 @@ class CaptiveJpaNetworkUserDeviceRepositoryAdapter(
     NetworkUserDeviceWritePort {
     override fun findByMac(mac: String): NetworkUserDevice? = repository.findByDeviceMac(mac)?.let(mapper::toDomain)
 
-    override fun findAllMacs(): List<String> = repository.findAllDeviceMacs()
+    override fun findAllAuthorizedMacs(): List<String> = repository.findAllAuthorizedMacs()
 
     override fun findByUserId(userId: UserId): List<NetworkUserDevice> = repository.findAllByUserId(userId.id).map(mapper::toDomain)
 

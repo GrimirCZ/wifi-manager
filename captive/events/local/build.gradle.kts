@@ -9,6 +9,7 @@ dependencies {
     implementation(project(":shared:core"))
     implementation(libs.springContext)
     implementation(libs.springTx)
+    implementation(libs.kotlinLogging)
 
     testImplementation(platform(libs.junitBom))
     testImplementation(libs.bundles.testBase)

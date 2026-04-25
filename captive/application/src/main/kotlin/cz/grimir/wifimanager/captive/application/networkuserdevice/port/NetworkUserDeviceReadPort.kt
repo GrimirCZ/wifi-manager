@@ -6,7 +6,7 @@ import cz.grimir.wifimanager.shared.core.UserId
 interface NetworkUserDeviceReadPort {
     fun findByMac(mac: String): NetworkUserDevice?
 
-    fun findAllMacs(): List<String>
+    fun findAllAuthorizedMacs(): List<String>
 
     fun findByUserId(userId: UserId): List<NetworkUserDevice>
 

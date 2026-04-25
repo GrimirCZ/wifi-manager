@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.events.local
 
+import cz.grimir.wifimanager.captive.application.authorization.event.MacAuthorizationStateChangedEvent
 import cz.grimir.wifimanager.captive.application.shared.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.shared.events.AuthorizationTokenRemovedEvent
 import cz.grimir.wifimanager.shared.events.ClientAccessRevokedEvent
@@ -40,6 +41,10 @@ class SpringCaptiveEventPublisher(
     }
 
     override fun publish(event: NetworkUserDeviceConnectedEvent) {
+        applicationEventPublisher.publishEvent(event)
+    }
+
+    override fun publish(event: MacAuthorizationStateChangedEvent) {
         applicationEventPublisher.publishEvent(event)
     }
 }

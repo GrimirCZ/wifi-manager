@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.application.shared.port
 
+import cz.grimir.wifimanager.captive.application.authorization.event.MacAuthorizationStateChangedEvent
 import cz.grimir.wifimanager.shared.events.AuthorizationTokenRemovedEvent
 import cz.grimir.wifimanager.shared.events.ClientAccessRevokedEvent
 import cz.grimir.wifimanager.shared.events.DeviceAuthorizedEvent
@@ -22,4 +23,6 @@ interface CaptiveEventPublisher {
     fun publish(event: NetworkUserDeviceRemovedEvent)
 
     fun publish(event: NetworkUserDeviceConnectedEvent)
+
+    fun publish(event: MacAuthorizationStateChangedEvent)
 }

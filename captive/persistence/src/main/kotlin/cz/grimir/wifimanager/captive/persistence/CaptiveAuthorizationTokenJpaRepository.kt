@@ -23,7 +23,8 @@ interface CaptiveAuthorizationTokenJpaRepository : JpaRepository<CaptiveAuthoriz
         select distinct device.mac
         from CaptiveAuthorizationTokenEntity token
         join token.authorizedDevices device
+        where device.reauthRequiredAt is null
         """,
     )
-    fun findAllAuthorizedDeviceMacs(): List<String>
+    fun findAllAuthorizedMacs(): List<String>
 }

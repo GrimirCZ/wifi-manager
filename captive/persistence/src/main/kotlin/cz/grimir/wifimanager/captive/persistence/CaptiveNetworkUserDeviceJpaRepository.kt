@@ -10,8 +10,8 @@ import java.util.UUID
 interface CaptiveNetworkUserDeviceJpaRepository : JpaRepository<NetworkUserDeviceEntity, NetworkUserDeviceId> {
     fun findByDeviceMac(deviceMac: String): NetworkUserDeviceEntity?
 
-    @Query("select device.deviceMac from NetworkUserDeviceEntity device")
-    fun findAllDeviceMacs(): List<String>
+    @Query("select device.deviceMac from NetworkUserDeviceEntity device where device.reauthRequiredAt is null")
+    fun findAllAuthorizedMacs(): List<String>
 
     fun findAllByUserId(userId: UUID): List<NetworkUserDeviceEntity>
 

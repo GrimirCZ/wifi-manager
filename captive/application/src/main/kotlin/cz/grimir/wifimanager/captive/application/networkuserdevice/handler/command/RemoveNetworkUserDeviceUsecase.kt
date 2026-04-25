@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command
 
+import cz.grimir.wifimanager.captive.application.authorization.event.MacAuthorizationStateChangedEvent
 import cz.grimir.wifimanager.captive.application.shared.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.application.networkuserdevice.port.NetworkUserDeviceWritePort
 import cz.grimir.wifimanager.shared.core.TimeProvider
@@ -27,5 +28,6 @@ class RemoveNetworkUserDeviceUsecase(
                 removedAt = timeProvider.get(),
             ),
         )
+        captiveEventPublisher.publish(MacAuthorizationStateChangedEvent(listOf(mac)))
     }
 }

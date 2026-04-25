@@ -44,9 +44,9 @@ class RouterAgentGrpcService(
                         try {
                             commandExecutor.execute {
                                 try {
-                                    val ticketAuthorizedMacs = findAuthorizationTokenPort.findAllAuthorizedDeviceMacs()
-                                    val accountDeviceMacs = networkUserDeviceReadPort.findAllMacs()
-                                    val allowedMacs = allowedMacReadPort.findAllMacs()
+                                    val ticketAuthorizedMacs = findAuthorizationTokenPort.findAllAuthorizedMacs()
+                                    val accountDeviceMacs = networkUserDeviceReadPort.findAllAuthorizedMacs()
+                                    val allowedMacs = allowedMacReadPort.findAllAuthorizedMacs()
                                     val macAddresses = (ticketAuthorizedMacs + accountDeviceMacs + allowedMacs).distinct()
                                     hub.broadcastSetAllowedClients(macAddresses)
                                 } catch (ex: Exception) {

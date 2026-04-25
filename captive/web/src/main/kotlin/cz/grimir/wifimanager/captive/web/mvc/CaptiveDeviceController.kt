@@ -149,7 +149,6 @@ class CaptiveDeviceController(
                 ?: return "redirect:/captive/device"
 
         removeNetworkUserDeviceUsecase.remove(user.userId, normalizedMac)
-        routerAgentPort.revokeClientAccess(listOf(normalizedMac))
 
         return "redirect:/captive/device"
     }

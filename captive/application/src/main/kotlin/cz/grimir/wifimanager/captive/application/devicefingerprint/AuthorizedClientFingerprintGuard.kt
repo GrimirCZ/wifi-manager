@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.captive.application.devicefingerprint
 
+import cz.grimir.wifimanager.captive.application.authorization.event.MacAuthorizationStateChangedEvent
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.authorization.port.ModifyAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
 import cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.application.networkuserdevice.port.NetworkUserDeviceReadPort
 import cz.grimir.wifimanager.captive.application.networkuserdevice.port.NetworkUserDeviceWritePort
@@ -39,7 +39,6 @@ class AuthorizedClientFingerprintGuard(
     private val networkUserDeviceWritePort: NetworkUserDeviceWritePort,
     private val findAuthorizationTokenPort: FindAuthorizationTokenPort,
     private val modifyAuthorizationTokenPort: ModifyAuthorizationTokenPort,
-    private val routerAgentPort: RouterAgentPort,
     private val eventPublisher: CaptiveEventPublisher,
     private val timeProvider: TimeProvider,
     private val deviceFingerprintService: DeviceFingerprintService,
@@ -112,7 +111,7 @@ class AuthorizedClientFingerprintGuard(
         if (comparison.breached) {
             val updated = device.copy(reauthRequiredAt = now)
             networkUserDeviceWritePort.save(updated)
-            routerAgentPort.revokeClientAccess(listOf(device.mac))
+            eventPublisher.publish(MacAuthorizationStateChangedEvent(listOf(device.mac)))
             return AuthorizedMacVerification(AuthorizedMacState.REAUTH_REQUIRED, networkUserDevice = updated)
         }
 
@@ -158,7 +157,7 @@ class AuthorizedClientFingerprintGuard(
         if (comparison.breached) {
             val updatedDevice = token.requireReauthForAuthorizedDevice(device.mac, now)
             modifyAuthorizationTokenPort.save(token)
-            routerAgentPort.revokeClientAccess(listOf(device.mac))
+            eventPublisher.publish(MacAuthorizationStateChangedEvent(listOf(device.mac)))
             return AuthorizedMacVerification(AuthorizedMacState.REAUTH_REQUIRED, token = token, ticketDevice = updatedDevice)
         }
 

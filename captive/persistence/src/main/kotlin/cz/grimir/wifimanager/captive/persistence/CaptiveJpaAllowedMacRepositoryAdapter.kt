@@ -16,7 +16,7 @@ class CaptiveJpaAllowedMacRepositoryAdapter(
     AllowedMacWritePort {
     override fun findAll(): List<AllowedMac> = allowedMacRepository.findAll().map(mapper::toDomain)
 
-    override fun findAllMacs(): List<String> = allowedMacRepository.findAllMacs()
+    override fun findAllAuthorizedMacs(): List<String> = allowedMacRepository.findAllAuthorizedMacs()
 
     override fun findByMac(mac: String): AllowedMac? = allowedMacRepository.findById(mac).orElse(null)?.let(mapper::toDomain)
 

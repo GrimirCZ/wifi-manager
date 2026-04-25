@@ -1,9 +1,9 @@
 package cz.grimir.wifimanager.captive.application.devicefingerprint
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import cz.grimir.wifimanager.captive.application.authorization.event.MacAuthorizationStateChangedEvent
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.authorization.port.ModifyAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
 import cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.application.networkuserdevice.port.NetworkUserDeviceReadPort
 import cz.grimir.wifimanager.captive.application.networkuserdevice.port.NetworkUserDeviceWritePort
@@ -37,7 +37,6 @@ class AuthorizedClientFingerprintGuardTest {
     private val networkUserDeviceWritePort: NetworkUserDeviceWritePort = mock()
     private val findAuthorizationTokenPort: FindAuthorizationTokenPort = mock()
     private val modifyAuthorizationTokenPort: ModifyAuthorizationTokenPort = mock()
-    private val routerAgentPort: RouterAgentPort = mock()
     private val eventPublisher: CaptiveEventPublisher = mock()
     private val timeProvider: TimeProvider = mock()
     private val now = Instant.parse("2025-01-01T10:15:00Z")
@@ -55,7 +54,6 @@ class AuthorizedClientFingerprintGuardTest {
             networkUserDeviceWritePort = networkUserDeviceWritePort,
             findAuthorizationTokenPort = findAuthorizationTokenPort,
             modifyAuthorizationTokenPort = modifyAuthorizationTokenPort,
-            routerAgentPort = routerAgentPort,
             eventPublisher = eventPublisher,
             timeProvider = timeProvider,
             deviceFingerprintService = deviceFingerprintService,
@@ -71,7 +69,7 @@ class AuthorizedClientFingerprintGuardTest {
 
         assertEquals(AuthorizedMacState.ACTIVE_NETWORK_USER_DEVICE, result.state)
         assertNull(result.networkUserDevice?.reauthRequiredAt)
-        verifyNoInteractions(networkUserDeviceWritePort, routerAgentPort, eventPublisher, findAuthorizationTokenPort, modifyAuthorizationTokenPort)
+        verifyNoInteractions(networkUserDeviceWritePort, eventPublisher, findAuthorizationTokenPort, modifyAuthorizationTokenPort)
     }
 
     @Test
@@ -85,7 +83,7 @@ class AuthorizedClientFingerprintGuardTest {
 
         assertEquals(AuthorizedMacState.ACTIVE_TICKET_DEVICE, result.state)
         assertNull(result.ticketDevice?.reauthRequiredAt)
-        verifyNoInteractions(networkUserDeviceWritePort, routerAgentPort, eventPublisher)
+        verifyNoInteractions(networkUserDeviceWritePort, eventPublisher)
         verify(modifyAuthorizationTokenPort, never()).save(token)
     }
 
@@ -99,7 +97,6 @@ class AuthorizedClientFingerprintGuardTest {
 
         assertEquals(AuthorizedMacState.ACTIVE_NETWORK_USER_DEVICE, result.state)
         assertNull(result.networkUserDevice?.reauthRequiredAt)
-        verify(routerAgentPort, never()).revokeClientAccess(org.mockito.kotlin.any())
         verify(networkUserDeviceWritePort, never()).save(org.mockito.kotlin.any())
 
         val eventCaptor = argumentCaptor<DeviceFingerprintMismatchDetectedEvent>()
@@ -126,7 +123,7 @@ class AuthorizedClientFingerprintGuardTest {
         val savedCaptor = argumentCaptor<NetworkUserDevice>()
         verify(networkUserDeviceWritePort).save(savedCaptor.capture())
         assertEquals(now, savedCaptor.firstValue.reauthRequiredAt)
-        verify(routerAgentPort).revokeClientAccess(listOf(device.mac))
+        verify(eventPublisher).publish(MacAuthorizationStateChangedEvent(listOf(device.mac)))
 
         val eventCaptor = argumentCaptor<DeviceFingerprintMismatchDetectedEvent>()
         verify(eventPublisher).publish(eventCaptor.capture())
@@ -146,7 +143,7 @@ class AuthorizedClientFingerprintGuardTest {
         assertEquals(AuthorizedMacState.REAUTH_REQUIRED, result.state)
         assertEquals(now, result.ticketDevice?.reauthRequiredAt)
         verify(modifyAuthorizationTokenPort).save(token)
-        verify(routerAgentPort).revokeClientAccess(listOf(ticketMac()))
+        verify(eventPublisher).publish(MacAuthorizationStateChangedEvent(listOf(ticketMac())))
 
         val eventCaptor = argumentCaptor<DeviceFingerprintMismatchDetectedEvent>()
         verify(eventPublisher).publish(eventCaptor.capture())
@@ -178,7 +175,7 @@ class AuthorizedClientFingerprintGuardTest {
         verify(networkUserDeviceWritePort).save(savedCaptor.capture())
         assertEquals("hash-a", savedCaptor.firstValue.fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH)?.value)
         assertEquals("office-laptop", savedCaptor.firstValue.fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_HOSTNAME_STEM)?.value)
-        verifyNoInteractions(routerAgentPort, eventPublisher)
+        verifyNoInteractions(eventPublisher)
     }
 
     @Test
@@ -195,7 +192,7 @@ class AuthorizedClientFingerprintGuardTest {
         assertEquals("android-dhcp-15", savedCaptor.firstValue.fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS)?.value)
         assertEquals("office-laptop", savedCaptor.firstValue.fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_HOSTNAME_STEM)?.value)
         assertEquals(now, savedCaptor.firstValue.fingerprintVerifiedAt)
-        verifyNoInteractions(routerAgentPort, eventPublisher, findAuthorizationTokenPort, modifyAuthorizationTokenPort)
+        verifyNoInteractions(eventPublisher, findAuthorizationTokenPort, modifyAuthorizationTokenPort)
     }
 
     @Test
@@ -212,7 +209,7 @@ class AuthorizedClientFingerprintGuardTest {
         assertEquals("android-dhcp-15", token.authorizedDevices.single().fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS)?.value)
         assertEquals("office-laptop", token.authorizedDevices.single().fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_HOSTNAME_STEM)?.value)
         assertEquals(now, token.authorizedDevices.single().fingerprintVerifiedAt)
-        verifyNoInteractions(networkUserDeviceWritePort, routerAgentPort, eventPublisher)
+        verifyNoInteractions(networkUserDeviceWritePort, eventPublisher)
     }
 
     private fun accountDevice(fingerprintProfile: DeviceFingerprintProfile?): NetworkUserDevice =

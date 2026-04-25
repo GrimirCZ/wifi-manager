@@ -9,7 +9,8 @@ interface CaptiveAllowedMacJpaRepository : JpaRepository<CaptiveAllowedMacEntity
         """
         select mac.mac
         from CaptiveAllowedMacEntity mac
+        where mac.validUntil is null or mac.validUntil > CURRENT_TIMESTAMP
         """,
     )
-    fun findAllMacs(): List<String>
+    fun findAllAuthorizedMacs(): List<String>
 }

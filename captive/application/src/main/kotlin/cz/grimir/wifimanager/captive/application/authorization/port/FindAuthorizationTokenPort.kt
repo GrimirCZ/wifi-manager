@@ -10,5 +10,5 @@ interface FindAuthorizationTokenPort {
 
     fun findByAuthorizedDeviceMac(macAddress: String): AuthorizationToken?
 
-    fun findAllAuthorizedDeviceMacs(): List<String>
+    fun findAllAuthorizedMacs(): List<String>
 }

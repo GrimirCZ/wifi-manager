@@ -36,9 +36,9 @@ class RouterAgentGrpcServiceTest {
 
     @Test
     fun `synchronize pushes ticket devices account devices and allowed macs`() {
-        given(findAuthorizationTokenPort.findAllAuthorizedDeviceMacs()).willReturn(listOf("AA:AA:AA:AA:AA:AA", "SHARED"))
-        given(networkUserDeviceReadPort.findAllMacs()).willReturn(listOf("BB:BB:BB:BB:BB:BB", "SHARED"))
-        given(allowedMacReadPort.findAllMacs()).willReturn(listOf("CC:CC:CC:CC:CC:CC"))
+        given(findAuthorizationTokenPort.findAllAuthorizedMacs()).willReturn(listOf("AA:AA:AA:AA:AA:AA", "SHARED"))
+        given(networkUserDeviceReadPort.findAllAuthorizedMacs()).willReturn(listOf("BB:BB:BB:BB:BB:BB", "SHARED"))
+        given(allowedMacReadPort.findAllAuthorizedMacs()).willReturn(listOf("CC:CC:CC:CC:CC:CC"))
 
         val responseObserver = mock<StreamObserver<RouterAgentCommand>>()
         val requestObserver = service.connect(responseObserver)
