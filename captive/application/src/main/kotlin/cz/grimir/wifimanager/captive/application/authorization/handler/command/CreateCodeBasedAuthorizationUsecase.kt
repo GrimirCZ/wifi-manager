@@ -4,11 +4,13 @@ import cz.grimir.wifimanager.captive.application.authorization.command.CreateCod
 import cz.grimir.wifimanager.captive.application.authorization.port.ModifyAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class CreateCodeBasedAuthorizationUsecase(
     private val modifyAuthorizationTokenPort: ModifyAuthorizationTokenPort,
 ) {
+    @Transactional
     fun create(command: CreateCodeBasedAuthorizationCommand) {
         modifyAuthorizationTokenPort.save(
             AuthorizationToken(

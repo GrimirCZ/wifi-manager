@@ -10,6 +10,7 @@ import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.events.DeviceAuthorizedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 private val logger = KotlinLogging.logger {}
 
@@ -21,6 +22,7 @@ class AuthorizeDeviceWithCodeUsecase(
     private val timeProvider: TimeProvider,
     private val deviceFingerprintService: DeviceFingerprintService,
 ) {
+    @Transactional
     fun authorize(command: AuthorizeDeviceWithCodeCommand) {
         val now = timeProvider.get()
         val token =

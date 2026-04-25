@@ -6,6 +6,7 @@ import cz.grimir.wifimanager.captive.application.networkuser.port.NetworkUserWri
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class UpsertNetworkUserOnLoginUsecase(
@@ -13,6 +14,7 @@ class UpsertNetworkUserOnLoginUsecase(
     private val networkUserWritePort: NetworkUserWritePort,
     private val timeProvider: TimeProvider,
 ) {
+    @Transactional
     fun upsert(
         identity: UserIdentitySnapshot,
         allowedDeviceCount: Int,

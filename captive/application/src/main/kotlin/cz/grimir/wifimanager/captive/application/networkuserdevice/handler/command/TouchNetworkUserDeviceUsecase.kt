@@ -6,6 +6,7 @@ import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceConnectedEvent
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class TouchNetworkUserDeviceUsecase(
@@ -13,6 +14,7 @@ class TouchNetworkUserDeviceUsecase(
     private val captiveEventPublisher: CaptiveEventPublisher,
     private val timeProvider: TimeProvider,
 ) {
+    @Transactional
     fun touch(
         userId: UserId,
         mac: String,

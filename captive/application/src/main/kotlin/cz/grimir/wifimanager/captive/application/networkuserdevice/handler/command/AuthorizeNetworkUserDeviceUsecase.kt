@@ -9,7 +9,11 @@ import cz.grimir.wifimanager.captive.application.networkuserdevice.port.NetworkU
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceAuthorizedEvent
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+
+private val logger = KotlinLogging.logger {}
 
 @Service
 class AuthorizeNetworkUserDeviceUsecase(
@@ -19,6 +23,7 @@ class AuthorizeNetworkUserDeviceUsecase(
     private val timeProvider: TimeProvider,
     private val deviceFingerprintService: DeviceFingerprintService,
 ) {
+    @Transactional
     fun authorize(
         userId: UserId,
         mac: String,
@@ -69,5 +74,9 @@ class AuthorizeNetworkUserDeviceUsecase(
                 lastSeenAt = device.lastSeenAt,
             ),
         )
+
+        logger.info {
+            "Device authorized userId=${userId} mac=${mac} deviceName=${hostname ?: "unknown"}"
+        }
     }
 }

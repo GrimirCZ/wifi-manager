@@ -6,8 +6,11 @@ import cz.grimir.wifimanager.captive.application.networkuserdevice.port.NetworkU
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceRemovedEvent
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+
+private val logger = KotlinLogging.logger {}
 
 @Service
 class RemoveNetworkUserDeviceUsecase(
@@ -21,6 +24,7 @@ class RemoveNetworkUserDeviceUsecase(
         mac: String,
     ) {
         networkUserDeviceWritePort.delete(userId, mac)
+        logger.info { "Network user device removed userId=$userId mac=$mac" }
         captiveEventPublisher.publish(
             NetworkUserDeviceRemovedEvent(
                 userId = userId,

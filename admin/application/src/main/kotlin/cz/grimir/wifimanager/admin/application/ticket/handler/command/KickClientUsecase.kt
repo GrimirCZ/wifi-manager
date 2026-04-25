@@ -10,6 +10,7 @@ import cz.grimir.wifimanager.shared.core.UserRole
 import cz.grimir.wifimanager.shared.events.ClientKickedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 private val logger = KotlinLogging.logger {}
 
@@ -20,6 +21,7 @@ class KickClientUsecase(
     private val eventPublisher: AdminEventPublisher,
     private val timeProvider: TimeProvider,
 ) {
+    @Transactional
     fun kick(command: KickDeviceCommand) {
         val ticket =
             findTicketPort.findById(command.ticketId)

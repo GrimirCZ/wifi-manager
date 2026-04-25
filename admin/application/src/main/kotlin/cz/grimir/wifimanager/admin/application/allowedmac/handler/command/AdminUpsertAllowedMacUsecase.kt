@@ -9,6 +9,7 @@ import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.events.AllowedMacUpsertedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 private val logger = KotlinLogging.logger {}
 
@@ -19,6 +20,7 @@ class AdminUpsertAllowedMacUsecase(
     private val eventPublisher: AdminEventPublisher,
     private val timeProvider: TimeProvider,
 ) {
+    @Transactional
     fun upsert(command: UpsertAllowedMacCommand) {
         val now = timeProvider.get()
         val validUntil = command.validityDuration?.let { now.plus(it) }

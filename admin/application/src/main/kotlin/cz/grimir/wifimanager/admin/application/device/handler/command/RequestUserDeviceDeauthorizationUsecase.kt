@@ -7,6 +7,7 @@ import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceDeauthorizeRequestedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 private val logger = KotlinLogging.logger {}
 
@@ -16,6 +17,7 @@ class RequestUserDeviceDeauthorizationUsecase(
     private val adminEventPublisher: AdminEventPublisher,
     private val timeProvider: TimeProvider,
 ) {
+    @Transactional
     fun request(command: RequestUserDeviceDeauthorizationCommand) {
         val device = findUserDevicePort.findByUserIdAndMac(command.userId, command.deviceMac) ?: return
         val now = timeProvider.get()

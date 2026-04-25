@@ -8,6 +8,7 @@ import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.events.AllowedMacRemovedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 private val logger = KotlinLogging.logger {}
 
@@ -18,6 +19,7 @@ class AdminDeleteAllowedMacUsecase(
     private val eventPublisher: AdminEventPublisher,
     private val timeProvider: TimeProvider,
 ) {
+    @Transactional
     fun delete(command: DeleteAllowedMacCommand) {
         val existing = findAllowedMacPort.findByMac(command.macAddress) ?: return
 

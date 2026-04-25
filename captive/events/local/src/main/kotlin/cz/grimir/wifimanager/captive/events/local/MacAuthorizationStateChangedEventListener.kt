@@ -18,21 +18,40 @@ class MacAuthorizationStateChangedEventListener(
     private val routerAgentPort: RouterAgentPort,
 ) {
     @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     fun on(event: MacAuthorizationStateChangedEvent) {
-        event.macAddresses
-            .map(MacAddressNormalizer::normalize)
-            .distinct()
-            .forEach(::reconcile)
+        val macAddresses =
+            event.macAddresses
+                .map(MacAddressNormalizer::normalize)
+                .distinct()
+
+        logger.trace { "Reconciling client authorization state macAddresses=$macAddresses" }
+        macAddresses.forEach(::reconcile)
     }
 
     private fun reconcile(mac: String) {
         try {
             if (!isAuthorized(mac)) {
                 routerAgentPort.revokeClientAccess(listOf(mac))
+                logTrace(mac, "revoked")
+            } else {
+                logTrace(mac, "remains authorized")
             }
         } catch (ex: Exception) {
             logger.error(ex) { "Failed to reconcile router access for mac=$mac" }
+        }
+    }
+
+    private fun logTrace(mac: String, action: String) {
+        logger.trace {
+            val isAllowedMac = clientAccessAuthorizationResolver.isAuthorizedByAllowedMac(mac)
+            val isActiveTicketDevice = clientAccessAuthorizationResolver.isAuthorizedByActiveTicketDevice(mac)
+            val isAccountDevice = clientAccessAuthorizationResolver.isAuthorizedByAccountDevice(mac)
+
+            "Client access $action mac=$mac " +
+                "allowedMac=${isAllowedMac} " +
+                "ticketDevice=${isActiveTicketDevice} " +
+                "accountDevice=${isAccountDevice}"
         }
     }
 

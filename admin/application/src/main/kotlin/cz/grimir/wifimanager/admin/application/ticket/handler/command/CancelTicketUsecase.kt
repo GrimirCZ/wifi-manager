@@ -10,6 +10,7 @@ import cz.grimir.wifimanager.shared.events.TicketEndedEvent
 import cz.grimir.wifimanager.shared.events.TicketEndedEvent.Reason
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
 private val logger = KotlinLogging.logger {}
@@ -20,6 +21,7 @@ class CancelTicketUsecase(
     private val saveTicketPort: SaveTicketPort,
     private val eventPublisher: AdminEventPublisher,
 ) {
+    @Transactional
     @Throws(CannotCancelInactiveTicket::class)
     fun cancel(command: CancelTicketCommand) {
         val ticket =
