@@ -2,9 +2,11 @@ package agent
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -674,11 +676,17 @@ func (a *Agent) logIPAuthorizations(ips []string, mac, interfaceName string, all
 		return
 	}
 	slices.Sort(changed)
+
+	var interfaceString = ""
+	if len(strings.TrimSpace(interfaceName)) > 0 {
+		interfaceString = fmt.Sprintf("interface=%s", interfaceName)
+	}
+
 	if allowed {
-		logClientEventf("client ips allowed mac=%s ips=%s interface=%s", mac, formatIPList(changed), interfaceName)
+		logClientEventf("client ips allowed mac=%s ips=%s %s", mac, formatIPList(changed), interfaceString)
 		return
 	}
-	logClientEventf("client ips disallowed mac=%s ips=%s interface=%s", mac, formatIPList(changed), interfaceName)
+	logClientEventf("client ips disallowed mac=%s ips=%s %s", mac, formatIPList(changed), interfaceString)
 }
 
 func (a *Agent) logIPAuthorizationsRemoved(ips []string, mac, reason string) {
