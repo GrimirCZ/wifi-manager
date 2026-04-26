@@ -132,6 +132,37 @@ class CaptivePortalControllerTest {
     }
 
     @Test
+    fun `required name ticket returns full page name step without htmx when name is missing`() {
+        val form = CaptiveAccessCodeForm(accessCode = "abc-def", acceptTerms = true)
+        val bindingResult = BeanPropertyBindingResult(form, "form")
+        val model = ExtendedModelMap()
+        val token = token(requireUserNameOnLogin = true)
+        given(htmxRequest.isHtmxRequest).willReturn(false)
+        given(clientAccessStatusService.resolve(clientInfo))
+            .willReturn(CaptiveClientAccessStatus(CaptiveClientAccessState.UNAUTHORIZED))
+        given(findAuthorizationTokenPort.findByAccessCode("ABCDEF")).willReturn(token)
+
+        val view = controller.submit(clientInfo, form, bindingResult, request(), model, htmxRequest)
+
+        assertEquals("captive/index", view)
+        assertEquals(true, model["requireUserNameStep"])
+        assertFalse(bindingResult.hasFieldErrors("name"))
+        verifyNoInteractions(authorizeDeviceWithCodeUsecase)
+    }
+
+    @Test
+    fun `captive template includes no js access code and scanner hooks`() {
+        val template =
+            requireNotNull(javaClass.classLoader.getResource("templates/captive/index.html"))
+                .readText()
+
+        assertTrue(template.contains("""<html lang="en" class="no-js""""))
+        assertTrue(template.contains("""pattern="[A-Za-z0-9]{3}-?[A-Za-z0-9]{3}""""))
+        assertTrue(template.contains("""maxlength="7""""))
+        assertTrue(template.contains("""class="captive-scanner-section require-js""""))
+    }
+
+    @Test
     fun `name shorter than three characters is rejected after trim`() {
         val form = CaptiveAccessCodeForm(accessCode = "ABCDEF", name = "  ab  ", acceptTerms = true)
         val bindingResult = BeanPropertyBindingResult(form, "form")

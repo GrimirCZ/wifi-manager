@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" class="no-js" xmlns:th="http://www.thymeleaf.org">
   <head th:replace="~{captive/fragments/head :: head(#{captive.page.title})}"></head>
   <body
     class="bg-surface captive-body"
@@ -204,7 +204,7 @@
             th:placeholder="#{captive.access.placeholder}"
             inputmode="text"
             maxlength="7"
-            pattern="[A-Za-z0-9]{3}-[A-Za-z0-9]{3}"
+            pattern="[A-Za-z0-9]{3}-?[A-Za-z0-9]{3}"
             title="XXX-XXX"
             autocomplete="off"
             required
@@ -237,7 +237,7 @@
         <!-- Scanner section -->
         <div
           id="scanner-section"
-          class="captive-scanner-section"
+          class="captive-scanner-section require-js"
           th:classappend="${requireUserNameStep == true} ? ' hidden' : ''"
           th:attr="data-scanner-allowed=${requireUserNameStep != true}"
         >

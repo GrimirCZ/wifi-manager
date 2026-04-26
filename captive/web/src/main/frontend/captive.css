@@ -87,6 +87,10 @@
     letter-spacing: 0.25em;
   }
 
+  .no-js .require-js {
+    display: none !important;
+  }
+
   /* Scanner */
   .captive-scanner-section {
     @apply rounded-2xl bg-surface-muted p-4 space-y-3;
