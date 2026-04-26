@@ -122,6 +122,10 @@ abstract class BaseWorkflowE2ETest {
             registry.add("wifimanager.captive.router-agent.dummy.default-dhcp-vendor-class") { "android-dhcp-14" }
             registry.add("wifimanager.captive.router-agent.dummy.default-dhcp-prl-hash") { "hash-a" }
             registry.add("wifimanager.captive.router-agent.dummy.default-dhcp-hostname") { "e2e-device.local" }
+
+            // Avoid binding the application.yml fallback literal "[]" as a single invalid CIDR string.
+            registry.add("wifimanager.captive.request-routing.ipv4-subnets[0]") { "198.51.100.0/24" }
+            registry.add("wifimanager.captive.request-routing.ipv6-subnets[0]") { "2001:db8:ffff::/64" }
         }
 
         private fun realmImportPath(): String {
