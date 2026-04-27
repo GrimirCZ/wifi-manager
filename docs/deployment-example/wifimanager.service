@@ -1,0 +1,22 @@
+[Unit]
+Description=WiFi Manager application
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=wifimanager
+Group=wifimanager
+WorkingDirectory=/opt/wifimanager
+EnvironmentFile=/etc/wifimanager/wifimanager.env
+ExecStart=/usr/bin/java -jar /opt/wifimanager/wifimanager-app.jar
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/wifimanager /var/log/wifimanager
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,17 @@
+[Unit]
+Description=WiFi Manager captive dnsmasq
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+RuntimeDirectory=wifimanager
+StateDirectory=dnsmasq
+PIDFile=/run/dnsmasq.wifi.pid
+ExecStartPre=/usr/bin/install -d -o dnsmasq -g dnsmasq -m 0755 /var/lib/dnsmasq
+ExecStart=/usr/sbin/dnsmasq --conf-file=/etc/wifimanager/dnsmasq-wifimanager.conf --pid-file=/run/dnsmasq.wifi.pid
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
