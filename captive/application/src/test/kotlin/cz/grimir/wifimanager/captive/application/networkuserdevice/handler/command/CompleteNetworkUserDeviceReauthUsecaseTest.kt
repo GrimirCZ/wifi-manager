@@ -44,7 +44,7 @@ class CompleteNetworkUserDeviceReauthUsecaseTest {
         )
 
     @Test
-    fun `complete reauth merges current observable signals and clears reauth`() {
+    fun `complete reauth replaces accepted fingerprint and clears reauth`() {
         val existing =
             accountDevice(
                 fingerprintProfile =
@@ -84,14 +84,7 @@ class CompleteNetworkUserDeviceReauthUsecaseTest {
                 ?.get(DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS)
                 ?.value,
         )
-        assertEquals(
-            "tls-a",
-            updated
-                ?.fingerprintProfile
-                ?.signals
-                ?.get(DeviceFingerprintService.SIGNAL_TLS)
-                ?.value,
-        )
+        assertEquals(null, updated?.fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_TLS))
 
         val savedCaptor = argumentCaptor<NetworkUserDevice>()
         verify(networkUserDeviceWritePort).save(savedCaptor.capture())

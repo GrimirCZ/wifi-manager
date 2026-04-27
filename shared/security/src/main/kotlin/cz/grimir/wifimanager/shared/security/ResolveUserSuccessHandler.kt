@@ -153,7 +153,7 @@ class ResolveUserSuccessHandler(
                 realmRoles
 
         val authorityRoles =
-            authentication.authorities
+            (authentication.authorities + oidcUser.authorities)
                 .mapNotNull { it.authority }
                 .filter { it.startsWith("ROLE_") }
                 .map { it.removePrefix("ROLE_") }

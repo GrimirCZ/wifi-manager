@@ -14,7 +14,14 @@ class AdminRoleDeviceScopeWorkflowE2ETest : BaseWorkflowE2ETest() {
         loginAsStaff()
         openDevicesFromAccountMenu()
 
-        assertThat(page.getByText("Manage your authorized devices.")).isVisible()
+        assertThat(
+            page.getByRole(
+                AriaRole.HEADING,
+                com.microsoft.playwright.Page
+                    .GetByRoleOptions()
+                    .setName("My devices"),
+            ),
+        ).isVisible()
         assertEquals(
             0,
             page

@@ -28,6 +28,7 @@ import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 import org.testcontainers.utility.MountableFile
+import java.net.ServerSocket
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
@@ -39,6 +40,7 @@ abstract class BaseWorkflowE2ETest {
     companion object {
         const val DEFAULT_DEVICE_MAC = "02:00:00:00:00:01"
         private val containersStarted = AtomicBoolean(false)
+        private val applicationPort = findAvailablePort()
 
         val postgres =
             PostgreSQLContainer("postgres:16-alpine")
@@ -96,7 +98,8 @@ abstract class BaseWorkflowE2ETest {
             registry.add("spring.datasource.username") { postgres.username }
             registry.add("spring.datasource.password") { postgres.password }
             registry.add("spring.datasource.driver-class-name") { "org.postgresql.Driver" }
-            registry.add("server.port") { "8080" }
+            registry.add("server.port") { applicationPort.toString() }
+            registry.add("app.locale.default") { "en" }
 
             registry.add("spring.docker.compose.enabled") { "false" }
 
@@ -130,8 +133,25 @@ abstract class BaseWorkflowE2ETest {
 
         private fun realmImportPath(): String {
             val rootDir = System.getProperty("wifimanager.root-dir") ?: error("Missing wifimanager.root-dir")
-            return Paths.get(rootDir, "app", "keycloak", "import", "wifimanager-realm.json").toString()
+            val source = Paths.get(rootDir, "app", "keycloak", "import", "wifimanager-realm.json")
+            val generated = Paths.get(rootDir, "build", "e2e", "keycloak", "wifimanager-realm.json")
+            Files.createDirectories(generated.parent)
+            Files.writeString(
+                generated,
+                Files
+                    .readString(source)
+                    .replace("http://localhost:8080", "http://localhost:$applicationPort"),
+            )
+            return generated.toString()
         }
+
+        private fun findAvailablePort(): Int =
+            ServerSocket(0).use { socket ->
+                socket.reuseAddress = true
+                socket.localPort
+            }
+
+        fun applicationBaseUrl(): String = "http://localhost:$applicationPort"
 
         @Synchronized
         private fun ensureContainersStarted() {
@@ -171,7 +191,7 @@ abstract class BaseWorkflowE2ETest {
     }
 
     protected val baseUrl: String
-        get() = "http://localhost:8080"
+        get() = applicationBaseUrl()
 
     @BeforeEach
     fun setupTest() {
@@ -374,8 +394,8 @@ abstract class BaseWorkflowE2ETest {
 
         page.waitForURL("**/captive/device")
 
-        page.getByLabel("Device name").fill(deviceName)
-        page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Authorize device")).click()
+        page.getByLabel("What would you like to call this device?").fill(deviceName)
+        page.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Connect this device")).click()
 
         page.waitForURL("**/captive")
     }
@@ -427,8 +447,8 @@ abstract class BaseWorkflowE2ETest {
             form.getByLabel("Password").fill("user")
             form.getByRole(AriaRole.BUTTON, Locator.GetByRoleOptions().setName("Sign in")).click()
             isolatedPage.waitForURL("**/captive/device")
-            isolatedPage.getByLabel("Device name").fill(deviceName)
-            isolatedPage.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Authorize device")).click()
+            isolatedPage.getByLabel("What would you like to call this device?").fill(deviceName)
+            isolatedPage.getByRole(AriaRole.BUTTON, Page.GetByRoleOptions().setName("Connect this device")).click()
             isolatedPage.waitForURL("**/captive")
             assertThat(
                 isolatedPage.getByRole(

@@ -78,13 +78,19 @@ class AuthorizedClientFingerprintGuard(
         val now = timeProvider.get()
         val networkDevice = networkUserDeviceReadPort.findByMac(mac)
         if (networkDevice != null) {
-            refreshNetworkUserDeviceFingerprint(networkDevice, currentFingerprint, now)
+            val verification = verifyNetworkUserDevice(networkDevice, currentFingerprint, now)
+            if (verification.state == AuthorizedMacState.ACTIVE_NETWORK_USER_DEVICE) {
+                refreshNetworkUserDeviceFingerprint(verification.networkUserDevice ?: networkDevice, currentFingerprint, now)
+            }
             return
         }
 
         val token = findAuthorizationTokenPort.findByAuthorizedDeviceMac(mac) ?: return
         val ticketDevice = token.authorizedDevices.firstOrNull { it.mac == mac } ?: return
-        refreshTicketDeviceFingerprint(token, ticketDevice, currentFingerprint, now)
+        val verification = verifyTicketDevice(token, ticketDevice, currentFingerprint, now)
+        if (verification.state == AuthorizedMacState.ACTIVE_TICKET_DEVICE) {
+            refreshTicketDeviceFingerprint(verification.token ?: token, verification.ticketDevice ?: ticketDevice, currentFingerprint, now)
+        }
     }
 
     private fun verifyNetworkUserDevice(

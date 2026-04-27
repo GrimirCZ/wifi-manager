@@ -41,7 +41,7 @@ class KeycloakPasswordGrantAuthProvider(
             return null
         }
 
-        val roles = userInfo.realmAccess?.roles ?: emptySet()
+        val roles = userInfo.realmAccess?.roles?.takeIf { it.isNotEmpty() } ?: userInfo.roles
         val displayName =
             userInfo.name?.takeIf { it.isNotBlank() }
                 ?: userInfo.preferredUsername?.takeIf { it.isNotBlank() }
@@ -149,6 +149,7 @@ class KeycloakPasswordGrantAuthProvider(
         @get:JsonProperty("preferred_username")
         val preferredUsername: String? = null,
         val picture: String? = null,
+        val roles: Set<String> = emptySet(),
         @get:JsonProperty("realm_access")
         val realmAccess: RealmAccess? = null,
     )

@@ -30,11 +30,10 @@ class CompleteNetworkUserDeviceReauthUsecase(
         require(existing.userId == userId) { "network user device ownership mismatch for mac=$mac" }
         require(existing.reauthRequiredAt != null) { "network user device is not pending reauth for mac=$mac" }
 
-        val mergedProfile = deviceFingerprintService.mergeObservedSignals(existing.fingerprintProfile, currentFingerprint)
         val updated =
             existing.copy(
-                fingerprintProfile = mergedProfile,
-                fingerprintStatus = deviceFingerprintService.status(mergedProfile),
+                fingerprintProfile = currentFingerprint,
+                fingerprintStatus = deviceFingerprintService.status(currentFingerprint),
                 fingerprintVerifiedAt = timeProvider.get(),
                 reauthRequiredAt = null,
             )

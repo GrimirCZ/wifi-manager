@@ -196,7 +196,7 @@ class AuthorizedClientFingerprintGuardTest {
     }
 
     @Test
-    fun `authenticated session observation refreshes only currently present account signals without revoking`() {
+    fun `authenticated session breach marks account device for reauth without refreshing accepted fingerprint`() {
         val device = accountDevice(fingerprintProfile = acceptedEnforceableFingerprint())
         given(timeProvider.get()).willReturn(now)
         given(networkUserDeviceReadPort.findByMac(device.mac)).willReturn(device)
@@ -205,15 +205,16 @@ class AuthorizedClientFingerprintGuardTest {
 
         val savedCaptor = argumentCaptor<NetworkUserDevice>()
         verify(networkUserDeviceWritePort).save(savedCaptor.capture())
+        assertEquals(now, savedCaptor.firstValue.reauthRequiredAt)
         assertEquals(
-            "hash-b",
+            "hash-a",
             savedCaptor.firstValue.fingerprintProfile
                 ?.signals
                 ?.get(DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH)
                 ?.value,
         )
         assertEquals(
-            "android-dhcp-15",
+            "android-dhcp-14",
             savedCaptor.firstValue.fingerprintProfile
                 ?.signals
                 ?.get(DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS)
@@ -226,12 +227,45 @@ class AuthorizedClientFingerprintGuardTest {
                 ?.get(DeviceFingerprintService.SIGNAL_HOSTNAME_STEM)
                 ?.value,
         )
+        assertEquals(device.fingerprintVerifiedAt, savedCaptor.firstValue.fingerprintVerifiedAt)
+        verify(eventPublisher).publish(MacAuthorizationStateChangedEvent(listOf(device.mac)))
+        val eventCaptor = argumentCaptor<DeviceFingerprintMismatchDetectedEvent>()
+        verify(eventPublisher).publish(eventCaptor.capture())
+        assertEquals(true, eventCaptor.firstValue.breached)
+        verifyNoInteractions(findAuthorizationTokenPort, modifyAuthorizationTokenPort)
+    }
+
+    @Test
+    fun `authenticated session active account device refreshes observed signals after verification`() {
+        val device = accountDevice(fingerprintProfile = acceptedEnforceableFingerprint())
+        given(timeProvider.get()).willReturn(now)
+        given(networkUserDeviceReadPort.findByMac(device.mac)).willReturn(device)
+
+        guard.refreshAuthenticatedClientFingerprint(device.mac, activeRefreshFingerprint())
+
+        val savedCaptor = argumentCaptor<NetworkUserDevice>()
+        verify(networkUserDeviceWritePort).save(savedCaptor.capture())
+        assertNull(savedCaptor.firstValue.reauthRequiredAt)
+        assertEquals(
+            "hash-a",
+            savedCaptor.firstValue.fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH)
+                ?.value,
+        )
+        assertEquals(
+            "field-laptop",
+            savedCaptor.firstValue.fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_HOSTNAME_STEM)
+                ?.value,
+        )
         assertEquals(now, savedCaptor.firstValue.fingerprintVerifiedAt)
         verifyNoInteractions(eventPublisher, findAuthorizationTokenPort, modifyAuthorizationTokenPort)
     }
 
     @Test
-    fun `authenticated session observation refreshes only currently present ticket signals without revoking`() {
+    fun `authenticated session breach marks ticket device for reauth without refreshing accepted fingerprint`() {
         val token = ticketToken(ticketDevice(fingerprintProfile = acceptedEnforceableFingerprint()))
         given(timeProvider.get()).willReturn(now)
         given(networkUserDeviceReadPort.findByMac(ticketMac())).willReturn(null)
@@ -240,8 +274,9 @@ class AuthorizedClientFingerprintGuardTest {
         guard.refreshAuthenticatedClientFingerprint(ticketMac(), breachedFingerprint())
 
         verify(modifyAuthorizationTokenPort).save(token)
+        assertEquals(now, token.authorizedDevices.single().reauthRequiredAt)
         assertEquals(
-            "hash-b",
+            "hash-a",
             token.authorizedDevices
                 .single()
                 .fingerprintProfile
@@ -250,7 +285,7 @@ class AuthorizedClientFingerprintGuardTest {
                 ?.value,
         )
         assertEquals(
-            "android-dhcp-15",
+            "android-dhcp-14",
             token.authorizedDevices
                 .single()
                 .fingerprintProfile
@@ -260,6 +295,43 @@ class AuthorizedClientFingerprintGuardTest {
         )
         assertEquals(
             "office-laptop",
+            token.authorizedDevices
+                .single()
+                .fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_HOSTNAME_STEM)
+                ?.value,
+        )
+        assertEquals(Instant.parse("2025-01-01T10:00:00Z"), token.authorizedDevices.single().fingerprintVerifiedAt)
+        verifyNoInteractions(networkUserDeviceWritePort)
+        verify(eventPublisher).publish(MacAuthorizationStateChangedEvent(listOf(ticketMac())))
+        val eventCaptor = argumentCaptor<DeviceFingerprintMismatchDetectedEvent>()
+        verify(eventPublisher).publish(eventCaptor.capture())
+        assertEquals(true, eventCaptor.firstValue.breached)
+    }
+
+    @Test
+    fun `authenticated session active ticket device refreshes observed signals after verification`() {
+        val token = ticketToken(ticketDevice(fingerprintProfile = acceptedEnforceableFingerprint()))
+        given(timeProvider.get()).willReturn(now)
+        given(networkUserDeviceReadPort.findByMac(ticketMac())).willReturn(null)
+        given(findAuthorizationTokenPort.findByAuthorizedDeviceMac(ticketMac())).willReturn(token)
+
+        guard.refreshAuthenticatedClientFingerprint(ticketMac(), activeRefreshFingerprint())
+
+        verify(modifyAuthorizationTokenPort).save(token)
+        assertNull(token.authorizedDevices.single().reauthRequiredAt)
+        assertEquals(
+            "hash-a",
+            token.authorizedDevices
+                .single()
+                .fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH)
+                ?.value,
+        )
+        assertEquals(
+            "field-laptop",
             token.authorizedDevices
                 .single()
                 .fingerprintProfile
@@ -325,6 +397,16 @@ class AuthorizedClientFingerprintGuardTest {
                 signal("hash-b", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
             DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to
                 signal("android-dhcp-15", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
+        )
+
+    private fun activeRefreshFingerprint(): DeviceFingerprintProfile =
+        profile(
+            DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to
+                signal("android-dhcp-14", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
+            DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to
+                signal("field-laptop", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
         )
 
     private fun acceptedEnforceableFingerprint(): DeviceFingerprintProfile =

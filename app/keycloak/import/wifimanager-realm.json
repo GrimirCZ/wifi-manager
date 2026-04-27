@@ -15,6 +15,7 @@
       "protocol": "openid-connect",
       "publicClient": false,
       "secret": "admin-web-secret",
+      "fullScopeAllowed": true,
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": true,
       "attributes": {
@@ -49,6 +50,21 @@
             "userinfo.token.claim": "true",
             "multivalued": "true"
           }
+        },
+        {
+          "name": "roles attribute",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "roles",
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "multivalued": "true"
+          }
         }
       ],
       "redirectUris": [
@@ -64,6 +80,7 @@
       "protocol": "openid-connect",
       "publicClient": false,
       "secret": "captive-portal-secret",
+      "fullScopeAllowed": true,
       "standardFlowEnabled": false,
       "directAccessGrantsEnabled": true,
       "protocolMappers": [
@@ -95,6 +112,21 @@
             "userinfo.token.claim": "true",
             "multivalued": "true"
           }
+        },
+        {
+          "name": "roles attribute",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "roles",
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "multivalued": "true"
+          }
         }
       ],
       "webOrigins": []
@@ -109,7 +141,8 @@
       "lastName": "User",
       "emailVerified": true,
       "attributes": {
-        "picture": ["http://localhost:8080/assets/shared/admin.png"]
+        "picture": ["http://localhost:8080/assets/shared/admin.png"],
+        "roles": ["WIFI_ADMIN", "WIFI_STAFF"]
       },
       "credentials": [
         { "type": "password", "value": "admin", "temporary": false }
@@ -124,7 +157,8 @@
       "lastName": "User",
       "emailVerified": true,
       "attributes": {
-        "picture": ["http://localhost:8080/assets/shared/user.png"]
+        "picture": ["http://localhost:8080/assets/shared/user.png"],
+        "roles": ["WIFI_STAFF"]
       },
       "credentials": [
         { "type": "password", "value": "user", "temporary": false }

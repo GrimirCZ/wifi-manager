@@ -60,7 +60,7 @@ class CaptiveAccessCodeWorkflowE2ETest : BaseWorkflowE2ETest() {
                 AriaRole.BUTTON,
                 com.microsoft.playwright.Page
                     .GetByRoleOptions()
-                    .setName("Authorize"),
+                    .setName("Complete"),
             ).click()
         assertThat(page.getByText("Please enter at least 3 characters.")).isVisible()
 
@@ -70,7 +70,7 @@ class CaptiveAccessCodeWorkflowE2ETest : BaseWorkflowE2ETest() {
                 AriaRole.BUTTON,
                 com.microsoft.playwright.Page
                     .GetByRoleOptions()
-                    .setName("Authorize"),
+                    .setName("Complete"),
             ).click()
         assertThat(
             page.getByRole(

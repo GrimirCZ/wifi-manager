@@ -152,7 +152,7 @@ class CaptiveDeviceFingerprintWorkflowE2ETest : BaseWorkflowE2ETest() {
                 fingerprint_status = ?,
                 fingerprint_verified_at = now(),
                 reauth_required_at = null
-            where device_mac = ?
+            where lower(device_mac) = lower(?)
             """.trimIndent(),
             deviceFingerprintService.toJson(profile),
             deviceFingerprintService.status(profile).name,
@@ -162,7 +162,7 @@ class CaptiveDeviceFingerprintWorkflowE2ETest : BaseWorkflowE2ETest() {
 
     private fun countFingerprintMismatchRows(): Int =
         jdbcTemplate.queryForObject(
-            "select count(*) from admin.device_fingerprint_mismatch where device_mac = ?",
+            "select count(*) from admin.device_fingerprint_mismatch where lower(device_mac) = lower(?)",
             Int::class.java,
             DEFAULT_DEVICE_MAC,
         ) ?: 0
@@ -172,7 +172,7 @@ class CaptiveDeviceFingerprintWorkflowE2ETest : BaseWorkflowE2ETest() {
             """
             select breached
             from admin.device_fingerprint_mismatch
-            where device_mac = ?
+            where lower(device_mac) = lower(?)
             order by detected_at desc
             limit 1
             """.trimIndent(),
@@ -182,7 +182,7 @@ class CaptiveDeviceFingerprintWorkflowE2ETest : BaseWorkflowE2ETest() {
 
     private fun networkUserReauthRequiredAt(): java.time.Instant? =
         jdbcTemplate.queryForObject(
-            "select reauth_required_at from captive.network_user_device where device_mac = ?",
+            "select reauth_required_at from captive.network_user_device where lower(device_mac) = lower(?)",
             java.time.Instant::class.java,
             DEFAULT_DEVICE_MAC,
         )
