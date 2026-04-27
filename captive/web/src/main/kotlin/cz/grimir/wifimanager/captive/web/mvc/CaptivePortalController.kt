@@ -65,9 +65,7 @@ class CaptivePortalController(
     fun info(
         @CurrentClient
         clientInfo: ClientInfo,
-    ): ResponseEntity<String> {
-        return ResponseEntity.ok(clientInfo.toString())
-    }
+    ): ResponseEntity<String> = ResponseEntity.ok(clientInfo.toString())
 
     @PostMapping("/captive")
     fun submit(

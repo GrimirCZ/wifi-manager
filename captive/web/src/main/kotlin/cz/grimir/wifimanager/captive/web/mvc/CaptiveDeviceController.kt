@@ -1,20 +1,20 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
-import cz.grimir.wifimanager.captive.application.networkuserdevice.support.MacAddressUtils
 import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
+import cz.grimir.wifimanager.captive.application.networkuser.handler.query.FindNetworkUserByUserIdUsecase
+import cz.grimir.wifimanager.captive.application.networkuser.handler.query.ResolveNetworkUserLimitUsecase
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.AuthorizeNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.DeviceOwnershipException
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.RemoveNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.query.CountNetworkUserDevicesByUserIdUsecase
-import cz.grimir.wifimanager.captive.application.networkuser.handler.query.FindNetworkUserByUserIdUsecase
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.query.FindNetworkUserDeviceByMacUsecase
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.query.FindNetworkUserDevicesByUserIdUsecase
-import cz.grimir.wifimanager.captive.application.networkuser.handler.query.ResolveNetworkUserLimitUsecase
+import cz.grimir.wifimanager.captive.application.networkuserdevice.support.MacAddressUtils
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveDeviceNameForm
 import cz.grimir.wifimanager.captive.web.security.support.ClientInfo
 import cz.grimir.wifimanager.captive.web.security.support.CurrentClient
-import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
+import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import cz.grimir.wifimanager.shared.security.mvc.CurrentUser
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model

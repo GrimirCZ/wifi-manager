@@ -30,7 +30,9 @@ class CaptiveDeviceFingerprintWorkflowE2ETest : BaseWorkflowE2ETest() {
         assertThat(
             page.getByRole(
                 AriaRole.HEADING,
-                com.microsoft.playwright.Page.GetByRoleOptions().setName("You're connected"),
+                com.microsoft.playwright.Page
+                    .GetByRoleOptions()
+                    .setName("You're connected"),
             ),
         ).isVisible()
         assertEquals(0, countFingerprintMismatchRows())
@@ -47,7 +49,9 @@ class CaptiveDeviceFingerprintWorkflowE2ETest : BaseWorkflowE2ETest() {
         assertThat(
             page.getByRole(
                 AriaRole.HEADING,
-                com.microsoft.playwright.Page.GetByRoleOptions().setName("You're connected"),
+                com.microsoft.playwright.Page
+                    .GetByRoleOptions()
+                    .setName("You're connected"),
             ),
         ).isVisible()
         assertThat(page.getByText("Please sign in again")).isHidden()
@@ -95,13 +99,21 @@ class CaptiveDeviceFingerprintWorkflowE2ETest : BaseWorkflowE2ETest() {
         val form = page.locator("form").first()
         form.getByLabel("Username").fill("user")
         form.getByLabel("Password").fill("user")
-        form.getByRole(AriaRole.BUTTON, com.microsoft.playwright.Locator.GetByRoleOptions().setName("Sign in")).click()
+        form
+            .getByRole(
+                AriaRole.BUTTON,
+                com.microsoft.playwright.Locator
+                    .GetByRoleOptions()
+                    .setName("Sign in"),
+            ).click()
         page.waitForURL("**/captive")
 
         assertThat(
             page.getByRole(
                 AriaRole.HEADING,
-                com.microsoft.playwright.Page.GetByRoleOptions().setName("You're connected"),
+                com.microsoft.playwright.Page
+                    .GetByRoleOptions()
+                    .setName("You're connected"),
             ),
         ).isVisible()
         assertNull(networkUserReauthRequiredAt())
@@ -117,7 +129,9 @@ class CaptiveDeviceFingerprintWorkflowE2ETest : BaseWorkflowE2ETest() {
         assertThat(
             page.getByRole(
                 AriaRole.HEADING,
-                com.microsoft.playwright.Page.GetByRoleOptions().setName("You're connected"),
+                com.microsoft.playwright.Page
+                    .GetByRoleOptions()
+                    .setName("You're connected"),
             ),
         ).isVisible()
 

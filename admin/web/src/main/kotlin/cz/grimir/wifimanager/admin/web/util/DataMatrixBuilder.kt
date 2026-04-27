@@ -6,9 +6,9 @@ import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.datamatrix.encoder.SymbolShapeHint
 import cz.grimir.wifimanager.shared.ui.AccessCodeFormatter
+import org.springframework.stereotype.Component
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import org.springframework.stereotype.Component
 
 @Component("DataMatrixBuilder")
 class DataMatrixBuilder(
@@ -43,7 +43,9 @@ class DataMatrixBuilder(
                 for (y in 0 until matrix.height) {
                     for (x in 0 until matrix.width) {
                         if (matrix[x, y]) {
-                            append("<rect x='${x * moduleSize}' y='${y * moduleSize}' width='$moduleSize' height='$moduleSize' fill='black'/>")
+                            append(
+                                "<rect x='${x * moduleSize}' y='${y * moduleSize}' width='$moduleSize' height='$moduleSize' fill='black'/>",
+                            )
                         }
                     }
                 }

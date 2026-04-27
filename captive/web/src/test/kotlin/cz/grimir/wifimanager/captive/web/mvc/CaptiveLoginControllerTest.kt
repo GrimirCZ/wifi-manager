@@ -113,8 +113,14 @@ class CaptiveLoginControllerTest {
                 org.mockito.kotlin.eq(request),
                 org.mockito.kotlin.isNull(),
             ),
+        ).willReturn(
+            LdapLoginResult(
+                success = true,
+                userId =
+                    cz.grimir.wifimanager.shared.core
+                        .UserId(UUID.fromString("00000000-0000-0000-0000-000000000111")),
+            ),
         )
-            .willReturn(LdapLoginResult(success = true, userId = cz.grimir.wifimanager.shared.core.UserId(UUID.fromString("00000000-0000-0000-0000-000000000111"))))
 
         val view = controller.submit(clientInfo, form, bindingResult, ExtendedModelMap(), request, htmxRequest)
 
@@ -140,7 +146,9 @@ class CaptiveLoginControllerTest {
     fun `reauth required device stays on login page with warning banner`() {
         val session = mock<HttpSession>()
         val model = ExtendedModelMap()
-        given(findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)).willReturn(existingDevice(reauthRequiredAt = Instant.parse("2025-01-01T10:06:00Z")))
+        given(
+            findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress),
+        ).willReturn(existingDevice(reauthRequiredAt = Instant.parse("2025-01-01T10:06:00Z")))
         given(session.getAttribute(CaptivePortalController.ACCOUNT_REAUTH_SESSION_KEY)).willReturn(true)
 
         val view = controller.login(clientInfo, session, model, htmxRequest)
@@ -165,8 +173,7 @@ class CaptiveLoginControllerTest {
                 org.mockito.kotlin.eq(request),
                 org.mockito.kotlin.any(),
             ),
-        )
-            .willReturn(LdapLoginResult(success = true, userId = existingDevice.userId))
+        ).willReturn(LdapLoginResult(success = true, userId = existingDevice.userId))
 
         val view = controller.submit(clientInfo, form, bindingResult, ExtendedModelMap(), request, htmxRequest)
 
@@ -177,7 +184,9 @@ class CaptiveLoginControllerTest {
 
     private fun existingDevice(reauthRequiredAt: Instant? = null): NetworkUserDevice =
         NetworkUserDevice(
-            userId = cz.grimir.wifimanager.shared.core.UserId(UUID.fromString("00000000-0000-0000-0000-000000000111")),
+            userId =
+                cz.grimir.wifimanager.shared.core
+                    .UserId(UUID.fromString("00000000-0000-0000-0000-000000000111")),
             mac = clientInfo.macAddress,
             name = "Work Laptop",
             hostname = clientInfo.hostname,

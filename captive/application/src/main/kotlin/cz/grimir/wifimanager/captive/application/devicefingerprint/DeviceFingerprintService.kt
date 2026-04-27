@@ -20,8 +20,7 @@ class DeviceFingerprintService(
     fun fromJsonNode(node: JsonNode?): DeviceFingerprintProfile? =
         node?.let { objectMapper.treeToValue(it, DeviceFingerprintProfile::class.java) }
 
-    fun toJsonNode(profile: DeviceFingerprintProfile?): JsonNode? =
-        profile?.let(objectMapper::valueToTree)
+    fun toJsonNode(profile: DeviceFingerprintProfile?): JsonNode? = profile?.let(objectMapper::valueToTree)
 
     fun fromJson(value: String?): DeviceFingerprintProfile? =
         value
@@ -254,8 +253,7 @@ class DeviceFingerprintService(
         dhcpHostname: String?,
         dhcpVendorClass: String?,
         dhcpPrlHash: String?,
-    ): DeviceFingerprintProfile? =
-        createHttpObservation(hostname, dhcpHostname, dhcpVendorClass, dhcpPrlHash, null, null)
+    ): DeviceFingerprintProfile? = createHttpObservation(hostname, dhcpHostname, dhcpVendorClass, dhcpPrlHash, null, null)
 
     fun trustedTlsFingerprint(headerValue: String?): String? {
         if (!properties.enabled || !properties.trustedProxyEnabled) {

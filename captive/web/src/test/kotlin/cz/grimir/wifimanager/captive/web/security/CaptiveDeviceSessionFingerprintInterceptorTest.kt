@@ -44,7 +44,8 @@ class CaptiveDeviceSessionFingerprintInterceptorTest {
         val allowed = interceptor.preHandle(request, response, Any())
 
         assertTrue(allowed)
-        org.junit.jupiter.api.Assertions.assertEquals("aa:bb:cc:dd:ee:ff", MDC.get("clientMac"))
+        org.junit.jupiter.api.Assertions
+            .assertEquals("aa:bb:cc:dd:ee:ff", MDC.get("clientMac"))
         verify(authorizedClientFingerprintGuard).refreshAuthenticatedClientFingerprint(current.macAddress, current.fingerprintProfile)
         verifyNoInteractions(response)
     }
@@ -105,7 +106,8 @@ class CaptiveDeviceSessionFingerprintInterceptorTest {
                     signals =
                         linkedMapOf(
                             DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-b", DeviceFingerprintSignalStrength.STRONG),
-                            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to signal("android-dhcp-15", DeviceFingerprintSignalStrength.MEDIUM),
+                            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to
+                                signal("android-dhcp-15", DeviceFingerprintSignalStrength.MEDIUM),
                         ),
                 ),
         )

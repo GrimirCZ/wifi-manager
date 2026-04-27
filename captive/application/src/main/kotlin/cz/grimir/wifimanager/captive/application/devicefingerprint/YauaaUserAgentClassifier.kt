@@ -118,12 +118,15 @@ open class YauaaUserAgentClassifier : UserAgentClassifier {
                 it.isNotBlank() &&
                     !it.equals("Unknown", ignoreCase = true) &&
                     it != "??"
-            }
-            ?.lowercase(Locale.ROOT)
+            }?.lowercase(Locale.ROOT)
             ?.let { normalized ->
                 when (fieldName) {
                     "AgentName", "OperatingSystemName", "WebviewAppName", "AgentClass" ->
-                        agent.getValue(fieldName)?.trim()?.takeIf { original -> original.isNotBlank() && !original.equals("Unknown", ignoreCase = true) && original != "??" }
+                        agent.getValue(fieldName)?.trim()?.takeIf { original ->
+                            original.isNotBlank() &&
+                                !original.equals("Unknown", ignoreCase = true) &&
+                                original != "??"
+                        }
 
                     else -> normalized
                 }

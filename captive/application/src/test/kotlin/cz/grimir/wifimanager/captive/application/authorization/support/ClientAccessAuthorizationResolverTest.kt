@@ -44,7 +44,9 @@ class ClientAccessAuthorizationResolverTest {
 
     @Test
     fun `active ticket device excludes devices pending reauth`() {
-        given(findAuthorizationTokenPort.findByAuthorizedDeviceMac(mac)).willReturn(token(kicked = false, reauthRequiredAt = Instant.parse("2025-01-01T10:05:00Z")))
+        given(
+            findAuthorizationTokenPort.findByAuthorizedDeviceMac(mac),
+        ).willReturn(token(kicked = false, reauthRequiredAt = Instant.parse("2025-01-01T10:05:00Z")))
 
         assertFalse(resolver.isAuthorizedByActiveTicketDevice(mac))
     }
@@ -92,7 +94,10 @@ class ClientAccessAuthorizationResolverTest {
             accessCode = "ABCDEFGH",
             validUntil = Instant.parse("2025-01-01T10:00:00Z"),
             requireUserNameOnLogin = false,
-            authorizedDevices = mutableListOf(Device(mac = mac, displayName = null, deviceName = null, reauthRequiredAt = reauthRequiredAt)),
+            authorizedDevices =
+                mutableListOf(
+                    Device(mac = mac, displayName = null, deviceName = null, reauthRequiredAt = reauthRequiredAt),
+                ),
             kickedMacAddresses = if (kicked) mutableSetOf(mac) else mutableSetOf(),
         )
 

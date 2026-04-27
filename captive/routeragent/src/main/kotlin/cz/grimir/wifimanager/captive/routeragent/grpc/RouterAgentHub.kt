@@ -108,7 +108,7 @@ class RouterAgentHub(
         return waitForFirstSuccessfulAck(sendToAll(command), commandId(command))
             .also {
                 logger.debug {
-                    "Got mac=${it?.macAddress} for ip=${ipAddress}, commandId=$commandId"
+                    "Got mac=${it?.macAddress} for ip=$ipAddress, commandId=$commandId"
                 }
             }
     }

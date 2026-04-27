@@ -4,8 +4,8 @@ import cz.grimir.wifimanager.shared.core.ResolveUserCommand
 import cz.grimir.wifimanager.shared.core.RoleMappingInput
 import cz.grimir.wifimanager.shared.core.UserDirectoryClient
 import cz.grimir.wifimanager.shared.core.UserProfileSnapshot
-import cz.grimir.wifimanager.shared.security.oidc.OidcLoginEnricher
 import cz.grimir.wifimanager.shared.security.mvc.SessionUserIdentity
+import cz.grimir.wifimanager.shared.security.oidc.OidcLoginEnricher
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -85,20 +85,21 @@ class ResolveUserSuccessHandler(
                         )
                 val resolvedGroups = loginEnrichment?.groups ?: roleMapping.groups
 
-                userDirectoryClient.resolveUser(
-                    ResolveUserCommand(
-                        issuer = issuer,
-                        subject = subject,
-                        profile = profile,
-                        roleMapping = roleMapping,
-                    ),
-                ).also { resolved ->
-                    logger.info {
-                        "OIDC login resolved user issuer=$issuer registrationId=${oauth.authorizedClientRegistrationId} " +
-                            "email=${profile.email} groups=${resolvedGroups.sorted()} " +
-                            "userId=${resolved.userId} identityId=${resolved.identityId}"
+                userDirectoryClient
+                    .resolveUser(
+                        ResolveUserCommand(
+                            issuer = issuer,
+                            subject = subject,
+                            profile = profile,
+                            roleMapping = roleMapping,
+                        ),
+                    ).also { resolved ->
+                        logger.info {
+                            "OIDC login resolved user issuer=$issuer registrationId=${oauth.authorizedClientRegistrationId} " +
+                                "email=${profile.email} groups=${resolvedGroups.sorted()} " +
+                                "userId=${resolved.userId} identityId=${resolved.identityId}"
+                        }
                     }
-                }
             } catch (ex: Exception) {
                 logger.error(ex) {
                     "Failed to resolve user during OIDC login issuer=$issuer registrationId=${oauth.authorizedClientRegistrationId}"

@@ -5,10 +5,10 @@ import cz.grimir.wifimanager.shared.core.ResolveUserResult
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.core.UserRole
 import cz.grimir.wifimanager.shared.events.UserCreatedOrUpdatedEvent
-import cz.grimir.wifimanager.user.application.identity.support.RoleMapper
 import cz.grimir.wifimanager.user.application.identity.port.UserDirectoryRepository
 import cz.grimir.wifimanager.user.application.identity.port.UserEventPublisher
 import cz.grimir.wifimanager.user.application.identity.port.UserIdentityRecord
+import cz.grimir.wifimanager.user.application.identity.support.RoleMapper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID

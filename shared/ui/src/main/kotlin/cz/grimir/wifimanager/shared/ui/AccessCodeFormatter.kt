@@ -74,7 +74,8 @@ class AccessCodeFormatter {
 
     private fun calculateChecksum(code: String): Char {
         val checksumValue =
-            code.withIndex()
+            code
+                .withIndex()
                 .sumOf { (index, char) -> (index + 1) * charValue(char) } % 36
         return checksumChar(checksumValue)
     }

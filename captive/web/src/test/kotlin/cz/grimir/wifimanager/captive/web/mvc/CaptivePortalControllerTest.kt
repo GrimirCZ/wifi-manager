@@ -4,10 +4,10 @@ import cz.grimir.wifimanager.captive.application.authorization.command.Authorize
 import cz.grimir.wifimanager.captive.application.authorization.handler.command.AuthorizeDeviceWithCodeUsecase
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.identity.port.CaptiveUserIdentityPort
-import cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.TouchNetworkUserDeviceUsecase
-import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintStatus
+import cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
+import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintStatus
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveAccessCodeForm
 import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessState
 import cz.grimir.wifimanager.captive.web.portal.CaptiveClientAccessStatus
@@ -268,7 +268,9 @@ class CaptivePortalControllerTest {
                     state = CaptiveClientAccessState.REAUTH_REQUIRED_NETWORK_USER_DEVICE,
                     networkUserDevice =
                         cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice(
-                            userId = cz.grimir.wifimanager.shared.core.UserId(UUID.fromString("00000000-0000-0000-0000-000000000111")),
+                            userId =
+                                cz.grimir.wifimanager.shared.core
+                                    .UserId(UUID.fromString("00000000-0000-0000-0000-000000000111")),
                             mac = clientInfo.macAddress,
                             name = "Work Laptop",
                             hostname = clientInfo.hostname,

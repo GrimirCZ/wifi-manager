@@ -11,8 +11,8 @@ import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnaps
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.core.UserRole
 import cz.grimir.wifimanager.shared.events.TicketCreatedEvent
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

@@ -155,14 +155,19 @@ class AuthorizedClientFingerprintGuardTest {
     fun `matching observation enriches only missing account signals`() {
         val accepted =
             profile(
-                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
-                DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to signal("android-dhcp-14", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
+                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                    signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+                DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to
+                    signal("android-dhcp-14", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
             )
         val current =
             profile(
-                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
-                DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to signal("android-dhcp-14", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
-                DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to signal("office-laptop", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
+                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                    signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+                DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to
+                    signal("android-dhcp-14", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
+                DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to
+                    signal("office-laptop", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
             )
         val device = accountDevice(fingerprintProfile = accepted)
         given(timeProvider.get()).willReturn(now)
@@ -173,8 +178,20 @@ class AuthorizedClientFingerprintGuardTest {
         assertEquals(AuthorizedMacState.ACTIVE_NETWORK_USER_DEVICE, result.state)
         val savedCaptor = argumentCaptor<NetworkUserDevice>()
         verify(networkUserDeviceWritePort).save(savedCaptor.capture())
-        assertEquals("hash-a", savedCaptor.firstValue.fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH)?.value)
-        assertEquals("office-laptop", savedCaptor.firstValue.fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_HOSTNAME_STEM)?.value)
+        assertEquals(
+            "hash-a",
+            savedCaptor.firstValue.fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH)
+                ?.value,
+        )
+        assertEquals(
+            "office-laptop",
+            savedCaptor.firstValue.fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_HOSTNAME_STEM)
+                ?.value,
+        )
         verifyNoInteractions(eventPublisher)
     }
 
@@ -188,9 +205,27 @@ class AuthorizedClientFingerprintGuardTest {
 
         val savedCaptor = argumentCaptor<NetworkUserDevice>()
         verify(networkUserDeviceWritePort).save(savedCaptor.capture())
-        assertEquals("hash-b", savedCaptor.firstValue.fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH)?.value)
-        assertEquals("android-dhcp-15", savedCaptor.firstValue.fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS)?.value)
-        assertEquals("office-laptop", savedCaptor.firstValue.fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_HOSTNAME_STEM)?.value)
+        assertEquals(
+            "hash-b",
+            savedCaptor.firstValue.fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH)
+                ?.value,
+        )
+        assertEquals(
+            "android-dhcp-15",
+            savedCaptor.firstValue.fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS)
+                ?.value,
+        )
+        assertEquals(
+            "office-laptop",
+            savedCaptor.firstValue.fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_HOSTNAME_STEM)
+                ?.value,
+        )
         assertEquals(now, savedCaptor.firstValue.fingerprintVerifiedAt)
         verifyNoInteractions(eventPublisher, findAuthorizationTokenPort, modifyAuthorizationTokenPort)
     }
@@ -205,9 +240,33 @@ class AuthorizedClientFingerprintGuardTest {
         guard.refreshAuthenticatedClientFingerprint(ticketMac(), breachedFingerprint())
 
         verify(modifyAuthorizationTokenPort).save(token)
-        assertEquals("hash-b", token.authorizedDevices.single().fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH)?.value)
-        assertEquals("android-dhcp-15", token.authorizedDevices.single().fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS)?.value)
-        assertEquals("office-laptop", token.authorizedDevices.single().fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_HOSTNAME_STEM)?.value)
+        assertEquals(
+            "hash-b",
+            token.authorizedDevices
+                .single()
+                .fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH)
+                ?.value,
+        )
+        assertEquals(
+            "android-dhcp-15",
+            token.authorizedDevices
+                .single()
+                .fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS)
+                ?.value,
+        )
+        assertEquals(
+            "office-laptop",
+            token.authorizedDevices
+                .single()
+                .fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_HOSTNAME_STEM)
+                ?.value,
+        )
         assertEquals(now, token.authorizedDevices.single().fingerprintVerifiedAt)
         verifyNoInteractions(networkUserDeviceWritePort, eventPublisher)
     }
@@ -252,22 +311,30 @@ class AuthorizedClientFingerprintGuardTest {
 
     private fun alarmOnlyFingerprint(): DeviceFingerprintProfile =
         profile(
-            DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
-            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to signal("android-dhcp-15", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
-            DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to signal("guest-phone", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
+            DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to
+                signal("android-dhcp-15", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
+            DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to
+                signal("guest-phone", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
         )
 
     private fun breachedFingerprint(): DeviceFingerprintProfile =
         profile(
-            DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-b", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
-            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to signal("android-dhcp-15", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
+            DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                signal("hash-b", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to
+                signal("android-dhcp-15", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
         )
 
     private fun acceptedEnforceableFingerprint(): DeviceFingerprintProfile =
         profile(
-            DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
-            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to signal("android-dhcp-14", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
-            DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to signal("office-laptop", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
+            DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to
+                signal("android-dhcp-14", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
+            DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to
+                signal("office-laptop", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
         )
 
     private fun profile(vararg entries: Pair<String, DeviceFingerprintSignal>): DeviceFingerprintProfile =

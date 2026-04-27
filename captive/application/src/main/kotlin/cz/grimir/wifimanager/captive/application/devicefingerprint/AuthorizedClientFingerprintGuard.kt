@@ -54,8 +54,9 @@ class AuthorizedClientFingerprintGuard(
         }
 
         val token = findAuthorizationTokenPort.findByAuthorizedDeviceMac(mac) ?: return AuthorizedMacVerification(AuthorizedMacState.NONE)
-        val ticketDevice = token.authorizedDevices.firstOrNull { it.mac == mac }
-            ?: return AuthorizedMacVerification(AuthorizedMacState.NONE)
+        val ticketDevice =
+            token.authorizedDevices.firstOrNull { it.mac == mac }
+                ?: return AuthorizedMacVerification(AuthorizedMacState.NONE)
         return verifyTicketDevice(token, ticketDevice, currentFingerprint, now)
     }
 

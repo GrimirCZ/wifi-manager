@@ -2,13 +2,13 @@ package cz.grimir.wifimanager.shared.security.mvc
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.ErrorResponse
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -23,7 +23,10 @@ class UnexpectedExceptionControllerAdvice(
     private val wifiSsid: String,
 ) {
     @ExceptionHandler(Exception::class)
-    fun handle(exception: Exception, request: HttpServletRequest): Any {
+    fun handle(
+        exception: Exception,
+        request: HttpServletRequest,
+    ): Any {
         if (exception is ErrorResponse || exception is AccessDeniedException) {
             throw exception
         }

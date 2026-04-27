@@ -16,8 +16,6 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 import org.springframework.security.web.util.matcher.OrRequestMatcher
 import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher
 
-
-
 @Configuration
 @ComponentScan(basePackages = ["cz.grimir.wifimanager.shared.security"])
 @EnableConfigurationProperties(UiSecurityProperties::class)
@@ -33,7 +31,6 @@ class UiSecurityConfig(
     ): SecurityFilterChain {
         val entryPoint = HxRefreshHeaderAuthenticationEntryPoint()
         val requestMatcher = RequestHeaderRequestMatcher("HX-Request")
-
 
         val logoutSuccessHandler =
             OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepository).also {
@@ -81,9 +78,8 @@ class UiSecurityConfig(
                 configurer
                     .defaultAuthenticationEntryPointFor(
                         entryPoint,
-                        requestMatcher
-                    )
-                    .defaultAuthenticationEntryPointFor(
+                        requestMatcher,
+                    ).defaultAuthenticationEntryPointFor(
                         LoginUrlAuthenticationEntryPoint("/admin/login"),
                         pathPattern("/admin/**"),
                     ).defaultAuthenticationEntryPointFor(

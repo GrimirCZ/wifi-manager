@@ -15,7 +15,8 @@ class RequestMdcInterceptor : HandlerInterceptor {
         RequestMdc.clear()
         RequestMdc.putRequestPath(request.requestURI)
         val sessionUser =
-            request.getSession(false)
+            request
+                .getSession(false)
                 ?.getAttribute(SessionUserIdentity.SESSION_KEY) as? SessionUserIdentity
         if (sessionUser != null) {
             RequestMdc.putUser(sessionUser)

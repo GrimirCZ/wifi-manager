@@ -1,9 +1,9 @@
 package cz.grimir.wifimanager.captive.auth.google
 
-import cz.grimir.wifimanager.captive.application.auth.port.UserAuthProvider
-import cz.grimir.wifimanager.shared.application.identity.google.GoogleDirectoryApiClient
 import cz.grimir.wifimanager.captive.application.auth.model.UserAuthenticationResult
 import cz.grimir.wifimanager.captive.application.auth.model.UserCredentials
+import cz.grimir.wifimanager.captive.application.auth.port.UserAuthProvider
+import cz.grimir.wifimanager.shared.application.identity.google.GoogleDirectoryApiClient
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.ResolveUserCommand
 import cz.grimir.wifimanager.shared.core.RoleMappingInput

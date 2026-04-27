@@ -37,8 +37,7 @@ class IndexControllerTest {
                 get("/")
                     .withRemoteAddr("203.0.113.15")
                     .principal(TestingAuthenticationToken("user", "password", "ROLE_USER").apply { isAuthenticated = true }),
-            )
-            .andExpect(status().is3xxRedirection)
+            ).andExpect(status().is3xxRedirection)
             .andExpect(redirectedUrl("/admin"))
     }
 
@@ -65,8 +64,7 @@ class IndexControllerTest {
                 get("/")
                     .withRemoteAddr("10.42.8.19")
                     .principal(TestingAuthenticationToken("user", "password", "ROLE_USER").apply { isAuthenticated = true }),
-            )
-            .andExpect(status().is3xxRedirection)
+            ).andExpect(status().is3xxRedirection)
             .andExpect(redirectedUrl("/captive"))
     }
 

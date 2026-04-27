@@ -1,11 +1,10 @@
 package cz.grimir.wifimanager.captive.web.portal
 
-import cz.grimir.wifimanager.shared.application.captive.CaptivePortalApiProperties
-
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import cz.grimir.wifimanager.captive.web.security.support.ClientInfo
 import cz.grimir.wifimanager.captive.web.security.support.CurrentClient
+import cz.grimir.wifimanager.shared.application.captive.CaptivePortalApiProperties
 import org.springframework.http.CacheControl
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType

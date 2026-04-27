@@ -1,11 +1,11 @@
 package cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command
 
 import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
-import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintProfile
 import cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice
-import cz.grimir.wifimanager.captive.application.shared.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.application.networkuserdevice.port.NetworkUserDeviceReadPort
 import cz.grimir.wifimanager.captive.application.networkuserdevice.port.NetworkUserDeviceWritePort
+import cz.grimir.wifimanager.captive.application.shared.port.CaptiveEventPublisher
+import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintProfile
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceAuthorizedEvent
@@ -76,7 +76,7 @@ class AuthorizeNetworkUserDeviceUsecase(
         )
 
         logger.info {
-            "Device authorized userId=${userId} mac=${mac} deviceName=${hostname ?: "unknown"}"
+            "Device authorized userId=$userId mac=$mac deviceName=${hostname ?: "unknown"}"
         }
     }
 }

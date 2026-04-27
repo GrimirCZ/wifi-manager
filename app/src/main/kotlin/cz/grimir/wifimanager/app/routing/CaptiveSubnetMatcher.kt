@@ -12,13 +12,12 @@ class CaptiveSubnetMatcher(
     private val ipv4Ranges = properties.ipv4Subnets.map { parseCidr(it, Inet4Address::class.java) }
     private val ipv6Ranges = properties.ipv6Subnets.map { parseCidr(it, Inet6Address::class.java) }
 
-    fun matches(ipAddress: String): Boolean {
-        return when (val address = InetAddress.getByName(ipAddress)) {
+    fun matches(ipAddress: String): Boolean =
+        when (val address = InetAddress.getByName(ipAddress)) {
             is Inet4Address -> ipv4Ranges.any { it.contains(address) }
             is Inet6Address -> ipv6Ranges.any { it.contains(address) }
             else -> false
         }
-    }
 
     private fun <T : InetAddress> parseCidr(
         cidr: String,

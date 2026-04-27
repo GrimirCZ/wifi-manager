@@ -15,7 +15,16 @@ class AdminRoleDeviceScopeWorkflowE2ETest : BaseWorkflowE2ETest() {
         openDevicesFromAccountMenu()
 
         assertThat(page.getByText("Manage your authorized devices.")).isVisible()
-        assertEquals(0, page.getByRole(AriaRole.LINK, com.microsoft.playwright.Page.GetByRoleOptions().setName("All devices")).count())
+        assertEquals(
+            0,
+            page
+                .getByRole(
+                    AriaRole.LINK,
+                    com.microsoft.playwright.Page
+                        .GetByRoleOptions()
+                        .setName("All devices"),
+                ).count(),
+        )
 
         val forbiddenResponse = page.request().get("$baseUrl/admin/devices?scope=all")
         assertEquals(403, forbiddenResponse.status())
@@ -27,7 +36,13 @@ class AdminRoleDeviceScopeWorkflowE2ETest : BaseWorkflowE2ETest() {
 
         loginAsAdmin()
         openDevicesFromAccountMenu()
-        page.getByRole(AriaRole.LINK, com.microsoft.playwright.Page.GetByRoleOptions().setName("All devices")).click()
+        page
+            .getByRole(
+                AriaRole.LINK,
+                com.microsoft.playwright.Page
+                    .GetByRoleOptions()
+                    .setName("All devices"),
+            ).click()
         page.waitForURL("**/admin/devices?scope=all")
         assertThat(page.getByText("Owner user:")).isVisible()
 
@@ -68,4 +83,3 @@ class AdminRoleDeviceScopeWorkflowE2ETest : BaseWorkflowE2ETest() {
         )
     }
 }
-

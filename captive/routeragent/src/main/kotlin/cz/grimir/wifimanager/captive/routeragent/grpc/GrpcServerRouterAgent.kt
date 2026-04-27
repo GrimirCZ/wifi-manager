@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.captive.routeragent.grpc
 
 import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadPort
-import cz.grimir.wifimanager.captive.application.integration.routeragent.port.ClientInfo
 import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.integration.routeragent.port.ClientInfo
 import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
 import cz.grimir.wifimanager.captive.application.networkuserdevice.port.NetworkUserDeviceReadPort
 import cz.grimir.wifimanager.captive.routeragent.GrpcServerRouterAgentProperties
@@ -38,7 +38,7 @@ class GrpcServerRouterAgent(
     networkUserDeviceReadPort: NetworkUserDeviceReadPort,
     allowedMacReadPort: AllowedMacReadPort,
     applicationEventPublisher: ApplicationEventPublisher,
-    commandExecutor: TaskExecutor
+    commandExecutor: TaskExecutor,
 ) : RouterAgentPort,
     AutoCloseable,
     InitializingBean {

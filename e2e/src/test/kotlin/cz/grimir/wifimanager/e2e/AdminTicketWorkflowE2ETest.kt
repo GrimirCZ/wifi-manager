@@ -23,12 +23,13 @@ class AdminTicketWorkflowE2ETest : BaseWorkflowE2ETest() {
 
         page.waitForFunction("() => window.htmx !== undefined")
         val activeTicketCard = page.locator("#ticket-panel .ticket-card").first()
-        val endButton = activeTicketCard.getByRole(
-            AriaRole.BUTTON,
-            Locator
-                .GetByRoleOptions()
-                .setName("End early"),
-        )
+        val endButton =
+            activeTicketCard.getByRole(
+                AriaRole.BUTTON,
+                Locator
+                    .GetByRoleOptions()
+                    .setName("End early"),
+            )
         val deleteResponse =
             clickAndConfirmAndWaitForResponse(
                 trigger = endButton,
@@ -46,7 +47,7 @@ class AdminTicketWorkflowE2ETest : BaseWorkflowE2ETest() {
         while (System.currentTimeMillis() < deadline) {
             val canceledCount =
                 jdbcTemplate.queryForObject<Int>(
-                    "select count(*) from admin.ticket where was_canceled = true"
+                    "select count(*) from admin.ticket where was_canceled = true",
                 )
             if (canceledCount == 1) {
                 return

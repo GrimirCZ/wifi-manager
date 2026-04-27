@@ -16,7 +16,7 @@ class CaptiveDeviceAuthorizationWorkflowE2ETest : BaseWorkflowE2ETest() {
                 com.microsoft.playwright.Page
                     .GetByRoleOptions()
                     .setName("You're connected"),
-                ),
+            ),
         ).isVisible()
         assertEquals(
             1,

@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.admin.application.usecases.commands
 
-import cz.grimir.wifimanager.admin.application.device.port.FindUserDevicePort
 import cz.grimir.wifimanager.admin.application.device.handler.command.ConnectUserDeviceUsecase
+import cz.grimir.wifimanager.admin.application.device.port.FindUserDevicePort
 import cz.grimir.wifimanager.admin.application.device.port.SaveUserDevicePort
 import cz.grimir.wifimanager.admin.core.value.UserDevice
 import cz.grimir.wifimanager.shared.core.UserId

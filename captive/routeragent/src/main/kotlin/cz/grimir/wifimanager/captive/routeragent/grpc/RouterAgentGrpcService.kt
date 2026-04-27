@@ -21,7 +21,7 @@ class RouterAgentGrpcService(
     private val networkUserDeviceReadPort: NetworkUserDeviceReadPort,
     private val allowedMacReadPort: AllowedMacReadPort,
     private val applicationEventPublisher: ApplicationEventPublisher,
-    private val commandExecutor: TaskExecutor
+    private val commandExecutor: TaskExecutor,
 ) : RouterAgentServiceGrpc.RouterAgentServiceImplBase() {
     override fun connect(responseObserver: StreamObserver<RouterAgentCommand>): StreamObserver<RouterAgentMessage> {
         val connectionId = hub.registerConnection(responseObserver)
@@ -57,7 +57,7 @@ class RouterAgentGrpcService(
                             when (ex) {
                                 is TaskRejectedException,
                                 is RejectedExecutionException,
-                                    -> logger.error(ex) { "Failed to schedule allowed clients synchronization" }
+                                -> logger.error(ex) { "Failed to schedule allowed clients synchronization" }
 
                                 else -> throw ex
                             }

@@ -45,16 +45,19 @@ class MacAuthorizationStateChangedEventListener(
         }
     }
 
-    private fun logTrace(mac: String, action: String) {
+    private fun logTrace(
+        mac: String,
+        action: String,
+    ) {
         logger.trace {
             val isAllowedMac = clientAccessAuthorizationResolver.isAuthorizedByAllowedMac(mac)
             val isActiveTicketDevice = clientAccessAuthorizationResolver.isAuthorizedByActiveTicketDevice(mac)
             val isAccountDevice = clientAccessAuthorizationResolver.isAuthorizedByAccountDevice(mac)
 
             "Client access $action mac=$mac " +
-                "allowedMac=${isAllowedMac} " +
-                "ticketDevice=${isActiveTicketDevice} " +
-                "accountDevice=${isAccountDevice}"
+                "allowedMac=$isAllowedMac " +
+                "ticketDevice=$isActiveTicketDevice " +
+                "accountDevice=$isAccountDevice"
         }
     }
 

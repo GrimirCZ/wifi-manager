@@ -38,7 +38,9 @@ class CaptiveAccessCodeWorkflowE2ETest : BaseWorkflowE2ETest() {
         assertThat(
             page.getByRole(
                 AriaRole.HEADING,
-                com.microsoft.playwright.Page.GetByRoleOptions().setName("You're connected"),
+                com.microsoft.playwright.Page
+                    .GetByRoleOptions()
+                    .setName("You're connected"),
             ),
         ).isVisible()
     }
@@ -53,15 +55,29 @@ class CaptiveAccessCodeWorkflowE2ETest : BaseWorkflowE2ETest() {
         assertThat(page.getByLabel("Your name")).isVisible()
 
         page.getByLabel("Your name").fill("ab")
-        page.getByRole(AriaRole.BUTTON, com.microsoft.playwright.Page.GetByRoleOptions().setName("Authorize")).click()
+        page
+            .getByRole(
+                AriaRole.BUTTON,
+                com.microsoft.playwright.Page
+                    .GetByRoleOptions()
+                    .setName("Authorize"),
+            ).click()
         assertThat(page.getByText("Please enter at least 3 characters.")).isVisible()
 
         page.getByLabel("Your name").fill("Alice Guest")
-        page.getByRole(AriaRole.BUTTON, com.microsoft.playwright.Page.GetByRoleOptions().setName("Authorize")).click()
+        page
+            .getByRole(
+                AriaRole.BUTTON,
+                com.microsoft.playwright.Page
+                    .GetByRoleOptions()
+                    .setName("Authorize"),
+            ).click()
         assertThat(
             page.getByRole(
                 AriaRole.HEADING,
-                com.microsoft.playwright.Page.GetByRoleOptions().setName("You're connected"),
+                com.microsoft.playwright.Page
+                    .GetByRoleOptions()
+                    .setName("You're connected"),
             ),
         ).isVisible()
         assertThat(page.getByText("Name")).isVisible()

@@ -47,9 +47,9 @@ subprojects {
             target("**/*.kt")
             ktlint()
         }
-        kotlinGradle {
-            target("**/*.gradle.kts")
-            ktlint()
-        }
+    }
+
+    tasks.matching { it.name == "spotlessKotlin" }.configureEach {
+        dependsOn(rootProject.tasks.named("syncTablerIcons"))
     }
 }

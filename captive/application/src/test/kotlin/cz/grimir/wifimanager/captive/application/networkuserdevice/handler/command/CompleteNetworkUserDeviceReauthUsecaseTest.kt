@@ -50,7 +50,8 @@ class CompleteNetworkUserDeviceReauthUsecaseTest {
                 fingerprintProfile =
                     profile(
                         DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-a", DeviceFingerprintSignalStrength.STRONG),
-                        DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to signal("android-dhcp-14", DeviceFingerprintSignalStrength.MEDIUM),
+                        DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to
+                            signal("android-dhcp-14", DeviceFingerprintSignalStrength.MEDIUM),
                         DeviceFingerprintService.SIGNAL_TLS to signal("tls-a", DeviceFingerprintSignalStrength.STRONG),
                     ),
                 reauthRequiredAt = Instant.parse("2025-01-01T10:10:00Z"),
@@ -67,9 +68,30 @@ class CompleteNetworkUserDeviceReauthUsecaseTest {
 
         assertEquals(now, updated?.fingerprintVerifiedAt)
         assertEquals(null, updated?.reauthRequiredAt)
-        assertEquals("hash-b", updated?.fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH)?.value)
-        assertEquals("android-dhcp-15", updated?.fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS)?.value)
-        assertEquals("tls-a", updated?.fingerprintProfile?.signals?.get(DeviceFingerprintService.SIGNAL_TLS)?.value)
+        assertEquals(
+            "hash-b",
+            updated
+                ?.fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH)
+                ?.value,
+        )
+        assertEquals(
+            "android-dhcp-15",
+            updated
+                ?.fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS)
+                ?.value,
+        )
+        assertEquals(
+            "tls-a",
+            updated
+                ?.fingerprintProfile
+                ?.signals
+                ?.get(DeviceFingerprintService.SIGNAL_TLS)
+                ?.value,
+        )
 
         val savedCaptor = argumentCaptor<NetworkUserDevice>()
         verify(networkUserDeviceWritePort).save(savedCaptor.capture())

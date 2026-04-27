@@ -242,8 +242,8 @@ abstract class BaseWorkflowE2ETest {
         assertThat(
             page.getByRole(
                 AriaRole.HEADING,
-                Page.GetByRoleOptions().setName("Network operations")
-            )
+                Page.GetByRoleOptions().setName("Network operations"),
+            ),
         ).isVisible()
         assertThat(page.getByRole(AriaRole.HEADING, Page.GetByRoleOptions().setName("Allowed MAC addresses"))).isVisible()
         assertThat(page.getByText("Network clients").first()).isVisible()
@@ -280,7 +280,12 @@ abstract class BaseWorkflowE2ETest {
             page.waitForTimeout(200.0)
         }
         if (!form.isVisible) {
-            val pageSummary = page.locator("body").innerText().replace(Regex("\\s+"), " ").take(400)
+            val pageSummary =
+                page
+                    .locator("body")
+                    .innerText()
+                    .replace(Regex("\\s+"), " ")
+                    .take(400)
             throw AssertionError("Ticket form not visible. url=${page.url()} body=$pageSummary")
         }
 
@@ -464,13 +469,15 @@ abstract class BaseWorkflowE2ETest {
         Files.createDirectories(outputPath.parent)
         if (target != null) {
             target.screenshot(
-                Locator.ScreenshotOptions()
+                Locator
+                    .ScreenshotOptions()
                     .setAnimations(com.microsoft.playwright.options.ScreenshotAnimations.DISABLED)
                     .setPath(outputPath),
             )
         } else {
             page.screenshot(
-                Page.ScreenshotOptions()
+                Page
+                    .ScreenshotOptions()
                     .setAnimations(com.microsoft.playwright.options.ScreenshotAnimations.DISABLED)
                     .setFullPage(spec.fullPage)
                     .setPath(outputPath),
@@ -586,7 +593,7 @@ abstract class BaseWorkflowE2ETest {
                     .setUserAgent(
                         "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) " +
                             "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 " +
-                            "Mobile/15E148 Safari/604.1"
+                            "Mobile/15E148 Safari/604.1",
                     )
         }
     }
@@ -625,8 +632,7 @@ abstract class BaseWorkflowE2ETest {
                 .group:focus-within [role='menu'] {
                   display: none !important;
                 }
-                """
-                    .trimIndent(),
+                """.trimIndent(),
             ),
         )
     }

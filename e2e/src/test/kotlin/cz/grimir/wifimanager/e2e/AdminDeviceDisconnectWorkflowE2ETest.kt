@@ -24,13 +24,14 @@ class AdminDeviceDisconnectWorkflowE2ETest : BaseWorkflowE2ETest() {
                 ).first()
         assertThat(deviceRow).isVisible()
 
-        val disconnectButton = deviceRow
-            .getByRole(
-                AriaRole.BUTTON,
-                Locator
-                    .GetByRoleOptions()
-                    .setName("Disconnect")
-            )
+        val disconnectButton =
+            deviceRow
+                .getByRole(
+                    AriaRole.BUTTON,
+                    Locator
+                        .GetByRoleOptions()
+                        .setName("Disconnect"),
+                )
         val response =
             clickAndConfirmAndWaitForResponse(
                 trigger = disconnectButton,

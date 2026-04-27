@@ -356,7 +356,8 @@ class DocumentationScreenshotsE2ETest : BaseWorkflowE2ETest() {
         while (System.currentTimeMillis() < deadline) {
             page.navigate("$baseUrl/admin")
             val deviceRow =
-                page.locator("[id^='ticket-device-list-'] > div")
+                page
+                    .locator("[id^='ticket-device-list-'] > div")
                     .filter(Locator.FilterOptions().setHasText(DEFAULT_DEVICE_MAC))
                     .first()
             if (deviceRow.count() > 0 && deviceRow.isVisible) {
@@ -396,17 +397,20 @@ class DocumentationScreenshotsE2ETest : BaseWorkflowE2ETest() {
     }
 
     private fun kickTicketDeviceAsStaff() {
-        val ticketId = jdbcTemplate.queryForObject<UUID>("select id from admin.ticket limit 1")
-            ?: error("Missing admin ticket")
+        val ticketId =
+            jdbcTemplate.queryForObject<UUID>("select id from admin.ticket limit 1")
+                ?: error("Missing admin ticket")
 
         withIsolatedPage(RenderMode.DESKTOP) { isolatedPage ->
             loginAsStaff(isolatedPage)
             isolatedPage.navigate("$baseUrl/admin")
             val deadline = System.currentTimeMillis() + 15_000
             while (System.currentTimeMillis() < deadline) {
-                val row = isolatedPage.locator("#ticket-device-list-$ticketId > div")
-                    .filter(Locator.FilterOptions().setHasText(DEFAULT_DEVICE_MAC))
-                    .first()
+                val row =
+                    isolatedPage
+                        .locator("#ticket-device-list-$ticketId > div")
+                        .filter(Locator.FilterOptions().setHasText(DEFAULT_DEVICE_MAC))
+                        .first()
                 if (row.count() > 0 && row.isVisible) {
                     val response =
                         isolatedPage.waitForResponse(

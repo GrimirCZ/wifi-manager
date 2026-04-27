@@ -36,13 +36,17 @@ class DeviceFingerprintServiceTest {
     fun `weak only mismatch never breaches`() {
         val accepted =
             profile(
-                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
-                DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to signal("office-laptop", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
+                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                    signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+                DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to
+                    signal("office-laptop", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
             )
         val current =
             profile(
-                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
-                DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to signal("guest-phone", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
+                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                    signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+                DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to
+                    signal("guest-phone", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
             )
 
         val comparison = service.compare(accepted, current)
@@ -71,7 +75,8 @@ class DeviceFingerprintServiceTest {
         val accepted = partialFingerprint()
         val current =
             profile(
-                DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to signal("android-dhcp-15", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
+                DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to
+                    signal("android-dhcp-15", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
             )
 
         val comparison = service.compare(accepted, current)
@@ -86,11 +91,13 @@ class DeviceFingerprintServiceTest {
     fun `no overlap adds insufficient evidence reason`() {
         val accepted =
             profile(
-                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                    signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
             )
         val current =
             profile(
-                DeviceFingerprintService.SIGNAL_UA_FAMILY_MAJOR to signal("Chrome/136", "http:user-agent", DeviceFingerprintSignalStrength.MEDIUM),
+                DeviceFingerprintService.SIGNAL_UA_FAMILY_MAJOR to
+                    signal("Chrome/136", "http:user-agent", DeviceFingerprintSignalStrength.MEDIUM),
             )
 
         val comparison = service.compare(accepted, current)
@@ -106,12 +113,15 @@ class DeviceFingerprintServiceTest {
     fun `missing accepted field is neutral and enrichable`() {
         val accepted =
             profile(
-                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                    signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
             )
         val current =
             profile(
-                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
-                DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to signal("office-laptop", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
+                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                    signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+                DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to
+                    signal("office-laptop", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
             )
 
         val comparison = service.compare(accepted, current)
@@ -127,12 +137,15 @@ class DeviceFingerprintServiceTest {
     fun `missing current field is neutral`() {
         val accepted =
             profile(
-                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
-                DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to signal("office-laptop", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
+                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                    signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+                DeviceFingerprintService.SIGNAL_HOSTNAME_STEM to
+                    signal("office-laptop", "router-agent:hostname", DeviceFingerprintSignalStrength.WEAK),
             )
         val current =
             profile(
-                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+                DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                    signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
             )
 
         val comparison = service.compare(accepted, current)
@@ -172,19 +185,24 @@ class DeviceFingerprintServiceTest {
 
     private fun acceptedEnforceableFingerprint(): DeviceFingerprintProfile =
         profile(
-            DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
-            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to signal("android-dhcp-14", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
+            DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                signal("hash-a", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to
+                signal("android-dhcp-14", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
         )
 
     private fun partialFingerprint(): DeviceFingerprintProfile =
         profile(
-            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to signal("android-dhcp-14", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
+            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to
+                signal("android-dhcp-14", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
         )
 
     private fun breachedFingerprint(): DeviceFingerprintProfile =
         profile(
-            DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to signal("hash-b", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
-            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to signal("android-dhcp-15", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
+            DeviceFingerprintService.SIGNAL_DHCP_PRL_HASH to
+                signal("hash-b", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.STRONG),
+            DeviceFingerprintService.SIGNAL_DHCP_VENDOR_CLASS to
+                signal("android-dhcp-15", "router-agent:dhcp-log", DeviceFingerprintSignalStrength.MEDIUM),
         )
 
     private fun profile(vararg entries: Pair<String, DeviceFingerprintSignal>): DeviceFingerprintProfile =
