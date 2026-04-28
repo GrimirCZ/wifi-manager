@@ -2,8 +2,8 @@
 
 flush ruleset
 
-define wanIf          = "enp1s0"
-define captiveIf      = "enp2s0.30"
+define wanIf          = "ens0"
+define captiveIf      = "ens1"
 
 define router4        = 10.42.30.1
 define captiveNet4    = 10.42.30.0/24

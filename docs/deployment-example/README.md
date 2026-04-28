@@ -7,8 +7,8 @@ scenario described in the thesis. The values are intentionally fictitious.
 
 - Operating system: Rocky Linux
 - Public application name: `wifi.example.test`
-- WAN interface: `enp1s0`
-- Captive VLAN interface: `enp2s0.30`
+- WAN interface: `ens0`
+- Captive VLAN interface: `ens1`
 - Captive router address: `10.42.30.1`
 - Captive subnet: `10.42.30.0/24`
 - WiFi Manager installation directory: `/opt/wifimanager`
