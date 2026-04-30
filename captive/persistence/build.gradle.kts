@@ -18,5 +18,8 @@ dependencies {
 
     testImplementation(platform(libs.junitBom))
     testImplementation(libs.bundles.testBase)
+    testImplementation(libs.springBootStarterTest)
+    testImplementation(libs.testcontainersJunitJupiter)
+    testImplementation(libs.testcontainersPostgresql)
     testRuntimeOnly(libs.bundles.testRuntime)
 }

@@ -8,6 +8,8 @@ interface FindAuthorizationTokenPort {
 
     fun findByAccessCode(accessCode: String): AuthorizationToken?
 
+    fun findByAccessCodeForAuthorization(accessCode: String): AuthorizationToken?
+
     fun findByAuthorizedDeviceMac(macAddress: String): AuthorizationToken?
 
     fun findAllAuthorizedMacs(): List<String>

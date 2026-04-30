@@ -20,6 +20,9 @@ class CaptiveJpaAuthorizationTokenRepositoryAdapter(
     override fun findByAccessCode(accessCode: String): AuthorizationToken? =
         jpaRepository.findByAccessCode(accessCode)?.let(mapper::tokenToDomain)
 
+    override fun findByAccessCodeForAuthorization(accessCode: String): AuthorizationToken? =
+        jpaRepository.findByAccessCodeForAuthorization(accessCode)?.let(mapper::tokenToDomain)
+
     override fun findByAuthorizedDeviceMac(macAddress: String): AuthorizationToken? =
         jpaRepository.findByAuthorizedDeviceMac(macAddress)?.let(mapper::tokenToDomain)
 

@@ -26,7 +26,7 @@ class AuthorizeDeviceWithCodeUsecase(
     fun authorize(command: AuthorizeDeviceWithCodeCommand) {
         val now = timeProvider.get()
         val token =
-            findAuthorizationTokenPort.findByAccessCode(command.accessCode)
+            findAuthorizationTokenPort.findByAccessCodeForAuthorization(command.accessCode)
                 ?: throw InvalidAccessCodeException(command.accessCode, command.device.mac)
 
         val acceptedDevice =
