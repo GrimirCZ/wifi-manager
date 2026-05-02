@@ -6,6 +6,7 @@ plugins {
     id("cz.grimir.wifimanager.boot-only-if-app-main-class") apply false
     id("cz.grimir.wifimanager.tailwind-assets")
     id("com.diffplug.spotless")
+    jacoco
     kotlin("jvm")
     kotlin("plugin.spring")
 }
@@ -20,6 +21,7 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.jetbrains.kotlin.plugin.spring")
     apply(plugin = "com.diffplug.spotless")
+    apply(plugin = "jacoco")
 
     dependencies {
         implementation(kotlin("reflect"))
@@ -36,6 +38,15 @@ subprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
+        finalizedBy(tasks.named("jacocoTestReport"))
+    }
+
+    tasks.withType<JacocoReport>().configureEach {
+        reports {
+            xml.required.set(true)
+            csv.required.set(false)
+            html.required.set(false)
+        }
     }
 
     tasks.matching { it.name == "processResources" }.configureEach {
