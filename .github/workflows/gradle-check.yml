@@ -29,6 +29,9 @@ jobs:
       - name: Install npm dependencies
         run: npm install
 
+      - name: Install Playwright browser dependencies
+        run: npx --yes playwright@1.54.0 install-deps chromium
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
