@@ -3,8 +3,11 @@
 WiFi Manager is a Kotlin/Spring Boot application for managing Wi-Fi access through an admin interface and a captive
 portal.
 
-## Requirements
+The project is the implementation artifact for a diploma thesis about Wi-Fi access management in an elementary school
+environment. It focuses on temporary access tickets, self-service device authorization, integration with an external
+identity provider, and router-side enforcement through a separate router agent.
 
+## Requirements
 
 - [Docker + Docker Compose 29](https://docs.docker.com/desktop/setup/install/windows-install/)
 - [JDK 21](https://jdk.java.net/java-se-ri/21)
@@ -52,6 +55,29 @@ Local test users:
 
 If you open just http://localhost:8080 you will be redirected to Captive portal because of dev mode subnet settings.
 
+## Deployment example
+
+The thesis describes an anonymized deployment scenario. The matching example files are in
+[`docs/deployment-example/`](docs/deployment-example).
+
+That directory contains sample configuration for:
+
+- the Spring Boot application environment,
+- the standalone router agent,
+- Nginx reverse proxy,
+- dnsmasq captive network service,
+- nftables access enforcement,
+- systemd service units,
+- a Makefile for installing and reloading the example configuration.
+
+The example assumes Rocky Linux, a public application name `wifi.example.test`, a captive subnet
+`10.42.30.0/24`, and installation paths under `/opt/wifimanager` and `/opt/wifimanager-routeragent`.
+All values are fictitious and must be changed before a real deployment.
+
+For deployment-oriented environment variables, see `docs/app.env.example` and `docs/routeragent.env.example`.
+
+See [`docs/deployment-example/README.md`](docs/deployment-example/README.md) for further instructions.
+
 ## Features
 
 - Ticket-based Wi-Fi access management
@@ -80,12 +106,20 @@ adapter, and integration layers.
 
 ## Commands
 
-Build and test:
+Build and test Spring Boot app:
 
 ```bash
 ./gradlew bootJar
 ./gradlew check
 ./gradlew :e2e:screenshotTest
+```
+
+Build and test router agent:
+
+```bash
+cd routeragent
+go test
+GOOS=linux GOARCH=amd64 go build
 ```
 
 Format:
@@ -110,6 +144,9 @@ Main application configuration lives in `app/src/main/resources/application.yml`
 Keycloak imports the dev realm from `app/keycloak/import/wifimanager-realm.json`.
 
 Local docker compose starts PostgreSQL on `localhost:5432` and Keycloak on `http://localhost:8081`.
+
+For a full deployment shape, use the files in `docs/deployment-example/` as a reference. They show how the application,
+router agent, reverse proxy, DHCP/DNS service, firewall rules, and systemd units fit together.
 
 ## Notes
 
