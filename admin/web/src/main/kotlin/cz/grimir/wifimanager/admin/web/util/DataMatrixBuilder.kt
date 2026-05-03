@@ -38,7 +38,9 @@ class DataMatrixBuilder(
         val symbolHeight = matrix.height * moduleSize
         val body =
             buildString {
-                append("<svg xmlns='http://www.w3.org/2000/svg' width='$symbolWidth' height='$symbolHeight' viewBox='0 0 $symbolWidth $symbolHeight' shape-rendering='crispEdges'>")
+                append(
+                    "<svg xmlns='http://www.w3.org/2000/svg' width='$symbolWidth' height='$symbolHeight' viewBox='0 0 $symbolWidth $symbolHeight' shape-rendering='crispEdges'>",
+                )
                 append("<rect width='100%' height='100%' fill='white'/>")
                 for (y in 0 until matrix.height) {
                     for (x in 0 until matrix.width) {

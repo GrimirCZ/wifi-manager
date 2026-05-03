@@ -27,5 +27,4 @@ class DataMatrixBuilderTest {
         assertTrue(svgTag.contains(" width='"))
         assertTrue(svgTag.contains(" height='"))
     }
-
 }
