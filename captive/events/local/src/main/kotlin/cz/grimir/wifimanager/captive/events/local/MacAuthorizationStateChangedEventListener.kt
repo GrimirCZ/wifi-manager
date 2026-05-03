@@ -2,6 +2,7 @@ package cz.grimir.wifimanager.captive.events.local
 
 import cz.grimir.wifimanager.captive.application.authorization.event.MacAuthorizationStateChangedEvent
 import cz.grimir.wifimanager.captive.application.authorization.support.ClientAccessAuthorizationResolver
+import cz.grimir.wifimanager.captive.application.deviceprivacy.handler.ScrubDeauthorizedCaptiveDeviceUsecase
 import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
 import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -18,6 +19,7 @@ private val logger = KotlinLogging.logger {}
 class MacAuthorizationStateChangedEventListener(
     private val clientAccessAuthorizationResolver: ClientAccessAuthorizationResolver,
     private val routerAgentPort: RouterAgentPort,
+    private val scrubDeauthorizedCaptiveDeviceUsecase: ScrubDeauthorizedCaptiveDeviceUsecase,
 ) {
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -36,12 +38,21 @@ class MacAuthorizationStateChangedEventListener(
         try {
             if (!isAuthorized(mac)) {
                 routerAgentPort.revokeClientAccess(listOf(mac))
+                scrub(mac)
                 logTrace(mac, "revoked")
             } else {
                 logTrace(mac, "remains authorized")
             }
         } catch (ex: Exception) {
             logger.error(ex) { "Failed to reconcile router access for mac=$mac" }
+        }
+    }
+
+    private fun scrub(mac: String) {
+        try {
+            scrubDeauthorizedCaptiveDeviceUsecase.scrubIfEligible(mac)
+        } catch (ex: Exception) {
+            logger.error(ex) { "Failed to scrub captive device PII for mac=$mac" }
         }
     }
 

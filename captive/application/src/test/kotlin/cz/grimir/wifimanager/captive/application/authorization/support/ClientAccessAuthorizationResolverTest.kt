@@ -85,6 +85,39 @@ class ClientAccessAuthorizationResolverTest {
         assertTrue(resolver.isAuthorizedByAccountDevice(mac))
     }
 
+    @Test
+    fun `privacy cleanup is not eligible for pending ticket reauth`() {
+        given(findAuthorizationTokenPort.findByAuthorizedDeviceMac(mac)).willReturn(
+            token(kicked = false, reauthRequiredAt = Instant.parse("2025-01-01T10:05:00Z")),
+        )
+
+        assertFalse(resolver.isDevicePrivacyCleanupEligible(mac))
+    }
+
+    @Test
+    fun `privacy cleanup is not eligible for pending account reauth`() {
+        given(networkUserDeviceReadPort.findByMac(mac)).willReturn(
+            accountDevice(reauthRequiredAt = Instant.parse("2025-01-01T10:05:00Z")),
+        )
+
+        assertFalse(resolver.isDevicePrivacyCleanupEligible(mac))
+    }
+
+    @Test
+    fun `privacy cleanup is eligible when ticket device was kicked and no other record remains`() {
+        given(findAuthorizationTokenPort.findByAuthorizedDeviceMac(mac)).willReturn(token(kicked = true))
+
+        assertTrue(resolver.isDevicePrivacyCleanupEligible(mac))
+    }
+
+    @Test
+    fun `privacy cleanup is eligible when allowed mac is expired and no other record remains`() {
+        given(timeProvider.get()).willReturn(now)
+        given(allowedMacReadPort.findByMac(mac)).willReturn(AllowedMac(mac = mac, validUntil = now))
+
+        assertTrue(resolver.isDevicePrivacyCleanupEligible(mac))
+    }
+
     private fun token(
         kicked: Boolean,
         reauthRequiredAt: Instant? = null,

@@ -28,4 +28,22 @@ class ClientAccessAuthorizationResolver(
         val device = networkUserDeviceReadPort.findByMac(macAddress) ?: return false
         return device.reauthRequiredAt == null
     }
+
+    fun isDevicePrivacyCleanupEligible(macAddress: String): Boolean =
+        !hasCurrentAllowedMac(macAddress) &&
+            !hasTicketDeviceThatCanReauthorize(macAddress) &&
+            !hasAccountDevice(macAddress)
+
+    private fun hasCurrentAllowedMac(macAddress: String): Boolean {
+        val allowedMac = allowedMacReadPort.findByMac(macAddress) ?: return false
+        return allowedMac.validUntil?.isAfter(timeProvider.get()) ?: true
+    }
+
+    private fun hasTicketDeviceThatCanReauthorize(macAddress: String): Boolean {
+        val token = findAuthorizationTokenPort.findByAuthorizedDeviceMac(macAddress) ?: return false
+        return !token.kickedMacAddresses.contains(macAddress) &&
+            token.authorizedDevices.any { it.mac == macAddress }
+    }
+
+    private fun hasAccountDevice(macAddress: String): Boolean = networkUserDeviceReadPort.findByMac(macAddress) != null
 }
