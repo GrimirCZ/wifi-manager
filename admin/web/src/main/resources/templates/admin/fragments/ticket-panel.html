@@ -117,7 +117,7 @@
                                 <img
                                         th:src="${@DataMatrixBuilder.createAccessCodeDataMatrix(ticket.accessCode)}"
                                         th:alt="${'Data Matrix for access code ' + @AccessCodeFormatter.format(ticket.accessCode)}"
-                                        class="mx-auto block w-full max-w-[13rem]"
+                                        class="mx-auto block w-[13rem] max-w-full"
                                 />
                             </div>
                         </div>

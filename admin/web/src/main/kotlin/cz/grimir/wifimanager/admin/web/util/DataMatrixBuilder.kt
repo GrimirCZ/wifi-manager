@@ -32,13 +32,13 @@ class DataMatrixBuilder(
     }
 
     private fun renderSvg(matrix: BitMatrix): String {
-        val size = 180
-        val moduleSize = maxOf(4, size / maxOf(matrix.width, matrix.height))
-        val svgWidth = matrix.width * moduleSize
-        val svgHeight = matrix.height * moduleSize
+        val targetSymbolSize = 180
+        val moduleSize = maxOf(4, targetSymbolSize / maxOf(matrix.width, matrix.height))
+        val symbolWidth = matrix.width * moduleSize
+        val symbolHeight = matrix.height * moduleSize
         val body =
             buildString {
-                append("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 $svgWidth $svgHeight' shape-rendering='crispEdges'>")
+                append("<svg xmlns='http://www.w3.org/2000/svg' width='$symbolWidth' height='$symbolHeight' viewBox='0 0 $symbolWidth $symbolHeight' shape-rendering='crispEdges'>")
                 append("<rect width='100%' height='100%' fill='white'/>")
                 for (y in 0 until matrix.height) {
                     for (x in 0 until matrix.width) {
