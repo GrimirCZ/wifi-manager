@@ -3,7 +3,9 @@ package cz.grimir.wifimanager.captive.application.devicefingerprint
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
+import java.util.concurrent.AbstractExecutorService
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 
 class YauaaUserAgentClassifierTest {
@@ -63,17 +65,41 @@ class YauaaUserAgentClassifierTest {
     }
 
     private fun readyClassifier(): YauaaUserAgentClassifier {
-        val classifier = YauaaUserAgentClassifier()
-        classifier.startAsyncInitialization()
-        repeat(100) {
-            val value = classifier.classify(WINDOWS_CHROME)
-            if (value != null) {
-                return classifier
+        val classifier =
+            object : YauaaUserAgentClassifier() {
+                override fun createInitializationExecutor(): ExecutorService = sameThreadExecutor()
             }
-            Thread.sleep(50)
-        }
-        error("Yauaa analyzer did not initialize in time")
+
+        classifier.startAsyncInitialization()
+        return classifier
     }
+
+    private fun sameThreadExecutor(): ExecutorService =
+        object : AbstractExecutorService() {
+            private var shutdown = false
+
+            override fun shutdown() {
+                shutdown = true
+            }
+
+            override fun shutdownNow(): MutableList<Runnable> {
+                shutdown = true
+                return mutableListOf()
+            }
+
+            override fun isShutdown(): Boolean = shutdown
+
+            override fun isTerminated(): Boolean = shutdown
+
+            override fun awaitTermination(
+                timeout: Long,
+                unit: TimeUnit,
+            ): Boolean = true
+
+            override fun execute(command: Runnable) {
+                command.run()
+            }
+        }
 
     companion object {
         private const val WINDOWS_CHROME =
