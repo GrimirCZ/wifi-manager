@@ -43,7 +43,7 @@ class TailwindAssetsPlugin : Plugin<Project> {
             dependsOn(syncTablerIcons)
 
             workingDir = layout.projectDirectory.asFile
-            commandLine(bunCommand(), "run", "build:css")
+            commandLine(npmCommand(), "run", "build:css")
 
             inputs.files(
                 layout.projectDirectory.file("package.json"),
@@ -74,7 +74,7 @@ class TailwindAssetsPlugin : Plugin<Project> {
             description = "Watch Tailwind CSS builds for admin and captive modules."
 
             workingDir = layout.projectDirectory.asFile
-            commandLine(bunCommand(), "run", "watch:css")
+            commandLine(npmCommand(), "run", "watch:css")
 
             doFirst {
                 adminOutDir.asFile.mkdirs()
@@ -84,8 +84,8 @@ class TailwindAssetsPlugin : Plugin<Project> {
         }
     }
 
-    private fun bunCommand(): String {
-        val cmd = if (System.getProperty("os.name").startsWith("Windows")) "bun.exe" else "bun"
+    private fun npmCommand(): String {
+        val cmd = if (System.getProperty("os.name").startsWith("Windows")) "npm.cmd" else "npm"
 
         val file = File(cmd)
         if (file.exists() && file.canExecute()) return file.absolutePath
@@ -100,9 +100,6 @@ class TailwindAssetsPlugin : Plugin<Project> {
         if (executable != null) {
             return executable.absolutePath
         }
-
-        val homeBun = File(System.getProperty("user.home"), ".bun/bin/$cmd")
-        if (homeBun.exists()) return homeBun.absolutePath
 
         return cmd
     }
