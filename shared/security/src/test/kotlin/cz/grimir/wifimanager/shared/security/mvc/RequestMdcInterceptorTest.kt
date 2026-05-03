@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
+import org.slf4j.MDC
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import java.util.UUID
@@ -33,13 +34,26 @@ class RequestMdcInterceptorTest {
 
         interceptor.preHandle(request, MockHttpServletResponse(), Any())
 
-        assertEquals("/admin/users", org.slf4j.MDC.get("requestPath"))
-        assertEquals("alice@example.com", org.slf4j.MDC.get("userEmail"))
-        assertEquals("00000000-0000-0000-0000-000000000101", org.slf4j.MDC.get("userId"))
+        assertEquals("/admin/users", MDC.get("requestPath"))
+        assertEquals("alice@example.com", MDC.get("userEmail"))
+        assertEquals("00000000-0000-0000-0000-000000000101", MDC.get("userId"))
         assertEquals(
             "email=alice@example.com userId=00000000-0000-0000-0000-000000000101",
-            org.slf4j.MDC.get("principal"),
+            MDC.get("principal"),
         )
+        requireNotNull(MDC.get("cid")) {
+            "Expected request correlation id to be added to MDC"
+        }
+    }
+
+    @Test
+    fun `uses request cid header when present`() {
+        val request = MockHttpServletRequest("GET", "/admin/users")
+        request.addHeader("X-CID", "edge-cid-123")
+
+        interceptor.preHandle(request, MockHttpServletResponse(), Any())
+
+        assertEquals("edge-cid-123", MDC.get("cid"))
     }
 
     @Test
@@ -60,10 +74,11 @@ class RequestMdcInterceptorTest {
         interceptor.preHandle(request, MockHttpServletResponse(), Any())
         interceptor.afterCompletion(request, MockHttpServletResponse(), Any(), null)
 
-        assertNull(org.slf4j.MDC.get("userEmail"))
-        assertNull(org.slf4j.MDC.get("userId"))
-        assertNull(org.slf4j.MDC.get("principal"))
-        assertNull(org.slf4j.MDC.get("clientMac"))
-        assertNull(org.slf4j.MDC.get("requestPath"))
+        assertNull(MDC.get("userEmail"))
+        assertNull(MDC.get("userId"))
+        assertNull(MDC.get("principal"))
+        assertNull(MDC.get("clientMac"))
+        assertNull(MDC.get("requestPath"))
+        assertNull(MDC.get("cid"))
     }
 }

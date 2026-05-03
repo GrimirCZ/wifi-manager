@@ -78,6 +78,10 @@ class CaptivePortalController(
         model: Model,
         htmxRequest: HtmxRequest,
     ): String {
+        logger.debug {
+            "Started processing of ticket code submit for mac=${clientInfo.macAddress} code=${form.accessCode}"
+        }
+
         val rawAccessCode = form.accessCode.orEmpty()
         val accessCode = accessCodeFormatter.normalize(rawAccessCode)
         val trimmedName = form.name?.trim().orEmpty()
@@ -144,6 +148,9 @@ class CaptivePortalController(
                 ),
             )
         } catch (_: InvalidAccessCodeException) {
+            logger.debug {
+                "Wrong code submitted for mac=${clientInfo.macAddress}"
+            }
             bindingResult.reject("captive.error.code.invalid")
             form.acceptTerms = false
             model.addAttribute("requireUserNameStep", false)
@@ -169,6 +176,9 @@ class CaptivePortalController(
 
         model.addAttribute("form", CaptiveAccessCodeForm())
         model.addAttribute("requireUserNameStep", false)
+        logger.debug {
+            "Completed authorization for mac=${clientInfo.macAddress}"
+        }
         if (applyClientAuthorization(clientInfo, model, request)) {
             return if (htmxRequest.isHtmxRequest) "redirect:htmx:/captive/login" else "redirect:/captive/login"
         }

@@ -37,10 +37,10 @@ class MaybeCurrentClientArgumentResolver(
         return try {
             currentClientResolver.resolve(request)
         } catch (e: MissingClientMacException) {
-            logger.debug { "Client mac is missing: $e" }
+            logger.trace { "Client mac is missing: $e" }
             null
         } catch (e: ClientIdentityUnavailableException) {
-            logger.debug { "Current client was not found: $e" }
+            logger.trace { "Current client was not found: $e" }
             null
         }
     }

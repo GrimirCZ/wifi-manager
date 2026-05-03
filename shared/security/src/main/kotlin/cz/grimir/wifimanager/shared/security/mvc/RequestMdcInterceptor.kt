@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
+import java.util.UUID
 
 @Component
 class RequestMdcInterceptor : HandlerInterceptor {
@@ -13,6 +14,7 @@ class RequestMdcInterceptor : HandlerInterceptor {
         handler: Any,
     ): Boolean {
         RequestMdc.clear()
+        RequestMdc.putCid(request.getHeader(CID_HEADER)?.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString())
         RequestMdc.putRequestPath(request.requestURI)
         val sessionUser =
             request
@@ -31,5 +33,9 @@ class RequestMdcInterceptor : HandlerInterceptor {
         ex: Exception?,
     ) {
         RequestMdc.clear()
+    }
+
+    companion object {
+        const val CID_HEADER = "X-CID"
     }
 }

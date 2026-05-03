@@ -52,7 +52,7 @@ class RouterAgentHub(
                         .addAllMacAddresses(macAddresses)
                         .build(),
                 ).build()
-        logger.debug { "Allowing client access for macAddresses=$macAddresses, commandId=$commandId" }
+        logger.trace { "Allowing client access for macAddresses=$macAddresses, commandId=$commandId" }
         waitForAllAcks(sendToAll(command), commandId(command))
     }
 
@@ -72,7 +72,7 @@ class RouterAgentHub(
                         .addAllMacAddresses(macAddresses)
                         .build(),
                 ).build()
-        logger.debug { "Revoking client access for macAddresses=$macAddresses, commandId=$commandId" }
+        logger.trace { "Revoking client access for macAddresses=$macAddresses, commandId=$commandId" }
         waitForAllAcks(sendToAll(command), commandId(command))
     }
 
@@ -88,7 +88,7 @@ class RouterAgentHub(
                         .addAllMacAddresses(macAddresses)
                         .build(),
                 ).build()
-        logger.debug { "Setting allowed macAddresses=$macAddresses, command=$commandId" }
+        logger.trace { "Setting allowed macAddresses=$macAddresses, command=$commandId" }
         waitForAllAcks(sendToAll(command), commandId(command))
     }
 
@@ -104,10 +104,10 @@ class RouterAgentHub(
                         .setIpAddress(ipAddress)
                         .build(),
                 ).build()
-        logger.debug { "Getting mac for ip=$ipAddress, commandId=$commandId" }
+        logger.trace { "Getting mac for ip=$ipAddress, commandId=$commandId" }
         return waitForFirstSuccessfulAck(sendToAll(command), commandId(command))
             .also {
-                logger.debug {
+                logger.trace {
                     "Got mac=${it?.macAddress} for ip=$ipAddress, commandId=$commandId"
                 }
             }
@@ -124,7 +124,7 @@ class RouterAgentHub(
                         .setId(commandId)
                         .build(),
                 ).build()
-        logger.debug { "Listing network clients commandId=$commandId" }
+        logger.trace { "Listing network clients commandId=$commandId" }
         return waitForFirstSuccessfulAck(sendToAll(command), commandId(command))
     }
 

@@ -18,7 +18,7 @@ server:
 
 logging:
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%thread] %logger{36}%replace(%X{principal}){'^(.+)$',' principal=$1'}%replace(%X{clientMac}){'^(.+)$',' clientMac=$1'}%replace(%X{requestPath}){'^(.+)$',' path=$1'} - %msg%n%wEx"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%thread] %logger{36}%replace(%X{cid}){'^(.+)$',' cid=$1'}%replace(%X{principal}){'^(.+)$',' principal=$1'}%replace(%X{clientMac}){'^(.+)$',' clientMac=$1'}%replace(%X{requestPath}){'^(.+)$',' path=$1'} - %msg%n%wEx"
   level:
     cz.grimir.wifimanager: ${APP_LOG_LEVEL:INFO}
 

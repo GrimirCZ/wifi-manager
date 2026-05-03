@@ -3,11 +3,17 @@ package cz.grimir.wifimanager.shared.security.mvc
 import org.slf4j.MDC
 
 object RequestMdc {
+    private const val CID_KEY = "cid"
     private const val USER_EMAIL_KEY = "userEmail"
     private const val USER_ID_KEY = "userId"
     private const val PRINCIPAL_KEY = "principal"
     private const val CLIENT_MAC_KEY = "clientMac"
     private const val REQUEST_PATH_KEY = "requestPath"
+
+    fun putCid(cid: String) {
+        if (cid.isBlank()) return
+        MDC.put(CID_KEY, cid)
+    }
 
     fun putUser(sessionUserIdentity: SessionUserIdentity) {
         MDC.put(USER_EMAIL_KEY, sessionUserIdentity.email)
@@ -26,6 +32,7 @@ object RequestMdc {
     }
 
     fun clear() {
+        MDC.remove(CID_KEY)
         MDC.remove(USER_EMAIL_KEY)
         MDC.remove(USER_ID_KEY)
         MDC.remove(PRINCIPAL_KEY)

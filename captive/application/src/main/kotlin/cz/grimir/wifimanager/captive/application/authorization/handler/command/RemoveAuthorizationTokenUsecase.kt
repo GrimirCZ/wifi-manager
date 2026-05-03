@@ -37,6 +37,6 @@ class RemoveAuthorizationTokenUsecase(
             ),
         )
 
-        logger.debug { "Removed authorization token for ticket id=${command.ticketId}" }
+        logger.trace { "Removed authorization token for ticket id=${command.ticketId}" }
     }
 }
