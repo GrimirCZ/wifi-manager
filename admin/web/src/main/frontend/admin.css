@@ -106,4 +106,37 @@ details[open] > summary .details-chevron {
   .landing-highlight-body {
     @apply mt-1 text-sm text-text-muted leading-relaxed;
   }
+
+  .admin-device-details {
+    @apply mt-1 grid gap-x-3 gap-y-0.5 sm:grid-cols-2;
+  }
+
+  .admin-device-detail {
+    @apply flex min-w-0 items-baseline gap-1.5;
+  }
+
+  .admin-device-detail-label {
+    @apply shrink-0 text-[10px] font-semibold uppercase text-text-muted;
+  }
+
+  .admin-device-detail-value {
+    @apply block min-w-0 truncate text-[11px] text-text-muted;
+  }
+
+  .admin-device-detail-owner {
+    @apply whitespace-normal break-all overflow-visible;
+  }
+
+  .admin-device-name-with-popup {
+    @apply relative inline-flex min-w-0;
+  }
+
+  .admin-device-name-popup {
+    @apply pointer-events-none absolute left-0 top-full z-20 mt-1 hidden w-max max-w-xs rounded-lg border border-border/50 bg-white px-2 py-1 text-xs font-normal text-text shadow-lg;
+  }
+
+  .admin-device-name-with-popup:hover .admin-device-name-popup,
+  .admin-device-name-with-popup:focus-within .admin-device-name-popup {
+    @apply block;
+  }
 }

@@ -3,6 +3,7 @@ package cz.grimir.wifimanager.shared.ui
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import org.springframework.stereotype.Component
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -25,7 +26,9 @@ class DateFormatter(
         relativeTo: Instant,
         ts: Instant,
     ): String {
-        if (relativeTo.until(ts, ChronoUnit.HOURS) < 24) {
+        val relativeToDate = LocalDate.ofInstant(relativeTo, ZoneId.systemDefault())
+        val tsDate = LocalDate.ofInstant(ts, ZoneId.systemDefault())
+        if (relativeToDate == tsDate) {
             return LocalDateTime
                 .ofInstant(ts, ZoneId.systemDefault())
                 .format(DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault()))

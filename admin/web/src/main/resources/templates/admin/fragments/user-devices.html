@@ -51,7 +51,7 @@
             <li th:each="device : ${devices}"
                 class="device-row flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-3.5">
                 <div class="flex min-w-0 flex-1 items-center gap-3.5">
-                    <span class="admin-device-icon shrink-0">
+                    <span class="admin-device-icon shrink-0 hidden sm:flex">
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                              aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -61,7 +61,17 @@
                     </span>
                     <div class="min-w-0 flex-1">
                         <div class="flex flex-wrap items-baseline gap-2">
-                            <span class="min-w-0 device-name"
+                            <span th:if="${device.hostname != null && device.hostname != ''}"
+                                  class="admin-device-name-with-popup">
+                                <span class="min-w-0 device-name"
+                                      th:text="${device.name != null and !#strings.isEmpty(device.name) ? device.name : #messages.msg('admin.devices.unknown.name')}">
+                                    Unknown device
+                                </span>
+                                <span class="admin-device-name-popup"
+                                      th:text="#{admin.devices.hostname.label(${device.hostname})}">Hostname: device-hostname</span>
+                            </span>
+                            <span th:unless="${device.hostname != null && device.hostname != ''}"
+                                  class="min-w-0 device-name"
                                   th:text="${device.name != null and !#strings.isEmpty(device.name) ? device.name : #messages.msg('admin.devices.unknown.name')}">
                                 Unknown device
                             </span>
@@ -71,38 +81,39 @@
                                 Randomized
                             </span>
                         </div>
-                        <div class="mt-0.5 flex flex-col sm:flex-row items-start sm:items-center sm:flex-wrap sm:gap-x-1.5">
-                            <span class="font-mono text-[11px] text-text-muted" th:text="${device.mac}">AA:BB:CC:DD:EE:FF</span>
-                            <span class="text-[10px] text-text-muted opacity-50 hidden sm:inline">·</span>
-                            <span class="text-[11px] text-text-muted"
-                                  th:if="${device.hostname != null && device.hostname != ''}"
-                                  th:text="#{admin.devices.hostname.label(${device.hostname != null ? device.hostname : '-'})}">Hostname: -</span>
-                            <span class="text-[10px] text-text-muted opacity-50 hidden sm:inline"
-                                  th:if="${device.hostname != null && device.hostname != ''}"
-                            >·</span>
-                            <span class="text-[11px] text-text-muted"
-                                  th:text="#{admin.devices.authorizedAt.label(${@DateFormatter.absolute(device.authorizedAt)})}">Authorized: -</span>
-                            <span class="text-[10px] text-text-muted opacity-50 hidden sm:inline">·</span>
-                            <span class="text-[11px] text-text-muted"
-                                  th:text="#{admin.devices.lastSeenAt.label(${@DateFormatter.timeRelativeNow(device.lastSeenAt)})}">Last seen: -</span>
-                            <span th:if="${deviceScope == 'all'}"
-                                  class="text-[10px] text-text-muted opacity-50 hidden sm:inline">·</span>
-                            <span th:if="${deviceScope == 'all'}"
-                                  class="text-[11px] text-text-muted">
-                                <span th:text="#{admin.devices.owner.label}">Owner:</span>
-                                <span class="owner-lookup group relative inline-flex font-mono"
-                                      th:hx-get="@{/admin/users/{userId}/_display-name(userId=${device.userId})}"
-                                      hx-trigger="mouseenter once, focusin once"
-                                      hx-target="find .owner-lookup-popup-content"
-                                      hx-swap="innerHTML"
-                                      tabindex="0">
-                                    <span th:text="${device.userId}">00000000-0000-0000-0000-000000000000</span>
-                                    <span class="owner-lookup-popup absolute left-0 top-full z-20 mt-1 hidden w-max max-w-xs rounded-lg border border-border/60 bg-white px-2 py-1 text-xs font-sans text-text shadow-lg group-hover:block group-focus-within:block">
-                                        <span class="owner-lookup-popup-content text-text-muted"
-                                              th:text="#{admin.owner.lookup.loading}">Loading...</span>
+                        <div class="admin-device-details">
+                            <div class="admin-device-detail">
+                                <span class="admin-device-detail-label" th:text="#{admin.devices.mac.field}">MAC</span>
+                                <span class="admin-device-detail-value font-mono" th:text="${device.mac}">AA:BB:CC:DD:EE:FF</span>
+                            </div>
+                            <div class="admin-device-detail">
+                                <span class="admin-device-detail-label" th:text="#{admin.devices.authorizedAt.field}">Authorized</span>
+                                <span class="admin-device-detail-value"
+                                      th:text="${@DateFormatter.absolute(device.authorizedAt)}">Jan 1, 2026 10:00</span>
+                            </div>
+                            <div class="admin-device-detail">
+                                <span class="admin-device-detail-label" th:text="#{admin.devices.lastSeenAt.field}">Last seen</span>
+                                <span class="admin-device-detail-value"
+                                      th:text="${@DateFormatter.timeRelativeNow(device.lastSeenAt)}">just now</span>
+                            </div>
+                            <div th:if="${deviceScope == 'all'}"
+                                 class="admin-device-detail">
+                                <span class="admin-device-detail-label" th:text="#{admin.devices.owner.field}">Owner</span>
+                                <span class="admin-device-detail-value admin-device-detail-owner">
+                                    <span class="owner-lookup group relative inline-flex max-w-full font-mono"
+                                          th:hx-get="@{/admin/users/{userId}/_display-name(userId=${device.userId})}"
+                                          hx-trigger="mouseenter once, focusin once"
+                                          hx-target="find .owner-lookup-popup-content"
+                                          hx-swap="innerHTML"
+                                          tabindex="0">
+                                        <span th:text="${device.userId}">00000000-0000-0000-0000-000000000000</span>
+                                        <span class="owner-lookup-popup absolute left-0 top-full z-20 mt-1 hidden w-max max-w-xs rounded-lg border border-border/60 bg-white px-2 py-1 text-xs font-sans text-text shadow-lg group-hover:block group-focus-within:block">
+                                            <span class="owner-lookup-popup-content text-text-muted"
+                                                  th:text="#{admin.owner.lookup.loading}">Loading...</span>
+                                        </span>
                                     </span>
                                 </span>
-                            </span>
+                            </div>
                         </div>
                         <p class="mt-0.5 text-xs text-danger" th:if="${device.disconnectError}"
                            th:text="#{admin.devices.deauthorize.error}">

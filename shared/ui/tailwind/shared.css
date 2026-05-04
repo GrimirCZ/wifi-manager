@@ -276,7 +276,7 @@
   }
 
   .hero-shell {
-    @apply surface-panel-high relative overflow-hidden bg-[rgb(var(--surface-lowest))];
+    @apply surface-panel-high relative overflow-hidden bg-[rgb(var(--surface-lowest))] border border-border/60;
   }
 
   .glass-tint {
