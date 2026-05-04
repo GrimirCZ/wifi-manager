@@ -51,7 +51,7 @@ class AdminRoleDeviceScopeWorkflowE2ETest : BaseWorkflowE2ETest() {
                     .setName("All devices"),
             ).click()
         page.waitForURL("**/admin/devices?scope=all")
-        assertThat(page.getByText("Owner user:")).isVisible()
+        assertThat(page.getByText("Owner:")).isVisible()
 
         val deviceRow =
             page
@@ -62,6 +62,32 @@ class AdminRoleDeviceScopeWorkflowE2ETest : BaseWorkflowE2ETest() {
                         .setHasText(DEFAULT_DEVICE_MAC),
                 ).first()
         assertThat(deviceRow).isVisible()
+
+        val ownerId =
+            jdbcTemplate.queryForObject<String>(
+                "select user_id::text from admin.user_device where device_mac = ?",
+                DEFAULT_DEVICE_MAC,
+            )
+        val ownerDisplayName =
+            jdbcTemplate.queryForObject<String>(
+                "select display_name from admin.user_identity where user_id = cast(? as uuid)",
+                ownerId,
+            )
+        val ownerLookup =
+            deviceRow
+                .locator(".owner-lookup")
+                .filter(
+                    Locator
+                        .FilterOptions()
+                        .setHasText(ownerId),
+                ).first()
+        assertThat(ownerLookup).isVisible()
+        assertThat(ownerLookup).containsText(ownerId)
+
+        ownerLookup.hover()
+
+        assertThat(ownerLookup.locator(".owner-lookup-popup-content")).containsText(ownerDisplayName)
+        assertThat(ownerLookup).containsText(ownerId)
 
         val disconnectButton =
             deviceRow.getByRole(

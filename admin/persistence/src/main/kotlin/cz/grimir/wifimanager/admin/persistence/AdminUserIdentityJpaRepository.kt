@@ -9,4 +9,6 @@ interface AdminUserIdentityJpaRepository : JpaRepository<AdminUserIdentityEntity
         issuer: String,
         subject: String,
     ): AdminUserIdentityEntity?
+
+    fun findByUserId(userId: UUID): AdminUserIdentityEntity?
 }

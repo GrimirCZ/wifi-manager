@@ -11,6 +11,7 @@
     hx-swap="outerHTML"
 >
     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <input type="hidden" name="scope" th:if="${ticketScope != null}" th:value="${ticketScope}"/>
 
     <div class="space-y-1.5">
         <label

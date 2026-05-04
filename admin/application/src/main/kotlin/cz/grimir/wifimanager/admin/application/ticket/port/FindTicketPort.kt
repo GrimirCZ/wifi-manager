@@ -15,5 +15,7 @@ interface FindTicketPort {
 
     fun findByAuthorIdWithDeviceCount(authorId: UUID): List<TicketWithDeviceCount>
 
+    fun findAllWithDeviceCount(): List<TicketWithDeviceCount>
+
     fun findExpired(at: Instant): List<Ticket>
 }

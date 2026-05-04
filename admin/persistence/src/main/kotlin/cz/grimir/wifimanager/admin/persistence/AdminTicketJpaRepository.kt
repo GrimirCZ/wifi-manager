@@ -20,5 +20,13 @@ interface AdminTicketJpaRepository : JpaRepository<AdminTicketEntity, UUID> {
     )
     fun findByAuthorIdWithDeviceCount(authorId: UUID): List<AdminTicketWithDeviceCountProjection>
 
+    @Query(
+        "SELECT NEW" +
+            " cz.grimir.wifimanager.admin.persistence.projection.AdminTicketWithDeviceCountProjection(t, COUNT(ad))" +
+            " FROM AdminTicketEntity t LEFT JOIN t.authorizedDevices ad" +
+            " GROUP BY t",
+    )
+    fun findAllWithDeviceCount(): List<AdminTicketWithDeviceCountProjection>
+
     fun findAllByWasCanceledFalseAndValidUntilLessThanEqual(validUntil: Instant): List<AdminTicketEntity>
 }
