@@ -210,28 +210,36 @@ abstract class BaseWorkflowE2ETest {
         username: String,
         password: String,
     ) {
-        page.navigate("$baseUrl/admin/login")
-        page.locator("a[href^='/oauth2/authorization/']").first().click()
+        loginAdminOnPage(page, username, password)
+    }
 
-        val usernameInput = page.locator("#username, input[name='username']").first()
-        val passwordInput = page.locator("#password, input[name='password']").first()
+    protected fun loginAdminOnPage(
+        targetPage: Page,
+        username: String,
+        password: String,
+    ) {
+        targetPage.navigate("$baseUrl/admin/login")
+        targetPage.locator("a[href^='/oauth2/authorization/']").first().click()
+
+        val usernameInput = targetPage.locator("#username, input[name='username']").first()
+        val passwordInput = targetPage.locator("#password, input[name='password']").first()
 
         val deadline = System.currentTimeMillis() + 20_000
         while (System.currentTimeMillis() < deadline) {
-            if (isAdminHome(page.url())) {
+            if (isAdminHome(targetPage.url())) {
                 return
             }
             if (usernameInput.isVisible) {
                 usernameInput.fill(username)
                 passwordInput.fill(password)
-                page.locator("#kc-login, button[type='submit']").first().click()
-                waitForAdminHome()
+                targetPage.locator("#kc-login, button[type='submit']").first().click()
+                waitForAdminHome(targetPage)
                 return
             }
-            page.waitForTimeout(200.0)
+            targetPage.waitForTimeout(200.0)
         }
 
-        throw AssertionError("Admin login did not reach /admin. finalUrl=${page.url()}")
+        throw AssertionError("Admin login did not reach /admin. finalUrl=${targetPage.url()}")
     }
 
     protected fun loginAsStaff() {
@@ -247,7 +255,7 @@ abstract class BaseWorkflowE2ETest {
     protected fun openTicketsFromAccountMenu() {
         page.getByRole(AriaRole.LINK, Page.GetByRoleOptions().setName("Tickets")).click()
         page.waitForURL("**/admin")
-        assertThat(page.getByRole(AriaRole.HEADING, Page.GetByRoleOptions().setName("Create ticket"))).isVisible()
+        assertThat(page.locator("#ticket-panel").getByText("Create ticket").first()).isVisible()
     }
 
     protected fun openDevicesFromAccountMenu() {
@@ -284,11 +292,17 @@ abstract class BaseWorkflowE2ETest {
     protected fun createTicketAndReturnCsrfToken(
         validityMinutes: String = "45",
         requireUserNameOnLogin: Boolean = false,
-    ): String {
-        page.navigate("$baseUrl/admin")
+    ): String = createTicketAndReturnCsrfToken(page, validityMinutes, requireUserNameOnLogin)
 
-        val form = page.locator("form:has(select[name='validityMinutes'])").first()
-        val createTicketToggler = page.getByText("Create ticket").first()
+    protected fun createTicketAndReturnCsrfToken(
+        targetPage: Page,
+        validityMinutes: String = "45",
+        requireUserNameOnLogin: Boolean = false,
+    ): String {
+        targetPage.navigate("$baseUrl/admin")
+
+        val form = targetPage.locator("form:has(select[name='validityMinutes'])").first()
+        val createTicketToggler = targetPage.getByText("Create ticket").first()
         val deadline = System.currentTimeMillis() + 15_000
         while (System.currentTimeMillis() < deadline) {
             if (form.isVisible) {
@@ -297,16 +311,16 @@ abstract class BaseWorkflowE2ETest {
             if (createTicketToggler.isVisible) {
                 createTicketToggler.click()
             }
-            page.waitForTimeout(200.0)
+            targetPage.waitForTimeout(200.0)
         }
         if (!form.isVisible) {
             val pageSummary =
-                page
+                targetPage
                     .locator("body")
                     .innerText()
                     .replace(Regex("\\s+"), " ")
                     .take(400)
-            throw AssertionError("Ticket form not visible. url=${page.url()} body=$pageSummary")
+            throw AssertionError("Ticket form not visible. url=${targetPage.url()} body=$pageSummary")
         }
 
         val csrfToken = form.locator("input[name='_csrf']").first().inputValue()
@@ -318,7 +332,7 @@ abstract class BaseWorkflowE2ETest {
         }
         form.getByRole(AriaRole.BUTTON, Locator.GetByRoleOptions().setName("Create")).click()
 
-        assertThat(page.locator("#ticket-panel .ticket-card")).isVisible()
+        assertThat(targetPage.locator("#ticket-panel .ticket-card")).isVisible()
         return csrfToken
     }
 
@@ -555,15 +569,18 @@ abstract class BaseWorkflowE2ETest {
         )
     }
 
-    private fun waitForAdminHome(timeoutMs: Long = 20_000) {
+    private fun waitForAdminHome(
+        targetPage: Page = page,
+        timeoutMs: Long = 20_000,
+    ) {
         val deadline = System.currentTimeMillis() + timeoutMs
         while (System.currentTimeMillis() < deadline) {
-            if (isAdminHome(page.url())) {
+            if (isAdminHome(targetPage.url())) {
                 return
             }
-            page.waitForTimeout(200.0)
+            targetPage.waitForTimeout(200.0)
         }
-        throw AssertionError("Admin login did not reach /admin after submit. finalUrl=${page.url()}")
+        throw AssertionError("Admin login did not reach /admin after submit. finalUrl=${targetPage.url()}")
     }
 
     private fun isAdminHome(url: String): Boolean {

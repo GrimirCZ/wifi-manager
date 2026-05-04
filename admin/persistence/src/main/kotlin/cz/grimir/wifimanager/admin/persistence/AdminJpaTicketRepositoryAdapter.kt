@@ -31,6 +31,14 @@ class AdminJpaTicketRepositoryAdapter(
             )
         }
 
+    override fun findAllWithDeviceCount(): List<TicketWithDeviceCount> =
+        jpaRepository.findAllWithDeviceCount().map {
+            TicketWithDeviceCount(
+                ticket = mapper.ticketToDomain(it.ticket),
+                deviceCount = it.deviceCount.toInt(),
+            )
+        }
+
     override fun findExpired(at: Instant): List<Ticket> =
         jpaRepository
             .findAllByWasCanceledFalseAndValidUntilLessThanEqual(at)

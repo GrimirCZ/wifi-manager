@@ -8,6 +8,7 @@ import cz.grimir.wifimanager.admin.application.ticket.handler.command.CancelTick
 import cz.grimir.wifimanager.admin.application.ticket.handler.command.CreateTicketUsecase
 import cz.grimir.wifimanager.admin.application.ticket.handler.command.KickClientUsecase
 import cz.grimir.wifimanager.admin.application.ticket.handler.query.CountAuthorizedDevicesByTicketIdUsecase
+import cz.grimir.wifimanager.admin.application.ticket.handler.query.FindAllTicketsWithDeviceCountUsecase
 import cz.grimir.wifimanager.admin.application.ticket.handler.query.FindAuthorizedDevicesByTicketIdUsecase
 import cz.grimir.wifimanager.admin.application.ticket.handler.query.FindTicketByIdUsecase
 import cz.grimir.wifimanager.admin.application.ticket.handler.query.FindTicketsByAuthorIdWithDeviceCountUsecase
@@ -48,6 +49,7 @@ class AdminHomeController(
     private val cancelTicketUsecase: CancelTicketUsecase,
     private val findTicketByIdUsecase: FindTicketByIdUsecase,
     private val findTicketsByAuthorIdWithDeviceCountUsecase: FindTicketsByAuthorIdWithDeviceCountUsecase,
+    private val findAllTicketsWithDeviceCountUsecase: FindAllTicketsWithDeviceCountUsecase,
     private val findAuthorizedDevicesByTicketIdUsecase: FindAuthorizedDevicesByTicketIdUsecase,
     private val countAuthorizedDevicesByTicketIdUsecase: CountAuthorizedDevicesByTicketIdUsecase,
     private val kickClientUsecase: KickClientUsecase,
@@ -57,10 +59,12 @@ class AdminHomeController(
     @GetMapping("/admin", "/admin/")
     fun index(
         @CurrentUser user: UserIdentitySnapshot,
+        @RequestParam(required = false, defaultValue = "mine") scope: String,
         htmxRequest: HtmxRequest,
         modelMap: ModelMap,
     ): String {
-        populateModel(user, modelMap)
+        val resolvedScope = resolveTicketScope(scope, user)
+        populateModel(user, resolvedScope, modelMap)
         modelMap.addAttribute("createTicket", CreateTicketRequestDto())
 
         if (htmxRequest.isHtmxRequest) {
@@ -75,11 +79,13 @@ class AdminHomeController(
         @CurrentUser
         user: UserIdentitySnapshot,
         @ModelAttribute request: CreateTicketRequestDto,
+        @RequestParam(required = false, defaultValue = "mine") scope: String,
         redirectAttributes: RedirectAttributes,
         htmxRequest: HtmxRequest,
         modelMap: ModelMap,
     ): String {
         val isHtmx = htmxRequest.isHtmxRequest
+        val resolvedScope = resolveTicketScope(scope, user)
 
         try {
             createTicketUsecase.create(
@@ -95,7 +101,7 @@ class AdminHomeController(
             redirectAttributes.addFlashAttribute("ticketValidityMinutes", request.validityMinutes)
 
             if (isHtmx) {
-                populateModel(user, modelMap)
+                populateModel(user, resolvedScope, modelMap)
                 modelMap.addAttribute("createTicket", CreateTicketRequestDto())
 
                 return "admin/fragments/ticket-panel :: ticketPanel"
@@ -104,7 +110,7 @@ class AdminHomeController(
             redirectAttributes.addFlashAttribute("alreadyHasOpen", true)
 
             if (isHtmx) {
-                populateModel(user, modelMap)
+                populateModel(user, resolvedScope, modelMap)
                 modelMap.addAttribute("createTicket", CreateTicketRequestDto())
 
                 return "admin/fragments/ticket-panel :: ticketPanel"
@@ -113,7 +119,7 @@ class AdminHomeController(
             throw ResponseStatusException(HttpStatus.BAD_REQUEST)
         }
 
-        return "redirect:/admin"
+        return "redirect:/admin?scope=$resolvedScope"
     }
 
     @GetMapping("/admin/ticket/{ticketId}/_ended-banner")
@@ -127,7 +133,7 @@ class AdminHomeController(
     ): String {
         val ticket = findTicketByIdUsecase.find(FindTicketByIdQuery(TicketId(ticketId)))
 
-        if (ticket != null && ticket.authorId.id != user.userId.id) {
+        if (ticket != null && ticket.authorId.id != user.userId.id && !user.can(UserRole::canCancelOtherUsersTickets)) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND)
         }
 
@@ -153,7 +159,7 @@ class AdminHomeController(
     ): String {
         val ticket = findTicketByIdUsecase.find(FindTicketByIdQuery(TicketId(ticketId)))
 
-        if (ticket != null && ticket.authorId.id != user.userId.id) {
+        if (ticket != null && ticket.authorId.id != user.userId.id && !user.can(UserRole::canCancelOtherUsersTickets)) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND)
         }
 
@@ -219,25 +225,51 @@ class AdminHomeController(
         return "admin/fragments/ticket-devices :: devicesSwap"
     }
 
-    private fun findActiveTickets(user: UserIdentitySnapshot): List<TicketWithDeviceCount> {
+    private fun findActiveTickets(
+        user: UserIdentitySnapshot,
+        scope: String,
+    ): List<TicketWithDeviceCount> {
         val now = Instant.now()
-        return findTicketsByAuthorIdWithDeviceCountUsecase
-            .find(FindTicketsByAuthorIdWithDeviceCountQuery(user.userId))
+        val tickets =
+            if (scope == "all") {
+                findAllTicketsWithDeviceCountUsecase.find()
+            } else {
+                findTicketsByAuthorIdWithDeviceCountUsecase.find(FindTicketsByAuthorIdWithDeviceCountQuery(user.userId))
+            }
+        return tickets
             .filter { it.ticket.isActive(now) }
             .sortedByDescending { it.ticket.createdAt }
     }
 
     private fun populateModel(
         user: UserIdentitySnapshot,
+        scope: String,
         modelMap: ModelMap,
     ) {
-        modelMap.addAttribute("activeTickets", findActiveTickets(user))
+        val canViewAllTickets = user.can(UserRole::canCancelOtherUsersTickets)
+        modelMap.addAttribute("activeTickets", findActiveTickets(user, scope))
         modelMap.addAttribute("isAdmin", user.can(UserRole::canHaveMultipleTickets))
+        modelMap.addAttribute("canViewAllTickets", canViewAllTickets)
+        modelMap.addAttribute("ticketScope", scope)
+        modelMap.addAttribute("showTicketOwnerLookup", canViewAllTickets && scope == "all")
         modelMap.addAttribute("canCreateExtendedTickets", user.can(UserRole::canCreateExtendedTickets))
         modelMap.addAttribute("canManageAllowedMacs", user.can(UserRole::canManageAllowedMacs))
         modelMap.addAttribute("currentSection", "tickets")
         modelMap.addAttribute("wifiSsid", wifiProperties.ssid)
         modelMap.addAttribute("captivePortalUrl", captivePortalApiProperties.publicBaseUrl.trimEnd('/'))
+    }
+
+    private fun resolveTicketScope(
+        scope: String,
+        user: UserIdentitySnapshot,
+    ): String {
+        if (scope != "all") {
+            return "mine"
+        }
+        if (!user.can(UserRole::canCancelOtherUsersTickets)) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
+        return "all"
     }
 
     private fun loadTicketForUser(

@@ -88,8 +88,21 @@
                             <span th:if="${deviceScope == 'all'}"
                                   class="text-[10px] text-text-muted opacity-50 hidden sm:inline">·</span>
                             <span th:if="${deviceScope == 'all'}"
-                                  class="text-[11px] text-text-muted"
-                                  th:text="#{admin.devices.owner.label(${device.userId})}">Owner: -</span>
+                                  class="text-[11px] text-text-muted">
+                                <span th:text="#{admin.devices.owner.label}">Owner:</span>
+                                <span class="owner-lookup group relative inline-flex font-mono"
+                                      th:hx-get="@{/admin/users/{userId}/_display-name(userId=${device.userId})}"
+                                      hx-trigger="mouseenter once, focusin once"
+                                      hx-target="find .owner-lookup-popup-content"
+                                      hx-swap="innerHTML"
+                                      tabindex="0">
+                                    <span th:text="${device.userId}">00000000-0000-0000-0000-000000000000</span>
+                                    <span class="owner-lookup-popup absolute left-0 top-full z-20 mt-1 hidden w-max max-w-xs rounded-lg border border-border/60 bg-white px-2 py-1 text-xs font-sans text-text shadow-lg group-hover:block group-focus-within:block">
+                                        <span class="owner-lookup-popup-content text-text-muted"
+                                              th:text="#{admin.owner.lookup.loading}">Loading...</span>
+                                    </span>
+                                </span>
+                            </span>
                         </div>
                         <p class="mt-0.5 text-xs text-danger" th:if="${device.disconnectError}"
                            th:text="#{admin.devices.deauthorize.error}">

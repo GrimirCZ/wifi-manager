@@ -4,6 +4,7 @@ import cz.grimir.wifimanager.admin.application.identity.model.UserIdentity
 import cz.grimir.wifimanager.admin.application.identity.port.FindUserIdentityPort
 import cz.grimir.wifimanager.admin.application.identity.port.SaveUserIdentityPort
 import cz.grimir.wifimanager.admin.persistence.mapper.AdminUserIdentityMapper
+import cz.grimir.wifimanager.shared.core.UserId
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -16,6 +17,9 @@ class AdminJpaUserRepositoryAdapter(
         issuer: String,
         subject: String,
     ): UserIdentity? = identityRepository.findByIssuerAndSubject(issuer, subject)?.let(identityMapper::identityToApplication)
+
+    override fun findByUserId(userId: UserId): UserIdentity? =
+        identityRepository.findByUserId(userId.id)?.let(identityMapper::identityToApplication)
 
     override fun save(identity: UserIdentity): UserIdentity =
         identityRepository.save(identityMapper.identityToEntity(identity)).let(identityMapper::identityToApplication)

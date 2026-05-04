@@ -13,22 +13,50 @@
         <span th:text="#{admin.ticket.created(${ticketValidityMinutes})}">Ticket created.</span>
     </div>
 
-    <div th:if="${activeTickets != null and !activeTickets.isEmpty()}" class="space-y-8">
-        <div th:if="${isAdmin}" class="surface-panel print:hidden">
-            <details class="space-y-4">
-                <summary class="btn btn-primary inline-flex cursor-pointer list-none gap-2">
+    <div th:if="${isAdmin}" class="surface-panel print:hidden">
+        <details class="space-y-4">
+            <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
+                <span class="btn btn-primary inline-flex gap-2">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                          aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                     </svg>
                     <span th:text="#{admin.ticket.create.button}">Create ticket</span>
-                </summary>
-                <div class="admin-add-panel">
-                    <div th:replace="~{admin/fragments/ticket-form :: ticketForm(null)}"></div>
+                </span>
+                <div th:if="${canViewAllTickets}"
+                     id="ticket-scope-switch"
+                     class="inline-grid select-none grid-cols-2 overflow-hidden rounded-lg border border-border bg-text/10 p-0.5 text-xs font-semibold shadow-[0_18px_40px_-30px_rgba(22,29,31,0.14)]"
+                     role="group"
+                     onclick="event.stopPropagation()">
+                    <a class="rounded-md px-3 py-1.5 text-center transition-colors"
+                       th:classappend="${ticketScope != 'all'} ? ' bg-text text-white shadow-[0_18px_40px_-30px_rgba(22,29,31,0.14)]' : ' text-text hover:bg-white/60'"
+                       th:href="@{/admin(scope='mine')}"
+                       th:hx-get="@{/admin(scope='mine')}"
+                       th:attr="hx-push-url=@{/admin(scope='mine')},aria-pressed=${ticketScope != 'all'}"
+                       hx-target="#ticket-panel"
+                       hx-swap="outerHTML"
+                       th:text="#{admin.ticket.scope.mine}">
+                        Mine
+                    </a>
+                    <a class="rounded-md px-3 py-1.5 text-center transition-colors"
+                       th:classappend="${ticketScope == 'all'} ? ' bg-text text-white shadow-[0_18px_40px_-30px_rgba(22,29,31,0.14)]' : ' text-text hover:bg-white/60'"
+                       th:href="@{/admin(scope='all')}"
+                       th:hx-get="@{/admin(scope='all')}"
+                       th:attr="hx-push-url=@{/admin(scope='all')},aria-pressed=${ticketScope == 'all'}"
+                       hx-target="#ticket-panel"
+                       hx-swap="outerHTML"
+                       th:text="#{admin.ticket.scope.all}">
+                        All
+                    </a>
                 </div>
-            </details>
-        </div>
+            </summary>
+            <div class="admin-add-panel">
+                <div th:replace="~{admin/fragments/ticket-form :: ticketForm(null)}"></div>
+            </div>
+        </details>
+    </div>
 
+    <div th:if="${activeTickets != null and !activeTickets.isEmpty()}" class="space-y-8">
         <section th:each="ticketWithCount : ${activeTickets}" class="ticket-card space-y-8"
                  th:with="ticket=${ticketWithCount.ticket},deviceCount=${ticketWithCount.deviceCount}"
                  th:attr="data-ends-at=${@DateFormatter.toTimestamp(ticket.validUntil)}"
@@ -88,6 +116,22 @@
                                                      send showToast to #ticket-copy-toast"
                                       th:text="${@AccessCodeFormatter.format(ticket.accessCode)}">123456</span>
                             </div>
+                        </div>
+
+                        <div th:if="${showTicketOwnerLookup}" class="flex flex-wrap items-center gap-2 text-sm text-text-muted">
+                            <span th:text="#{admin.ticket.owner.label}">Owner:</span>
+                            <span class="owner-lookup group relative inline-flex font-mono text-[11px]"
+                                  th:hx-get="@{/admin/users/{userId}/_display-name(userId=${ticket.authorId})}"
+                                  hx-trigger="mouseenter once, focusin once"
+                                  hx-target="find .owner-lookup-popup-content"
+                                  hx-swap="innerHTML"
+                                  tabindex="0">
+                                <span th:text="${ticket.authorId}">00000000-0000-0000-0000-000000000000</span>
+                                <span class="owner-lookup-popup absolute left-0 top-full z-20 mt-1 hidden w-max max-w-xs rounded-lg border border-border/60 bg-white px-2 py-1 text-xs font-sans text-text shadow-lg group-hover:block group-focus-within:block">
+                                    <span class="owner-lookup-popup-content text-text-muted"
+                                          th:text="#{admin.owner.lookup.loading}">Loading...</span>
+                                </span>
+                            </span>
                         </div>
 
                         <div class="flex flex-wrap items-center gap-4">
@@ -155,7 +199,7 @@
         </section>
     </div>
 
-    <div th:if="${activeTickets == null or activeTickets.isEmpty()}" class="hero-shell space-y-5">
+    <div th:if="${!isAdmin and (activeTickets == null or activeTickets.isEmpty())}" class="hero-shell space-y-5">
         <div class="space-y-2">
             <h1 class="hero-title" th:text="#{admin.ticket.create.title}">Create ticket</h1>
         </div>
