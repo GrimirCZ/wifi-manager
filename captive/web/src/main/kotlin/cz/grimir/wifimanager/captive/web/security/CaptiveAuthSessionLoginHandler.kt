@@ -1,9 +1,9 @@
 package cz.grimir.wifimanager.captive.web.security
 
-import cz.grimir.wifimanager.captive.application.auth.model.UserCredentials
-import cz.grimir.wifimanager.captive.application.auth.port.UserAuthProvider
-import cz.grimir.wifimanager.captive.application.networkuser.handler.command.UpsertNetworkUserOnLoginUsecase
-import cz.grimir.wifimanager.captive.application.networkuser.handler.query.ResolveNetworkUserLimitUsecase
+import cz.grimir.wifimanager.captive.application.command.model.UserCredentials
+import cz.grimir.wifimanager.captive.application.port.UserAuthProviderPort
+import cz.grimir.wifimanager.captive.application.command.handler.UpsertNetworkUserOnLoginUsecase
+import cz.grimir.wifimanager.captive.application.query.handler.ResolveNetworkUserLimitUsecase
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.security.mvc.SessionUserIdentity
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class CaptiveAuthSessionLoginHandler(
-    authProviders: List<UserAuthProvider>,
+    authProviders: List<UserAuthProviderPort>,
     private val upsertNetworkUserOnLoginUsecase: UpsertNetworkUserOnLoginUsecase,
     private val resolveNetworkUserLimitUsecase: ResolveNetworkUserLimitUsecase,
 ) {

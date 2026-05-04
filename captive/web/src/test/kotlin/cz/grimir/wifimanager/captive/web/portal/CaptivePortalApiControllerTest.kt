@@ -1,10 +1,11 @@
 package cz.grimir.wifimanager.captive.web.portal
 
-import cz.grimir.wifimanager.captive.application.allowedmac.model.AllowedMac
-import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadPort
-import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedClientFingerprintGuard
-import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedMacState
-import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedMacVerification
+import cz.grimir.wifimanager.captive.application.query.model.AllowedMac
+import cz.grimir.wifimanager.captive.application.port.AllowedMacReadPort
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.AuthorizedClientFingerprintGuard
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.AuthorizedMacState
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.AuthorizedMacVerification
+import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
 import cz.grimir.wifimanager.captive.core.value.Device
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintStatus
@@ -79,7 +80,7 @@ class CaptivePortalApiControllerTest {
                 AuthorizedMacVerification(
                     state = AuthorizedMacState.ACTIVE_NETWORK_USER_DEVICE,
                     networkUserDevice =
-                        cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice(
+                        NetworkUserDevice(
                             userId = UserId(UUID.fromString("00000000-0000-0000-0000-000000000111")),
                             mac = clientInfo.macAddress,
                             name = "Work Laptop",
@@ -228,7 +229,7 @@ class CaptivePortalApiControllerTest {
                 AuthorizedMacVerification(
                     state = AuthorizedMacState.REAUTH_REQUIRED,
                     networkUserDevice =
-                        cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice(
+                        NetworkUserDevice(
                             userId = UserId(UUID.fromString("00000000-0000-0000-0000-000000000111")),
                             mac = clientInfo.macAddress,
                             name = "Work Laptop",

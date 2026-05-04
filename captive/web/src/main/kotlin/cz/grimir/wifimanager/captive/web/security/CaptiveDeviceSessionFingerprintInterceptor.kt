@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.captive.web.security
 
-import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedClientFingerprintGuard
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.AuthorizedClientFingerprintGuard
 import cz.grimir.wifimanager.captive.web.security.support.CurrentClientResolver
 import cz.grimir.wifimanager.shared.security.mvc.ClientIdentityUnavailableException
 import cz.grimir.wifimanager.shared.security.mvc.MissingClientMacException

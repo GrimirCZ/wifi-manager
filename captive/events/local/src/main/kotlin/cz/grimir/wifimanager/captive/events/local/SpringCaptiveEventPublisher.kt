@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.events.local
 
-import cz.grimir.wifimanager.captive.application.authorization.event.MacAuthorizationStateChangedEvent
-import cz.grimir.wifimanager.captive.application.shared.port.CaptiveEventPublisher
+import cz.grimir.wifimanager.captive.application.event.MacAuthorizationStateChangedEvent
+import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.shared.events.AuthorizationTokenRemovedEvent
 import cz.grimir.wifimanager.shared.events.ClientAccessRevokedEvent
 import cz.grimir.wifimanager.shared.events.DeviceAuthorizedEvent

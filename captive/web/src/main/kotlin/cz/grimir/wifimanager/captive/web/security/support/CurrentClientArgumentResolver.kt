@@ -1,6 +1,5 @@
 package cz.grimir.wifimanager.captive.web.security.support
 
-import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.core.MethodParameter

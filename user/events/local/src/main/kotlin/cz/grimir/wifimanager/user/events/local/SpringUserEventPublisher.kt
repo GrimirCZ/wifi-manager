@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.user.events.local
 
 import cz.grimir.wifimanager.shared.events.UserCreatedOrUpdatedEvent
-import cz.grimir.wifimanager.user.application.identity.port.UserEventPublisher
+import cz.grimir.wifimanager.user.application.port.UserEventPublisher
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 

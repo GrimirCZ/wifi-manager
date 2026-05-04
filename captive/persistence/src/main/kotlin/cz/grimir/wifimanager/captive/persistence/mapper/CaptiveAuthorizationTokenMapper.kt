@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.captive.persistence.mapper
 
-import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
 import cz.grimir.wifimanager.captive.core.value.Device
 import cz.grimir.wifimanager.captive.persistence.entity.CaptiveAuthorizationTokenEntity

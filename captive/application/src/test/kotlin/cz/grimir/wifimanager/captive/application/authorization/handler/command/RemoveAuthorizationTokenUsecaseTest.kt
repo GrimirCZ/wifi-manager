@@ -1,10 +1,11 @@
 package cz.grimir.wifimanager.captive.application.authorization.handler.command
 
-import cz.grimir.wifimanager.captive.application.authorization.command.RemoveAuthorizationTokenCommand
-import cz.grimir.wifimanager.captive.application.authorization.event.MacAuthorizationStateChangedEvent
-import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.authorization.port.ModifyAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.shared.port.CaptiveEventPublisher
+import cz.grimir.wifimanager.captive.application.command.RemoveAuthorizationTokenCommand
+import cz.grimir.wifimanager.captive.application.event.MacAuthorizationStateChangedEvent
+import cz.grimir.wifimanager.captive.application.command.handler.RemoveAuthorizationTokenUsecase
+import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.port.ModifyAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
 import cz.grimir.wifimanager.captive.core.value.Device
 import cz.grimir.wifimanager.shared.core.TicketId

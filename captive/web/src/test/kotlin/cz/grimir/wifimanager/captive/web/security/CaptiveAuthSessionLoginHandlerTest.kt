@@ -1,11 +1,11 @@
 package cz.grimir.wifimanager.captive.web.security
 
-import cz.grimir.wifimanager.captive.application.auth.model.UserAuthenticationResult
-import cz.grimir.wifimanager.captive.application.auth.model.UserCredentials
-import cz.grimir.wifimanager.captive.application.auth.port.UserAuthProvider
-import cz.grimir.wifimanager.captive.application.networkuser.handler.command.UpsertNetworkUserOnLoginUsecase
-import cz.grimir.wifimanager.captive.application.networkuser.handler.query.ResolveNetworkUserLimitUsecase
-import cz.grimir.wifimanager.captive.application.networkuser.model.NetworkUser
+import cz.grimir.wifimanager.captive.application.command.model.UserAuthenticationResult
+import cz.grimir.wifimanager.captive.application.command.model.UserCredentials
+import cz.grimir.wifimanager.captive.application.port.UserAuthProviderPort
+import cz.grimir.wifimanager.captive.application.command.handler.UpsertNetworkUserOnLoginUsecase
+import cz.grimir.wifimanager.captive.application.query.handler.ResolveNetworkUserLimitUsecase
+import cz.grimir.wifimanager.captive.application.query.model.NetworkUser
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.core.UserRole
@@ -26,7 +26,7 @@ import java.time.Instant
 import java.util.UUID
 
 class CaptiveAuthSessionLoginHandlerTest {
-    private val authProvider: UserAuthProvider = mock()
+    private val authProvider: UserAuthProviderPort = mock()
     private val upsertNetworkUserOnLoginUsecase: UpsertNetworkUserOnLoginUsecase = mock()
     private val resolveNetworkUserLimitUsecase: ResolveNetworkUserLimitUsecase = mock()
     private val handler =

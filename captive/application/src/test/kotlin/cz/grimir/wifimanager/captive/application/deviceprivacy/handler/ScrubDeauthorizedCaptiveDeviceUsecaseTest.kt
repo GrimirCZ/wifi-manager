@@ -1,7 +1,8 @@
 package cz.grimir.wifimanager.captive.application.deviceprivacy.handler
 
-import cz.grimir.wifimanager.captive.application.authorization.support.ClientAccessAuthorizationResolver
-import cz.grimir.wifimanager.captive.application.deviceprivacy.port.CaptiveDevicePrivacyPort
+import cz.grimir.wifimanager.captive.application.support.ClientAccessAuthorizationResolver
+import cz.grimir.wifimanager.captive.application.command.handler.ScrubDeauthorizedCaptiveDeviceUsecase
+import cz.grimir.wifimanager.captive.application.port.CaptiveDevicePrivacyPort
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito.mock

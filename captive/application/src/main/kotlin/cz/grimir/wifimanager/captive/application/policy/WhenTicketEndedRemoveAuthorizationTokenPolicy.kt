@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.application.policy
 
-import cz.grimir.wifimanager.captive.application.authorization.command.RemoveAuthorizationTokenCommand
-import cz.grimir.wifimanager.captive.application.authorization.handler.command.RemoveAuthorizationTokenUsecase
+import cz.grimir.wifimanager.captive.application.command.RemoveAuthorizationTokenCommand
+import cz.grimir.wifimanager.captive.application.command.handler.RemoveAuthorizationTokenUsecase
 import cz.grimir.wifimanager.shared.events.TicketEndedEvent
 import org.springframework.stereotype.Service
 

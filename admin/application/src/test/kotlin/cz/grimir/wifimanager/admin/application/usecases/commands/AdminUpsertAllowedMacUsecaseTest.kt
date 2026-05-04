@@ -1,10 +1,10 @@
 package cz.grimir.wifimanager.admin.application.usecases.commands
 
-import cz.grimir.wifimanager.admin.application.allowedmac.command.UpsertAllowedMacCommand
-import cz.grimir.wifimanager.admin.application.allowedmac.handler.command.AdminUpsertAllowedMacUsecase
-import cz.grimir.wifimanager.admin.application.allowedmac.port.FindAllowedMacPort
-import cz.grimir.wifimanager.admin.application.allowedmac.port.SaveAllowedMacPort
-import cz.grimir.wifimanager.admin.application.shared.port.AdminEventPublisher
+import cz.grimir.wifimanager.admin.application.command.UpsertAllowedMacCommand
+import cz.grimir.wifimanager.admin.application.command.handler.AdminUpsertAllowedMacUsecase
+import cz.grimir.wifimanager.admin.application.port.FindAllowedMacPort
+import cz.grimir.wifimanager.admin.application.port.SaveAllowedMacPort
+import cz.grimir.wifimanager.admin.application.port.AdminEventPublisher
 import cz.grimir.wifimanager.admin.core.value.AllowedMac
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.TimeProvider
@@ -18,6 +18,7 @@ import org.mockito.Mockito.verify
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verifyNoMoreInteractions
+import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 
@@ -147,7 +148,7 @@ class AdminUpsertAllowedMacUsecaseTest {
                 macAddress = "aa:bb:cc:dd:ee:11",
                 hostname = "camera",
                 note = "lobby camera",
-                validityDuration = java.time.Duration.ofMinutes(30),
+                validityDuration = Duration.ofMinutes(30),
                 user = user,
             ),
         )

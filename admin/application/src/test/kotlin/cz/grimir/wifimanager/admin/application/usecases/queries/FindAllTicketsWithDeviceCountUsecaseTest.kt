@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.admin.application.usecases.queries
 
-import cz.grimir.wifimanager.admin.application.ticket.handler.query.FindAllTicketsWithDeviceCountUsecase
-import cz.grimir.wifimanager.admin.application.ticket.model.TicketWithDeviceCount
-import cz.grimir.wifimanager.admin.application.ticket.port.FindTicketPort
+import cz.grimir.wifimanager.admin.application.query.handler.FindAllTicketsWithDeviceCountUsecase
+import cz.grimir.wifimanager.admin.application.query.model.TicketWithDeviceCount
+import cz.grimir.wifimanager.admin.application.port.FindTicketPort
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.shared.core.TicketId
 import cz.grimir.wifimanager.shared.core.UserId

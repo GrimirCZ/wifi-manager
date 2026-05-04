@@ -2,11 +2,10 @@ package cz.grimir.wifimanager.captive.persistence
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import cz.grimir.wifimanager.captive.application.devicefingerprint.CaptiveFingerprintingProperties
-import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
-import cz.grimir.wifimanager.captive.application.devicefingerprint.UserAgentClassifier
+import cz.grimir.wifimanager.captive.application.config.CaptiveFingerprintingProperties
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.UserAgentClassifier
 import cz.grimir.wifimanager.captive.core.value.Device
-import cz.grimir.wifimanager.shared.core.TicketId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach

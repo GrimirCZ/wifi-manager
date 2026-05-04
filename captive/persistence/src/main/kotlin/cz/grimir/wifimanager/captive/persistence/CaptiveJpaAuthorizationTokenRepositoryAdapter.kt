@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.persistence
 
-import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.authorization.port.ModifyAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.port.ModifyAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
 import cz.grimir.wifimanager.captive.persistence.mapper.CaptiveAuthorizationTokenMapper
 import cz.grimir.wifimanager.shared.core.TicketId

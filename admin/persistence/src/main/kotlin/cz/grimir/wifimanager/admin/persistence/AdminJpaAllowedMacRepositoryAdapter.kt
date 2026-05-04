@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.admin.persistence
 
-import cz.grimir.wifimanager.admin.application.allowedmac.port.DeleteAllowedMacPort
-import cz.grimir.wifimanager.admin.application.allowedmac.port.FindAllowedMacPort
-import cz.grimir.wifimanager.admin.application.allowedmac.port.SaveAllowedMacPort
+import cz.grimir.wifimanager.admin.application.port.DeleteAllowedMacPort
+import cz.grimir.wifimanager.admin.application.port.FindAllowedMacPort
+import cz.grimir.wifimanager.admin.application.port.SaveAllowedMacPort
 import cz.grimir.wifimanager.admin.core.value.AllowedMac
 import cz.grimir.wifimanager.admin.persistence.mapper.AdminAllowedMacMapper
 import org.springframework.stereotype.Repository

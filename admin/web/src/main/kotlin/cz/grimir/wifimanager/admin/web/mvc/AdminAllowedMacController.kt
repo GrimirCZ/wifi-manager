@@ -1,11 +1,11 @@
 package cz.grimir.wifimanager.admin.web.mvc
 
-import cz.grimir.wifimanager.admin.application.allowedmac.command.DeleteAllowedMacCommand
-import cz.grimir.wifimanager.admin.application.allowedmac.command.UpsertAllowedMacCommand
-import cz.grimir.wifimanager.admin.application.allowedmac.handler.command.AdminDeleteAllowedMacUsecase
-import cz.grimir.wifimanager.admin.application.allowedmac.handler.command.AdminUpsertAllowedMacUsecase
-import cz.grimir.wifimanager.admin.application.allowedmac.handler.query.AdminListAllowedMacsUsecase
-import cz.grimir.wifimanager.admin.application.device.handler.query.AdminListNetworkClientsUsecase
+import cz.grimir.wifimanager.admin.application.command.DeleteAllowedMacCommand
+import cz.grimir.wifimanager.admin.application.command.UpsertAllowedMacCommand
+import cz.grimir.wifimanager.admin.application.command.handler.AdminDeleteAllowedMacUsecase
+import cz.grimir.wifimanager.admin.application.command.handler.AdminUpsertAllowedMacUsecase
+import cz.grimir.wifimanager.admin.application.query.handler.AdminListAllowedMacsUsecase
+import cz.grimir.wifimanager.admin.application.query.handler.AdminListNetworkClientsUsecase
 import cz.grimir.wifimanager.admin.web.mvc.dto.AllowedMacRequestDto
 import cz.grimir.wifimanager.admin.web.mvc.dto.AllowedMacViewDto
 import cz.grimir.wifimanager.admin.web.mvc.dto.NetworkClientViewDto

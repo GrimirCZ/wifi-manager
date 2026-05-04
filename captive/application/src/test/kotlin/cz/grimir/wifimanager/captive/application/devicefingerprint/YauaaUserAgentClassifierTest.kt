@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.application.devicefingerprint
 
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.YauaaUserAgentClassifier
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test

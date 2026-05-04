@@ -1,6 +1,5 @@
 package cz.grimir.wifimanager.captive.web.security.support
 
-import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
 import cz.grimir.wifimanager.shared.security.mvc.ClientIdentityUnavailableException
 import cz.grimir.wifimanager.shared.security.mvc.MissingClientMacException
 import io.github.oshai.kotlinlogging.KotlinLogging

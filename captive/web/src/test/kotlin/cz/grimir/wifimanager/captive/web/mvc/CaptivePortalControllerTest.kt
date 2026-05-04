@@ -1,11 +1,11 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
-import cz.grimir.wifimanager.captive.application.authorization.command.AuthorizeDeviceWithCodeCommand
-import cz.grimir.wifimanager.captive.application.authorization.handler.command.AuthorizeDeviceWithCodeUsecase
-import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.identity.port.CaptiveUserIdentityPort
-import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.TouchNetworkUserDeviceUsecase
-import cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice
+import cz.grimir.wifimanager.captive.application.command.AuthorizeDeviceWithCodeCommand
+import cz.grimir.wifimanager.captive.application.command.handler.AuthorizeDeviceWithCodeUsecase
+import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.port.CaptiveUserIdentityPort
+import cz.grimir.wifimanager.captive.application.command.handler.TouchNetworkUserDeviceUsecase
+import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintStatus
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveAccessCodeForm
@@ -267,10 +267,9 @@ class CaptivePortalControllerTest {
                 CaptiveClientAccessStatus(
                     state = CaptiveClientAccessState.REAUTH_REQUIRED_NETWORK_USER_DEVICE,
                     networkUserDevice =
-                        cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice(
+                        NetworkUserDevice(
                             userId =
-                                cz.grimir.wifimanager.shared.core
-                                    .UserId(UUID.fromString("00000000-0000-0000-0000-000000000111")),
+                                UserId(UUID.fromString("00000000-0000-0000-0000-000000000111")),
                             mac = clientInfo.macAddress,
                             name = "Work Laptop",
                             hostname = clientInfo.hostname,
@@ -278,7 +277,7 @@ class CaptivePortalControllerTest {
                             authorizedAt = Instant.parse("2025-01-01T10:00:00Z"),
                             lastSeenAt = Instant.parse("2025-01-01T10:05:00Z"),
                             fingerprintProfile = null,
-                            fingerprintStatus = cz.grimir.wifimanager.captive.core.value.DeviceFingerprintStatus.NONE,
+                            fingerprintStatus = DeviceFingerprintStatus.NONE,
                             fingerprintVerifiedAt = null,
                             reauthRequiredAt = Instant.parse("2025-01-01T10:06:00Z"),
                         ),

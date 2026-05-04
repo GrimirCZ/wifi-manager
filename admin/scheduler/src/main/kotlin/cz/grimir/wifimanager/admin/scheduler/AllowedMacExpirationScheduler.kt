@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.admin.scheduler
 
-import cz.grimir.wifimanager.admin.application.allowedmac.handler.command.AdminDeleteExpiredAllowedMacsUsecase
+import cz.grimir.wifimanager.admin.application.command.handler.AdminDeleteExpiredAllowedMacsUsecase
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import org.springframework.scheduling.annotation.Scheduled

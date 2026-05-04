@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.captive.persistence.mapper
 
-import cz.grimir.wifimanager.captive.application.identity.model.CaptiveUserIdentityProfile
+import cz.grimir.wifimanager.captive.application.query.model.CaptiveUserIdentityProfile
 import cz.grimir.wifimanager.captive.persistence.entity.CaptiveUserIdentityEntity
 import cz.grimir.wifimanager.shared.core.UserId
 import org.springframework.stereotype.Component

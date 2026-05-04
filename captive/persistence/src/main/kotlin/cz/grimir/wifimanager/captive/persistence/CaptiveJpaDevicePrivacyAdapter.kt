@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.captive.persistence
 
-import cz.grimir.wifimanager.captive.application.deviceprivacy.port.CaptiveDevicePrivacyPort
+import cz.grimir.wifimanager.captive.application.port.CaptiveDevicePrivacyPort
 import org.springframework.stereotype.Repository
 
 @Repository

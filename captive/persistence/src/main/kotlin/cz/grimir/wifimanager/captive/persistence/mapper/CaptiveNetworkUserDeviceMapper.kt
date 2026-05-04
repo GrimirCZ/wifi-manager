@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.persistence.mapper
 
-import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
-import cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService
+import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.persistence.entity.NetworkUserDeviceEntity
 import cz.grimir.wifimanager.shared.core.UserId
 import org.springframework.stereotype.Component

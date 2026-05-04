@@ -1,14 +1,15 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
-import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.CompleteNetworkUserDeviceReauthUsecase
-import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.query.FindNetworkUserDeviceByMacUsecase
-import cz.grimir.wifimanager.captive.application.networkuserdevice.model.NetworkUserDevice
+import cz.grimir.wifimanager.captive.application.command.handler.CompleteNetworkUserDeviceReauthUsecase
+import cz.grimir.wifimanager.captive.application.query.handler.FindNetworkUserDeviceByMacUsecase
+import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintStatus
 import cz.grimir.wifimanager.captive.web.CaptiveLoginProperties
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveLdapLoginForm
 import cz.grimir.wifimanager.captive.web.security.CaptiveAuthSessionLoginHandler
 import cz.grimir.wifimanager.captive.web.security.LdapLoginResult
 import cz.grimir.wifimanager.captive.web.security.support.ClientInfo
+import cz.grimir.wifimanager.shared.core.UserId
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HtmxRequest
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpSession
@@ -185,8 +186,7 @@ class CaptiveLoginControllerTest {
     private fun existingDevice(reauthRequiredAt: Instant? = null): NetworkUserDevice =
         NetworkUserDevice(
             userId =
-                cz.grimir.wifimanager.shared.core
-                    .UserId(UUID.fromString("00000000-0000-0000-0000-000000000111")),
+                UserId(UUID.fromString("00000000-0000-0000-0000-000000000111")),
             mac = clientInfo.macAddress,
             name = "Work Laptop",
             hostname = clientInfo.hostname,

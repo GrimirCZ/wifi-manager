@@ -1,7 +1,8 @@
 package cz.grimir.wifimanager.captive.application.authorization.handler.command
 
-import cz.grimir.wifimanager.captive.application.authorization.command.CreateCodeBasedAuthorizationCommand
-import cz.grimir.wifimanager.captive.application.authorization.port.ModifyAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.command.CreateCodeBasedAuthorizationCommand
+import cz.grimir.wifimanager.captive.application.command.handler.CreateCodeBasedAuthorizationUsecase
+import cz.grimir.wifimanager.captive.application.port.ModifyAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
 import cz.grimir.wifimanager.shared.core.TicketId
 import cz.grimir.wifimanager.shared.core.UserId

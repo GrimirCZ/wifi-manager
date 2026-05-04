@@ -1,9 +1,9 @@
 package cz.grimir.wifimanager.admin.application.usecases.queries
 
-import cz.grimir.wifimanager.admin.application.identity.handler.query.FindUserIdentityByUserIdUsecase
-import cz.grimir.wifimanager.admin.application.identity.model.UserIdentity
-import cz.grimir.wifimanager.admin.application.identity.port.FindUserIdentityPort
-import cz.grimir.wifimanager.admin.application.identity.query.FindUserIdentityByUserIdQuery
+import cz.grimir.wifimanager.admin.application.query.handler.FindUserIdentityByUserIdUsecase
+import cz.grimir.wifimanager.admin.application.query.model.UserIdentity
+import cz.grimir.wifimanager.admin.application.port.FindUserIdentityPort
+import cz.grimir.wifimanager.admin.application.query.FindUserIdentityByUserIdQuery
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.core.UserRole
 import org.junit.jupiter.api.Assertions.assertEquals

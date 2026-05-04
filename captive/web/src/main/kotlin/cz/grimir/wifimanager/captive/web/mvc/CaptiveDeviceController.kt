@@ -1,15 +1,15 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
-import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
-import cz.grimir.wifimanager.captive.application.networkuser.handler.query.FindNetworkUserByUserIdUsecase
-import cz.grimir.wifimanager.captive.application.networkuser.handler.query.ResolveNetworkUserLimitUsecase
-import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.AuthorizeNetworkUserDeviceUsecase
-import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.DeviceOwnershipException
-import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.RemoveNetworkUserDeviceUsecase
-import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.query.CountNetworkUserDevicesByUserIdUsecase
-import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.query.FindNetworkUserDeviceByMacUsecase
-import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.query.FindNetworkUserDevicesByUserIdUsecase
-import cz.grimir.wifimanager.captive.application.networkuserdevice.support.MacAddressUtils
+import cz.grimir.wifimanager.captive.application.port.RouterAgentPort
+import cz.grimir.wifimanager.captive.application.query.handler.FindNetworkUserByUserIdUsecase
+import cz.grimir.wifimanager.captive.application.query.handler.ResolveNetworkUserLimitUsecase
+import cz.grimir.wifimanager.captive.application.command.handler.AuthorizeNetworkUserDeviceUsecase
+import cz.grimir.wifimanager.captive.application.command.handler.DeviceOwnershipException
+import cz.grimir.wifimanager.captive.application.command.handler.RemoveNetworkUserDeviceUsecase
+import cz.grimir.wifimanager.captive.application.query.handler.CountNetworkUserDevicesByUserIdUsecase
+import cz.grimir.wifimanager.captive.application.query.handler.FindNetworkUserDeviceByMacUsecase
+import cz.grimir.wifimanager.captive.application.query.handler.FindNetworkUserDevicesByUserIdUsecase
+import cz.grimir.wifimanager.captive.application.support.MacAddressUtils
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveDeviceNameForm
 import cz.grimir.wifimanager.captive.web.security.support.ClientInfo
 import cz.grimir.wifimanager.captive.web.security.support.CurrentClient

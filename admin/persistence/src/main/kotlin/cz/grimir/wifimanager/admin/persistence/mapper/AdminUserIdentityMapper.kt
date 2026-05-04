@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.admin.persistence.mapper
 
-import cz.grimir.wifimanager.admin.application.identity.model.UserIdentity
+import cz.grimir.wifimanager.admin.application.query.model.UserIdentity
 import cz.grimir.wifimanager.admin.persistence.entity.AdminUserIdentityEntity
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.core.UserRole

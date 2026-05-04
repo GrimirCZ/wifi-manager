@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.events.local
 
-import cz.grimir.wifimanager.captive.application.allowedmac.handler.command.CaptiveRemoveAllowedMacUsecase
-import cz.grimir.wifimanager.captive.application.allowedmac.handler.command.CaptiveUpsertAllowedMacUsecase
+import cz.grimir.wifimanager.captive.application.command.handler.CaptiveRemoveAllowedMacUsecase
+import cz.grimir.wifimanager.captive.application.command.handler.CaptiveUpsertAllowedMacUsecase
 import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import cz.grimir.wifimanager.shared.events.AllowedMacRemovedEvent
 import cz.grimir.wifimanager.shared.events.AllowedMacUpsertedEvent

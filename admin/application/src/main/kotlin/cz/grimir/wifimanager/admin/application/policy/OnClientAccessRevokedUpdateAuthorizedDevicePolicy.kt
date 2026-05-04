@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.admin.application.policy
 
-import cz.grimir.wifimanager.admin.application.ticket.port.FindAuthorizedDevicePort
-import cz.grimir.wifimanager.admin.application.ticket.port.SaveAuthorizedDevicePort
+import cz.grimir.wifimanager.admin.application.port.FindAuthorizedDevicePort
+import cz.grimir.wifimanager.admin.application.port.SaveAuthorizedDevicePort
 import cz.grimir.wifimanager.shared.events.ClientAccessRevokedEvent
 import org.springframework.stereotype.Service
 

@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.captive.auth.google
 
-import cz.grimir.wifimanager.captive.application.auth.port.UserAuthProvider
+import cz.grimir.wifimanager.captive.application.port.UserAuthProviderPort
 import cz.grimir.wifimanager.shared.application.identity.google.GoogleDirectoryApiClient
 import cz.grimir.wifimanager.shared.application.identity.google.GoogleDirectoryApiProperties
 import cz.grimir.wifimanager.shared.core.UserDirectoryClient
@@ -31,10 +31,10 @@ class CaptiveAuthGoogleConfig {
         properties: GoogleLdapProperties,
         directoryProperties: GoogleDirectoryApiProperties,
         directoryApiClient: GoogleDirectoryApiClient,
-    ): UserAuthProvider {
+    ): UserAuthProviderPort {
         if (!properties.isConfigured(directoryProperties)) {
             logger.warn { "Google LDAP login disabled: missing search configuration or service-account-json-path." }
-            return UserAuthProvider { null }
+            return UserAuthProviderPort { null }
         }
 
         val allowedDevicesByGroup = properties.allowedDevicesByGroup()

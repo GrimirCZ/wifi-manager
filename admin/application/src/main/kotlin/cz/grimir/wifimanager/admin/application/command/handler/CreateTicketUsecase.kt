@@ -1,0 +1,81 @@
+package cz.grimir.wifimanager.admin.application.command.handler
+
+import cz.grimir.wifimanager.admin.application.port.AdminEventPublisher
+import cz.grimir.wifimanager.admin.application.command.CreateTicketCommand
+import cz.grimir.wifimanager.admin.core.exceptions.InvalidTicketDurationException
+import cz.grimir.wifimanager.admin.application.port.FindTicketPort
+import cz.grimir.wifimanager.admin.application.port.SaveTicketPort
+import cz.grimir.wifimanager.admin.application.support.AccessCodeGenerator
+import cz.grimir.wifimanager.admin.application.policy.TicketDurationPolicy
+import cz.grimir.wifimanager.admin.core.aggregates.Ticket
+import cz.grimir.wifimanager.admin.core.exceptions.UserAlreadyHasActiveTickets
+import cz.grimir.wifimanager.shared.core.TicketId
+import cz.grimir.wifimanager.shared.core.UserRole
+import cz.grimir.wifimanager.shared.events.TicketCreatedEvent
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
+
+private val logger = KotlinLogging.logger {}
+
+@Service
+class CreateTicketUsecase(
+    private val saveTicketPort: SaveTicketPort,
+    private val findTicketPort: FindTicketPort,
+    private val eventPublisher: AdminEventPublisher,
+    private val accessCodeGenerator: AccessCodeGenerator,
+) {
+    @Transactional
+    @Throws(UserAlreadyHasActiveTickets::class)
+    fun create(command: CreateTicketCommand): Ticket {
+        if (!TicketDurationPolicy.isAllowed(command.duration, command.user)) {
+            throw InvalidTicketDurationException(command.duration)
+        }
+
+        val existingUserTickets = findTicketPort.findByAuthorId(command.user.userId.id)
+        val now = Instant.now()
+        val activeUserTickets = existingUserTickets.filter { it.isActive(now) }
+
+        if (!command.user.can(UserRole::canHaveMultipleTickets) && activeUserTickets.isNotEmpty()) {
+            throw UserAlreadyHasActiveTickets(command.user.userId, activeUserTickets.map { it.id })
+        }
+
+        val validUntil = now.plusSeconds(command.duration.seconds)
+
+        val ticket =
+            Ticket(
+                id = TicketId.new(),
+                accessCode = accessCodeGenerator.generate(6),
+                createdAt = now,
+                validUntil = validUntil,
+                wasCanceled = false,
+                authorId = command.user.userId,
+                requireUserNameOnLogin = command.requireUserNameOnLogin,
+            )
+
+        saveTicketPort.save(ticket)
+
+        eventPublisher.publish(
+            TicketCreatedEvent(
+                id = ticket.id,
+                accessCode = ticket.accessCode,
+                createdAt = ticket.createdAt,
+                validUntil = ticket.validUntil,
+                requireUserNameOnLogin = ticket.requireUserNameOnLogin,
+                author =
+                    TicketCreatedEvent.Author(
+                        userId = command.user.userId,
+                        email = command.user.email,
+                        displayName = command.user.displayName,
+                    ),
+            ),
+        )
+
+        logger.info {
+            "Ticket created id=${ticket.id} authorId=${command.user.userId} validUntil=${ticket.validUntil} requireUserNameOnLogin=${ticket.requireUserNameOnLogin}"
+        }
+
+        return ticket
+    }
+}

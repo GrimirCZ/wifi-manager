@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.captive.events.local
 
-import cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command.RemoveNetworkUserDeviceUsecase
+import cz.grimir.wifimanager.captive.application.command.handler.RemoveNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceDeauthorizeRequestedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging

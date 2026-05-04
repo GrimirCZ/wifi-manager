@@ -2,9 +2,9 @@ package cz.grimir.wifimanager.captive.auth.keycloak
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import cz.grimir.wifimanager.captive.application.auth.model.UserAuthenticationResult
-import cz.grimir.wifimanager.captive.application.auth.model.UserCredentials
-import cz.grimir.wifimanager.captive.application.auth.port.UserAuthProvider
+import cz.grimir.wifimanager.captive.application.command.model.UserAuthenticationResult
+import cz.grimir.wifimanager.captive.application.command.model.UserCredentials
+import cz.grimir.wifimanager.captive.application.port.UserAuthProviderPort
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.ResolveUserCommand
 import cz.grimir.wifimanager.shared.core.RoleMappingInput
@@ -23,7 +23,7 @@ class KeycloakPasswordGrantAuthProvider(
     private val restClient: RestClient,
     private val properties: KeycloakPasswordGrantProperties,
     private val userDirectoryClient: UserDirectoryClient,
-) : UserAuthProvider {
+) : UserAuthProviderPort {
     private val logger = KotlinLogging.logger {}
     private val allowedDevicesByRole = properties.allowedDevicesByRole()
 

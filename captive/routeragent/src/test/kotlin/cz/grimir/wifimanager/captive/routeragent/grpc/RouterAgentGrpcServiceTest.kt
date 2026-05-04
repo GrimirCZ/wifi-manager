@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.captive.routeragent.grpc
 
-import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadPort
-import cz.grimir.wifimanager.captive.application.authorization.port.FindAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.networkuserdevice.port.NetworkUserDeviceReadPort
+import cz.grimir.wifimanager.captive.application.port.AllowedMacReadPort
+import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
+import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceReadPort
 import cz.grimir.wifimanager.shared.events.AuthorizedClientObservedEvent
 import io.grpc.stub.StreamObserver
 import org.junit.jupiter.api.Assertions.assertEquals

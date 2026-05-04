@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.application.policy
 
-import cz.grimir.wifimanager.captive.application.authorization.command.CreateCodeBasedAuthorizationCommand
-import cz.grimir.wifimanager.captive.application.authorization.handler.command.CreateCodeBasedAuthorizationUsecase
+import cz.grimir.wifimanager.captive.application.command.CreateCodeBasedAuthorizationCommand
+import cz.grimir.wifimanager.captive.application.command.handler.CreateCodeBasedAuthorizationUsecase
 import cz.grimir.wifimanager.shared.events.TicketCreatedEvent
 import org.springframework.stereotype.Service
 

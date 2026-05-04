@@ -1,10 +1,11 @@
 package cz.grimir.wifimanager.captive.application.allowedmac.handler.command
 
-import cz.grimir.wifimanager.captive.application.allowedmac.model.AllowedMac
-import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacReadPort
-import cz.grimir.wifimanager.captive.application.allowedmac.port.AllowedMacWritePort
-import cz.grimir.wifimanager.captive.application.authorization.event.MacAuthorizationStateChangedEvent
-import cz.grimir.wifimanager.captive.application.shared.port.CaptiveEventPublisher
+import cz.grimir.wifimanager.captive.application.command.handler.CaptiveRemoveAllowedMacUsecase
+import cz.grimir.wifimanager.captive.application.query.model.AllowedMac
+import cz.grimir.wifimanager.captive.application.port.AllowedMacReadPort
+import cz.grimir.wifimanager.captive.application.port.AllowedMacWritePort
+import cz.grimir.wifimanager.captive.application.event.MacAuthorizationStateChangedEvent
+import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito.mock

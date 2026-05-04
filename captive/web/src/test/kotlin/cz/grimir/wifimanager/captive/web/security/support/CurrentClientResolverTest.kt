@@ -1,8 +1,9 @@
 package cz.grimir.wifimanager.captive.web.security.support
 
-import cz.grimir.wifimanager.captive.application.devicefingerprint.CaptiveFingerprintingProperties
-import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
-import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
+import cz.grimir.wifimanager.captive.application.config.CaptiveFingerprintingProperties
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService
+import cz.grimir.wifimanager.captive.application.port.RouterAgentPort
+import cz.grimir.wifimanager.captive.application.port.ClientInfo
 import jakarta.servlet.http.HttpServletRequest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -27,7 +28,7 @@ class CurrentClientResolverTest {
         given(request.remoteAddr).willReturn("192.0.2.10")
         given(routerAgentPort.getClientInfo("192.0.2.10"))
             .willReturn(
-                cz.grimir.wifimanager.captive.application.integration.routeragent.port.ClientInfo(
+                ClientInfo(
                     macAddress = "  AA-BB-CC-DD-EE-FF  ",
                     hostname = "phone",
                 ),

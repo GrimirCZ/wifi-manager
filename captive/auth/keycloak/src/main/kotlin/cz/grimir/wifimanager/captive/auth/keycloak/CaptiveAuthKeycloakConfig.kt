@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.captive.auth.keycloak
 
-import cz.grimir.wifimanager.captive.application.auth.port.UserAuthProvider
+import cz.grimir.wifimanager.captive.application.port.UserAuthProviderPort
 import cz.grimir.wifimanager.shared.core.UserDirectoryClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -27,10 +27,10 @@ class CaptiveAuthKeycloakConfig {
     fun keycloakPasswordGrantAuthProvider(
         properties: KeycloakPasswordGrantProperties,
         userDirectoryClient: UserDirectoryClient,
-    ): UserAuthProvider {
+    ): UserAuthProviderPort {
         if (!properties.isConfigured()) {
             logger.warn { "Keycloak password grant login disabled: missing issuer-uri, client-id, or client-secret." }
-            return UserAuthProvider { null }
+            return UserAuthProviderPort { null }
         }
 
         val restClient = RestClient.builder().baseUrl(properties.issuerUri).build()

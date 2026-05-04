@@ -1,10 +1,10 @@
 package cz.grimir.wifimanager.admin.application.usecases.commands
 
-import cz.grimir.wifimanager.admin.application.ticket.command.AddAuthorizedDeviceCommand
-import cz.grimir.wifimanager.admin.application.ticket.handler.command.AddAuthorizedDeviceUsecase
-import cz.grimir.wifimanager.admin.application.ticket.port.FindAuthorizedDevicePort
-import cz.grimir.wifimanager.admin.application.ticket.port.FindTicketPort
-import cz.grimir.wifimanager.admin.application.ticket.port.SaveAuthorizedDevicePort
+import cz.grimir.wifimanager.admin.application.command.AddAuthorizedDeviceCommand
+import cz.grimir.wifimanager.admin.application.command.handler.AddAuthorizedDeviceUsecase
+import cz.grimir.wifimanager.admin.application.port.FindAuthorizedDevicePort
+import cz.grimir.wifimanager.admin.application.port.FindTicketPort
+import cz.grimir.wifimanager.admin.application.port.SaveAuthorizedDevicePort
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.admin.core.value.AuthorizedDevice
 import cz.grimir.wifimanager.shared.core.TicketId
@@ -19,7 +19,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.verifyNoInteractions
 import java.time.Instant
 import java.util.UUID
 

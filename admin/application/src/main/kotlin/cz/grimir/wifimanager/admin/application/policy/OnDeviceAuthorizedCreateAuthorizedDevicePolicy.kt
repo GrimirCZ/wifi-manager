@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.admin.application.policy
 
-import cz.grimir.wifimanager.admin.application.ticket.command.AddAuthorizedDeviceCommand
-import cz.grimir.wifimanager.admin.application.ticket.handler.command.AddAuthorizedDeviceUsecase
+import cz.grimir.wifimanager.admin.application.command.AddAuthorizedDeviceCommand
+import cz.grimir.wifimanager.admin.application.command.handler.AddAuthorizedDeviceUsecase
 import cz.grimir.wifimanager.shared.events.DeviceAuthorizedEvent
 import org.springframework.stereotype.Service
 

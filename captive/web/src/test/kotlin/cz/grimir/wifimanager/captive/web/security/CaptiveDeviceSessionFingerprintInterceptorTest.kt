@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.web.security
 
-import cz.grimir.wifimanager.captive.application.devicefingerprint.AuthorizedClientFingerprintGuard
-import cz.grimir.wifimanager.captive.application.devicefingerprint.DeviceFingerprintService
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.AuthorizedClientFingerprintGuard
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintProfile
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintSignal
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintSignalStrength

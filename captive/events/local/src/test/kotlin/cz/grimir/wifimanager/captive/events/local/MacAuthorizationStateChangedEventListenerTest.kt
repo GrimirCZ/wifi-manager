@@ -1,9 +1,9 @@
 package cz.grimir.wifimanager.captive.events.local
 
-import cz.grimir.wifimanager.captive.application.authorization.event.MacAuthorizationStateChangedEvent
-import cz.grimir.wifimanager.captive.application.authorization.support.ClientAccessAuthorizationResolver
-import cz.grimir.wifimanager.captive.application.deviceprivacy.handler.ScrubDeauthorizedCaptiveDeviceUsecase
-import cz.grimir.wifimanager.captive.application.integration.routeragent.port.RouterAgentPort
+import cz.grimir.wifimanager.captive.application.event.MacAuthorizationStateChangedEvent
+import cz.grimir.wifimanager.captive.application.support.ClientAccessAuthorizationResolver
+import cz.grimir.wifimanager.captive.application.command.handler.ScrubDeauthorizedCaptiveDeviceUsecase
+import cz.grimir.wifimanager.captive.application.port.RouterAgentPort
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito.mock

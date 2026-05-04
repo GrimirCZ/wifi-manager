@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.captive.auth.google
 
-import cz.grimir.wifimanager.captive.application.auth.model.UserAuthenticationResult
-import cz.grimir.wifimanager.captive.application.auth.model.UserCredentials
-import cz.grimir.wifimanager.captive.application.auth.port.UserAuthProvider
+import cz.grimir.wifimanager.captive.application.command.model.UserAuthenticationResult
+import cz.grimir.wifimanager.captive.application.command.model.UserCredentials
+import cz.grimir.wifimanager.captive.application.port.UserAuthProviderPort
 import cz.grimir.wifimanager.shared.application.identity.google.GoogleDirectoryApiClient
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.ResolveUserCommand
@@ -17,7 +17,7 @@ class GoogleLdapAuthProvider(
     private val directoryApiClient: GoogleDirectoryApiClient,
     private val userDirectoryClient: UserDirectoryClient,
     private val allowedDevicesByGroup: Map<String, Int>,
-) : UserAuthProvider {
+) : UserAuthProviderPort {
     private val logger = KotlinLogging.logger {}
 
     override fun authenticate(credentials: UserCredentials): UserAuthenticationResult? {

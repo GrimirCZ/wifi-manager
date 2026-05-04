@@ -1,6 +1,6 @@
 package cz.grimir.wifimanager.admin.events.local
 
-import cz.grimir.wifimanager.admin.application.shared.port.AdminEventPublisher
+import cz.grimir.wifimanager.admin.application.port.AdminEventPublisher
 import cz.grimir.wifimanager.shared.events.AllowedMacRemovedEvent
 import cz.grimir.wifimanager.shared.events.AllowedMacUpsertedEvent
 import cz.grimir.wifimanager.shared.events.ClientKickedEvent
