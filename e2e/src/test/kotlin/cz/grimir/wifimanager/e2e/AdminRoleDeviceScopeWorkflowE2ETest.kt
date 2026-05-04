@@ -51,7 +51,7 @@ class AdminRoleDeviceScopeWorkflowE2ETest : BaseWorkflowE2ETest() {
                     .setName("All devices"),
             ).click()
         page.waitForURL("**/admin/devices?scope=all")
-        assertThat(page.getByText("Owner:")).isVisible()
+        assertThat(page.getByText("Owner")).isVisible()
 
         val deviceRow =
             page
