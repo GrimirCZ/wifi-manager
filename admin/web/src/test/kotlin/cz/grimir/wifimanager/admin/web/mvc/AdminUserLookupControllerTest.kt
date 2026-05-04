@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.admin.web.mvc
 
+import cz.grimir.wifimanager.admin.application.query.FindUserIdentityByUserIdQuery
 import cz.grimir.wifimanager.admin.application.query.handler.FindUserIdentityByUserIdUsecase
 import cz.grimir.wifimanager.admin.application.query.model.UserIdentity
-import cz.grimir.wifimanager.admin.application.query.FindUserIdentityByUserIdQuery
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.core.UserRole

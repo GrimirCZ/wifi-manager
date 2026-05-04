@@ -1,10 +1,10 @@
 package cz.grimir.wifimanager.captive.application.command.handler
 
-import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService
-import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
+import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceReadPort
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceWritePort
-import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
+import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintProfile
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.core.UserId

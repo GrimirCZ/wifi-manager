@@ -2,9 +2,9 @@ package cz.grimir.wifimanager.captive.web.mvc
 
 import cz.grimir.wifimanager.captive.application.command.AuthorizeDeviceWithCodeCommand
 import cz.grimir.wifimanager.captive.application.command.handler.AuthorizeDeviceWithCodeUsecase
-import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.port.CaptiveUserIdentityPort
 import cz.grimir.wifimanager.captive.application.command.handler.TouchNetworkUserDeviceUsecase
+import cz.grimir.wifimanager.captive.application.port.CaptiveUserIdentityPort
+import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintStatus

@@ -1,10 +1,10 @@
 package cz.grimir.wifimanager.captive.application.command.handler
 
 import cz.grimir.wifimanager.captive.application.command.AuthorizeDeviceWithCodeCommand
+import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.port.ModifyAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService
-import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.core.exceptions.InvalidAccessCodeException
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.events.DeviceAuthorizedEvent

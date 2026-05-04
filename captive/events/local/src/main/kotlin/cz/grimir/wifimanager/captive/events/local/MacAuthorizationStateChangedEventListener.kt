@@ -1,9 +1,9 @@
 package cz.grimir.wifimanager.captive.events.local
 
-import cz.grimir.wifimanager.captive.application.event.MacAuthorizationStateChangedEvent
-import cz.grimir.wifimanager.captive.application.support.ClientAccessAuthorizationResolver
 import cz.grimir.wifimanager.captive.application.command.handler.ScrubDeauthorizedCaptiveDeviceUsecase
+import cz.grimir.wifimanager.captive.application.event.MacAuthorizationStateChangedEvent
 import cz.grimir.wifimanager.captive.application.port.RouterAgentPort
+import cz.grimir.wifimanager.captive.application.support.ClientAccessAuthorizationResolver
 import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Async

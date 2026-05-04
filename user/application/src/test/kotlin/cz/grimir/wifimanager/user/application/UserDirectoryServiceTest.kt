@@ -5,11 +5,11 @@ import cz.grimir.wifimanager.shared.core.RoleMappingInput
 import cz.grimir.wifimanager.shared.core.UserProfileSnapshot
 import cz.grimir.wifimanager.shared.core.UserRole
 import cz.grimir.wifimanager.shared.events.UserCreatedOrUpdatedEvent
-import cz.grimir.wifimanager.user.application.support.UserDirectoryService
 import cz.grimir.wifimanager.user.application.port.UserDirectoryRepository
 import cz.grimir.wifimanager.user.application.port.UserEventPublisher
 import cz.grimir.wifimanager.user.application.port.UserIdentityRecord
 import cz.grimir.wifimanager.user.application.support.RoleMapper
+import cz.grimir.wifimanager.user.application.support.UserDirectoryService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.Instant

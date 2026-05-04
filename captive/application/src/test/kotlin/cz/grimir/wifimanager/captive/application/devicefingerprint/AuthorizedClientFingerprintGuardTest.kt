@@ -1,14 +1,14 @@
 package cz.grimir.wifimanager.captive.application.devicefingerprint
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import cz.grimir.wifimanager.captive.application.config.CaptiveFingerprintingProperties
 import cz.grimir.wifimanager.captive.application.event.MacAuthorizationStateChangedEvent
+import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.port.ModifyAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.config.CaptiveFingerprintingProperties
-import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceReadPort
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceWritePort
-import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
+import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.application.support.devicefingerprint.AuthorizedClientFingerprintGuard
 import cz.grimir.wifimanager.captive.application.support.devicefingerprint.AuthorizedMacState
 import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService

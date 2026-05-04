@@ -3,11 +3,11 @@ package cz.grimir.wifimanager.captive.application.networkuserdevice.handler.comm
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import cz.grimir.wifimanager.captive.application.command.handler.CompleteNetworkUserDeviceReauthUsecase
 import cz.grimir.wifimanager.captive.application.config.CaptiveFingerprintingProperties
-import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService
-import cz.grimir.wifimanager.captive.application.support.devicefingerprint.UserAgentClassifier
-import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceReadPort
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceWritePort
+import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.UserAgentClassifier
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintProfile
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintSignal
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintSignalStrength

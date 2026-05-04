@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.captive.application.command.handler
 
-import cz.grimir.wifimanager.captive.application.support.ClientAccessAuthorizationResolver
 import cz.grimir.wifimanager.captive.application.port.CaptiveDevicePrivacyPort
+import cz.grimir.wifimanager.captive.application.support.ClientAccessAuthorizationResolver
 import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service

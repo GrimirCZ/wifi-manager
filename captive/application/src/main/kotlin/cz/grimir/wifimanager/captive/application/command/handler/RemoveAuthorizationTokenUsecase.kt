@@ -2,9 +2,9 @@ package cz.grimir.wifimanager.captive.application.command.handler
 
 import cz.grimir.wifimanager.captive.application.command.RemoveAuthorizationTokenCommand
 import cz.grimir.wifimanager.captive.application.event.MacAuthorizationStateChangedEvent
+import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.port.ModifyAuthorizationTokenPort
-import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.core.value.Device
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service

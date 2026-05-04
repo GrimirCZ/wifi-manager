@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.admin.application.query.handler
 
-import cz.grimir.wifimanager.admin.application.query.model.UserIdentity
 import cz.grimir.wifimanager.admin.application.port.FindUserIdentityPort
 import cz.grimir.wifimanager.admin.application.query.FindUserIdentityByUserIdQuery
+import cz.grimir.wifimanager.admin.application.query.model.UserIdentity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

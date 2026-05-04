@@ -1,7 +1,7 @@
 package cz.grimir.wifimanager.admin.application.command.handler
 
-import cz.grimir.wifimanager.admin.application.port.AdminEventPublisher
 import cz.grimir.wifimanager.admin.application.command.KickDeviceCommand
+import cz.grimir.wifimanager.admin.application.port.AdminEventPublisher
 import cz.grimir.wifimanager.admin.application.port.FindTicketPort
 import cz.grimir.wifimanager.admin.application.port.SaveTicketPort
 import cz.grimir.wifimanager.admin.core.exceptions.UserNotAllowedToKickDevice

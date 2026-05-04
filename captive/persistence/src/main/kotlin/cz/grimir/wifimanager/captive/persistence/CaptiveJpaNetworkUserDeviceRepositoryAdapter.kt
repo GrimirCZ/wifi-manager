@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.captive.persistence
 
-import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceReadPort
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceWritePort
+import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.persistence.entity.CaptiveDeviceEntity
 import cz.grimir.wifimanager.captive.persistence.mapper.CaptiveNetworkUserDeviceMapper
 import cz.grimir.wifimanager.shared.core.UserId

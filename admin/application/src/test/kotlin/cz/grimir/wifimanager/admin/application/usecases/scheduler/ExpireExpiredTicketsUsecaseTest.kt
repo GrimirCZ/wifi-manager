@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.admin.application.usecases.scheduler
 
-import cz.grimir.wifimanager.admin.application.port.AdminEventPublisher
 import cz.grimir.wifimanager.admin.application.command.ExpireTicketsCommand
 import cz.grimir.wifimanager.admin.application.command.handler.ExpireExpiredTicketsUsecase
+import cz.grimir.wifimanager.admin.application.port.AdminEventPublisher
 import cz.grimir.wifimanager.admin.application.port.FindTicketPort
 import cz.grimir.wifimanager.admin.application.port.SaveTicketPort
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket

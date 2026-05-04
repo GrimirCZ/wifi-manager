@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.captive.events.local
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import cz.grimir.wifimanager.captive.application.support.devicefingerprint.AuthorizedClientFingerprintGuard
 import cz.grimir.wifimanager.captive.application.config.CaptiveFingerprintingProperties
+import cz.grimir.wifimanager.captive.application.support.devicefingerprint.AuthorizedClientFingerprintGuard
 import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService
 import cz.grimir.wifimanager.captive.application.support.devicefingerprint.UserAgentClassifier
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintProfile

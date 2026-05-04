@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.captive.persistence
 
-import cz.grimir.wifimanager.captive.application.query.model.AllowedMac
 import cz.grimir.wifimanager.captive.application.port.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.port.AllowedMacWritePort
+import cz.grimir.wifimanager.captive.application.query.model.AllowedMac
 import cz.grimir.wifimanager.captive.persistence.entity.CaptiveDeviceEntity
 import cz.grimir.wifimanager.captive.persistence.mapper.CaptiveAllowedMacMapper
 import org.springframework.stereotype.Repository

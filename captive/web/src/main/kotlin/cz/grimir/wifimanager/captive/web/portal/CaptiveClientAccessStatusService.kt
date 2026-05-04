@@ -1,10 +1,10 @@
 package cz.grimir.wifimanager.captive.web.portal
 
-import cz.grimir.wifimanager.captive.application.query.model.AllowedMac
 import cz.grimir.wifimanager.captive.application.port.AllowedMacReadPort
+import cz.grimir.wifimanager.captive.application.query.model.AllowedMac
+import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.application.support.devicefingerprint.AuthorizedClientFingerprintGuard
 import cz.grimir.wifimanager.captive.application.support.devicefingerprint.AuthorizedMacState
-import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.core.aggregates.AuthorizationToken
 import cz.grimir.wifimanager.captive.core.value.Device
 import cz.grimir.wifimanager.captive.web.security.support.ClientInfo

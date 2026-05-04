@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.captive.application.command.handler
 
-import cz.grimir.wifimanager.captive.application.query.model.NetworkUser
 import cz.grimir.wifimanager.captive.application.port.NetworkUserReadPort
 import cz.grimir.wifimanager.captive.application.port.NetworkUserWritePort
+import cz.grimir.wifimanager.captive.application.query.model.NetworkUser
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import org.springframework.stereotype.Service

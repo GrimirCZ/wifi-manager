@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.captive.web.security
 
+import cz.grimir.wifimanager.captive.application.command.handler.UpsertNetworkUserOnLoginUsecase
 import cz.grimir.wifimanager.captive.application.command.model.UserCredentials
 import cz.grimir.wifimanager.captive.application.port.UserAuthProviderPort
-import cz.grimir.wifimanager.captive.application.command.handler.UpsertNetworkUserOnLoginUsecase
 import cz.grimir.wifimanager.captive.application.query.handler.ResolveNetworkUserLimitUsecase
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.security.mvc.SessionUserIdentity

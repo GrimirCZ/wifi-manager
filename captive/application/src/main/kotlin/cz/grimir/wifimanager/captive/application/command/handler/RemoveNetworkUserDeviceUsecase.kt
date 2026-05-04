@@ -1,8 +1,8 @@
 package cz.grimir.wifimanager.captive.application.command.handler
 
 import cz.grimir.wifimanager.captive.application.event.MacAuthorizationStateChangedEvent
-import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceWritePort
 import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
+import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceWritePort
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceRemovedEvent
