@@ -33,7 +33,7 @@ class CaptiveAuthorizationTokenEntity(
     /**
      * List of devices authorized using this ticket.
      */
-    @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+    @OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.PERSIST, CascadeType.MERGE])
     @JoinTable(
         name = "captive_authorized_device",
         schema = "captive",

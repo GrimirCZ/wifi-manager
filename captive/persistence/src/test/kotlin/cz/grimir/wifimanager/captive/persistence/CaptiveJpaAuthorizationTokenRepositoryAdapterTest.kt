@@ -2,11 +2,17 @@ package cz.grimir.wifimanager.captive.persistence
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import cz.grimir.wifimanager.captive.application.command.handler.ScrubDeauthorizedCaptiveDeviceUsecase
 import cz.grimir.wifimanager.captive.application.config.CaptiveFingerprintingProperties
+import cz.grimir.wifimanager.captive.application.port.AllowedMacReadPort
+import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceReadPort
+import cz.grimir.wifimanager.captive.application.support.ClientAccessAuthorizationResolver
 import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService
 import cz.grimir.wifimanager.captive.application.support.devicefingerprint.UserAgentClassifier
 import cz.grimir.wifimanager.captive.core.value.Device
+import cz.grimir.wifimanager.shared.core.TicketId
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -67,6 +73,15 @@ class CaptiveJpaAuthorizationTokenRepositoryAdapterTest {
 
     @Autowired
     private lateinit var repository: CaptiveJpaAuthorizationTokenRepositoryAdapter
+
+    @Autowired
+    private lateinit var allowedMacReadPort: AllowedMacReadPort
+
+    @Autowired
+    private lateinit var networkUserDeviceReadPort: NetworkUserDeviceReadPort
+
+    @Autowired
+    private lateinit var captiveDevicePrivacyPort: CaptiveJpaDevicePrivacyAdapter
 
     @Autowired
     private lateinit var transactionManager: PlatformTransactionManager
@@ -160,6 +175,43 @@ class CaptiveJpaAuthorizationTokenRepositoryAdapterTest {
         )
     }
 
+    @Test
+    fun `deleting ticket token keeps captive device used by account authorization`() {
+        val mac = "96:e8:b2:e8:a7:3e"
+        insertAuthorizedDevice(mac, "first")
+        insertNetworkUserDevice(mac)
+
+        transactions.executeWithoutResult {
+            repository.deleteByTicketId(TicketId(ticketId))
+        }
+
+        assertEquals(0, countRows("captive.captive_authorized_device", "device_mac = ?", mac))
+        assertEquals(1, countRows("captive.captive_device", "mac = ?", mac))
+        assertEquals(1, countRows("captive.network_user_device", "device_mac = ?", mac))
+    }
+
+    @Test
+    fun `ticket removal workflow scrubs retained ticket-only device pii`() {
+        val mac = "96:e8:b2:e8:a7:3e"
+        insertAuthorizedDevice(mac, "first")
+        jdbcTemplate.update(
+            "update captive.captive_device set display_name = 'Visitor One' where mac = ?",
+            mac,
+        )
+        val scrubUsecase = scrubUsecase()
+
+        transactions.executeWithoutResult {
+            repository.deleteByTicketId(TicketId(ticketId))
+        }
+        transactions.executeWithoutResult {
+            scrubUsecase.scrubIfEligible(mac)
+        }
+
+        assertEquals(1, countRows("captive.captive_device", "mac = ?", mac))
+        assertNull(deviceColumn(mac, "display_name"))
+        assertNull(deviceColumn(mac, "device_name"))
+    }
+
     private fun insertToken() {
         jdbcTemplate.update(
             """
@@ -199,6 +251,48 @@ class CaptiveJpaAuthorizationTokenRepositoryAdapterTest {
         )
     }
 
+    private fun insertNetworkUserDevice(mac: String) {
+        val userId = UUID.fromString("f5e63072-b8df-4afe-b085-4fd382987efe")
+        val identityId = UUID.fromString("b6e9ddc4-1e2a-4b35-a4ef-754e227449e8")
+        val now = Timestamp.from(Instant.parse("2026-04-30T08:51:55.800881Z"))
+        jdbcTemplate.update(
+            """
+            insert into captive.network_user (
+                user_id,
+                identity_id,
+                allowed_device_count,
+                admin_override_limit,
+                created_at,
+                updated_at,
+                last_login_at
+            ) values (?, ?, 3, null, ?, ?, ?)
+            """.trimIndent(),
+            userId,
+            identityId,
+            now,
+            now,
+            now,
+        )
+        jdbcTemplate.update(
+            """
+            insert into captive.network_user_device (
+                user_id,
+                device_mac,
+                name,
+                hostname,
+                is_randomized,
+                authorized_at,
+                last_seen_at,
+                fingerprint_status
+            ) values (?, ?, 'Owner phone', 'first', false, ?, ?, 'NONE')
+            """.trimIndent(),
+            userId,
+            mac,
+            now,
+            now,
+        )
+    }
+
     private fun assertAuthorizedDevices(vararg macs: String) {
         val actual =
             jdbcTemplate.queryForList(
@@ -213,6 +307,41 @@ class CaptiveJpaAuthorizationTokenRepositoryAdapterTest {
             )
 
         assertEquals(macs.sorted(), actual)
+    }
+
+    private fun countRows(
+        table: String,
+        where: String,
+        vararg args: Any,
+    ): Int =
+        jdbcTemplate.queryForObject(
+            "select count(*) from $table where $where",
+            Int::class.java,
+            *args,
+        ) ?: 0
+
+    private fun deviceColumn(
+        mac: String,
+        column: String,
+    ): String? =
+        jdbcTemplate.queryForObject(
+            "select $column from captive.captive_device where mac = ?",
+            String::class.java,
+            mac,
+        )
+
+    private fun scrubUsecase(): ScrubDeauthorizedCaptiveDeviceUsecase {
+        val resolver =
+            ClientAccessAuthorizationResolver(
+                allowedMacReadPort = allowedMacReadPort,
+                findAuthorizationTokenPort = repository,
+                networkUserDeviceReadPort = networkUserDeviceReadPort,
+                timeProvider = { Instant.parse("2026-04-30T08:52:55.800881Z") },
+            )
+        return ScrubDeauthorizedCaptiveDeviceUsecase(
+            clientAccessAuthorizationResolver = resolver,
+            captiveDevicePrivacyPort = captiveDevicePrivacyPort,
+        )
     }
 
     private fun device(
