@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.events.local
 
+import cz.grimir.wifimanager.captive.application.command.ScrubDeauthorizedCaptiveDeviceCommand
 import cz.grimir.wifimanager.captive.application.command.handler.ScrubDeauthorizedCaptiveDeviceUsecase
 import cz.grimir.wifimanager.captive.application.event.MacAuthorizationStateChangedEvent
 import cz.grimir.wifimanager.captive.application.port.RouterAgentPort
@@ -50,7 +51,7 @@ class MacAuthorizationStateChangedEventListener(
 
     private fun scrub(mac: String) {
         try {
-            scrubDeauthorizedCaptiveDeviceUsecase.scrubIfEligible(mac)
+            scrubDeauthorizedCaptiveDeviceUsecase.scrubIfEligible(ScrubDeauthorizedCaptiveDeviceCommand(mac))
         } catch (ex: Exception) {
             logger.error(ex) { "Failed to scrub captive device PII for mac=$mac" }
         }

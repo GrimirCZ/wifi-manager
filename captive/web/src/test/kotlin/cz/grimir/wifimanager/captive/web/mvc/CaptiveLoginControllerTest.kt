@@ -1,6 +1,8 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
+import cz.grimir.wifimanager.captive.application.command.CompleteNetworkUserDeviceReauthCommand
 import cz.grimir.wifimanager.captive.application.command.handler.CompleteNetworkUserDeviceReauthUsecase
+import cz.grimir.wifimanager.captive.application.query.FindNetworkUserDeviceByMacQuery
 import cz.grimir.wifimanager.captive.application.query.handler.FindNetworkUserDeviceByMacUsecase
 import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintStatus
@@ -89,7 +91,7 @@ class CaptiveLoginControllerTest {
     fun `login page shows verification banner when session marker is present`() {
         val session = mock<HttpSession>()
         val model = ExtendedModelMap()
-        given(findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)).willReturn(null)
+        given(findNetworkUserDeviceByMacUsecase.find(FindNetworkUserDeviceByMacQuery(clientInfo.macAddress))).willReturn(null)
         given(session.getAttribute(CaptivePortalController.ACCOUNT_REAUTH_SESSION_KEY)).willReturn(true)
 
         val view = controller.login(clientInfo, session, model, htmxRequest)
@@ -107,7 +109,7 @@ class CaptiveLoginControllerTest {
         val session = mock<HttpSession>()
         given(request.session).willReturn(session)
         given(htmxRequest.isHtmxRequest).willReturn(false)
-        given(findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)).willReturn(null)
+        given(findNetworkUserDeviceByMacUsecase.find(FindNetworkUserDeviceByMacQuery(clientInfo.macAddress))).willReturn(null)
         given(
             captiveAuthSessionLoginHandler.login(
                 org.mockito.kotlin.any(),
@@ -134,7 +136,7 @@ class CaptiveLoginControllerTest {
     fun `existing device redirects back to captive and clears marker`() {
         val session = mock<HttpSession>()
         val model = ExtendedModelMap()
-        given(findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)).willReturn(existingDevice())
+        given(findNetworkUserDeviceByMacUsecase.find(FindNetworkUserDeviceByMacQuery(clientInfo.macAddress))).willReturn(existingDevice())
         given(htmxRequest.isHtmxRequest).willReturn(false)
 
         val view = controller.login(clientInfo, session, model, htmxRequest)
@@ -148,7 +150,7 @@ class CaptiveLoginControllerTest {
         val session = mock<HttpSession>()
         val model = ExtendedModelMap()
         given(
-            findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress),
+            findNetworkUserDeviceByMacUsecase.find(FindNetworkUserDeviceByMacQuery(clientInfo.macAddress)),
         ).willReturn(existingDevice(reauthRequiredAt = Instant.parse("2025-01-01T10:06:00Z")))
         given(session.getAttribute(CaptivePortalController.ACCOUNT_REAUTH_SESSION_KEY)).willReturn(true)
 
@@ -167,7 +169,7 @@ class CaptiveLoginControllerTest {
         val existingDevice = existingDevice(reauthRequiredAt = Instant.parse("2025-01-01T10:06:00Z"))
         given(request.session).willReturn(session)
         given(htmxRequest.isHtmxRequest).willReturn(false)
-        given(findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)).willReturn(existingDevice)
+        given(findNetworkUserDeviceByMacUsecase.find(FindNetworkUserDeviceByMacQuery(clientInfo.macAddress))).willReturn(existingDevice)
         given(
             captiveAuthSessionLoginHandler.login(
                 org.mockito.kotlin.any(),
@@ -180,7 +182,9 @@ class CaptiveLoginControllerTest {
 
         assertEquals("redirect:/captive", view)
         verify(session).removeAttribute(CaptivePortalController.ACCOUNT_REAUTH_SESSION_KEY)
-        verify(completeNetworkUserDeviceReauthUsecase).complete(existingDevice.userId, clientInfo.macAddress, clientInfo.fingerprintProfile)
+        verify(completeNetworkUserDeviceReauthUsecase).complete(
+            CompleteNetworkUserDeviceReauthCommand(existingDevice.userId, clientInfo.macAddress, clientInfo.fingerprintProfile),
+        )
     }
 
     private fun existingDevice(reauthRequiredAt: Instant? = null): NetworkUserDevice =

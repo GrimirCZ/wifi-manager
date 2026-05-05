@@ -1,6 +1,7 @@
 package cz.grimir.wifimanager.admin.application.usecases.queries
 
 import cz.grimir.wifimanager.admin.application.port.FindTicketPort
+import cz.grimir.wifimanager.admin.application.query.FindAllTicketsWithDeviceCountQuery
 import cz.grimir.wifimanager.admin.application.query.handler.FindAllTicketsWithDeviceCountUsecase
 import cz.grimir.wifimanager.admin.application.query.model.TicketWithDeviceCount
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
@@ -30,6 +31,6 @@ class FindAllTicketsWithDeviceCountUsecaseTest {
         val tickets = listOf(TicketWithDeviceCount(ticket, 2))
         given(findTicketPort.findAllWithDeviceCount()).willReturn(tickets)
 
-        assertEquals(tickets, usecase.find())
+        assertEquals(tickets, usecase.find(FindAllTicketsWithDeviceCountQuery))
     }
 }

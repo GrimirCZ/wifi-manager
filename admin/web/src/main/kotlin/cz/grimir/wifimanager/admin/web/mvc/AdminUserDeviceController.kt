@@ -2,6 +2,7 @@ package cz.grimir.wifimanager.admin.web.mvc
 
 import cz.grimir.wifimanager.admin.application.command.RequestUserDeviceDeauthorizationCommand
 import cz.grimir.wifimanager.admin.application.command.handler.RequestUserDeviceDeauthorizationUsecase
+import cz.grimir.wifimanager.admin.application.query.FindAllUserDevicesQuery
 import cz.grimir.wifimanager.admin.application.query.FindUserDevicesByUserIdQuery
 import cz.grimir.wifimanager.admin.application.query.handler.FindAllUserDevicesUsecase
 import cz.grimir.wifimanager.admin.application.query.handler.FindUserDevicesByUserIdUsecase
@@ -107,7 +108,7 @@ class AdminUserDeviceController(
         scope: String,
     ): List<UserDevice> =
         if (scope == "all") {
-            findAllUserDevicesUsecase.find()
+            findAllUserDevicesUsecase.find(FindAllUserDevicesQuery)
         } else {
             findUserDevicesByUserIdUsecase.find(FindUserDevicesByUserIdQuery(user.userId))
         }

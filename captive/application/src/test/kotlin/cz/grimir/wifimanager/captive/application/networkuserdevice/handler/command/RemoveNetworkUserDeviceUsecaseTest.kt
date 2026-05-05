@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command
 
+import cz.grimir.wifimanager.captive.application.command.RemoveNetworkUserDeviceCommand
 import cz.grimir.wifimanager.captive.application.command.handler.RemoveNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.captive.application.event.MacAuthorizationStateChangedEvent
 import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
@@ -33,7 +34,7 @@ class RemoveNetworkUserDeviceUsecaseTest {
     fun `removing account authorization publishes state change event`() {
         given(timeProvider.get()).willReturn(now)
 
-        usecase.remove(userId, mac)
+        usecase.remove(RemoveNetworkUserDeviceCommand(userId, mac))
 
         verify(networkUserDeviceWritePort).delete(userId, mac)
         verify(captiveEventPublisher).publish(NetworkUserDeviceRemovedEvent(userId, mac, now))

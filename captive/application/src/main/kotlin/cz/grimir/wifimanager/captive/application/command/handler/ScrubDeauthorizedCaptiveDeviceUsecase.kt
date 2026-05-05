@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.application.command.handler
 
+import cz.grimir.wifimanager.captive.application.command.ScrubDeauthorizedCaptiveDeviceCommand
 import cz.grimir.wifimanager.captive.application.port.CaptiveDevicePrivacyPort
 import cz.grimir.wifimanager.captive.application.support.ClientAccessAuthorizationResolver
 import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
@@ -15,8 +16,8 @@ class ScrubDeauthorizedCaptiveDeviceUsecase(
     private val captiveDevicePrivacyPort: CaptiveDevicePrivacyPort,
 ) {
     @Transactional
-    fun scrubIfEligible(macAddress: String) {
-        val mac = MacAddressNormalizer.normalize(macAddress)
+    fun scrubIfEligible(command: ScrubDeauthorizedCaptiveDeviceCommand) {
+        val mac = MacAddressNormalizer.normalize(command.macAddress)
         if (!clientAccessAuthorizationResolver.isDevicePrivacyCleanupEligible(mac)) {
             logger.trace { "Skipping captive device PII scrub because authorization record remains mac=$mac" }
             return

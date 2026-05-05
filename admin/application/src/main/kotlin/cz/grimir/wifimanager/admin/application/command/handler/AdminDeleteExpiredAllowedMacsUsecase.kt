@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.admin.application.command.handler
 
+import cz.grimir.wifimanager.admin.application.command.DeleteExpiredAllowedMacsCommand
 import cz.grimir.wifimanager.admin.application.port.AdminEventPublisher
 import cz.grimir.wifimanager.admin.application.port.DeleteAllowedMacPort
 import cz.grimir.wifimanager.admin.application.port.FindAllowedMacPort
@@ -7,7 +8,6 @@ import cz.grimir.wifimanager.shared.events.AllowedMacRemovedEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
 
 private val logger = KotlinLogging.logger {}
 
@@ -18,8 +18,8 @@ class AdminDeleteExpiredAllowedMacsUsecase(
     private val eventPublisher: AdminEventPublisher,
 ) {
     @Transactional
-    fun deleteExpired(now: Instant) {
-        val expired = findAllowedMacPort.findExpired(now)
+    fun deleteExpired(command: DeleteExpiredAllowedMacsCommand) {
+        val expired = findAllowedMacPort.findExpired(command.at)
         if (expired.isEmpty()) {
             return
         }
@@ -30,7 +30,7 @@ class AdminDeleteExpiredAllowedMacsUsecase(
                 AllowedMacRemovedEvent(
                     macAddress = allowedMac.mac,
                     removedByUserId = null,
-                    removedAt = now,
+                    removedAt = command.at,
                 ),
             )
         }

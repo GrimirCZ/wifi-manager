@@ -4,6 +4,8 @@ import cz.grimir.wifimanager.admin.application.command.DeleteAllowedMacCommand
 import cz.grimir.wifimanager.admin.application.command.UpsertAllowedMacCommand
 import cz.grimir.wifimanager.admin.application.command.handler.AdminDeleteAllowedMacUsecase
 import cz.grimir.wifimanager.admin.application.command.handler.AdminUpsertAllowedMacUsecase
+import cz.grimir.wifimanager.admin.application.query.ListAllowedMacsQuery
+import cz.grimir.wifimanager.admin.application.query.ListNetworkClientsQuery
 import cz.grimir.wifimanager.admin.application.query.handler.AdminListAllowedMacsUsecase
 import cz.grimir.wifimanager.admin.application.query.handler.AdminListNetworkClientsUsecase
 import cz.grimir.wifimanager.admin.web.mvc.dto.AllowedMacRequestDto
@@ -120,7 +122,7 @@ class AdminAllowedMacController(
 
     private fun loadAllowedMacViews(): List<AllowedMacViewDto> =
         listAllowedMacsUsecase
-            .list()
+            .list(ListAllowedMacsQuery)
             .map {
                 AllowedMacViewDto(
                     mac = it.mac,
@@ -144,7 +146,7 @@ class AdminAllowedMacController(
 
     private fun loadNetworkClientViews(): List<NetworkClientViewDto> =
         listNetworkClientsUsecase
-            .list()
+            .list(ListNetworkClientsQuery)
             .map {
                 NetworkClientViewDto(
                     macAddress = it.macAddress,

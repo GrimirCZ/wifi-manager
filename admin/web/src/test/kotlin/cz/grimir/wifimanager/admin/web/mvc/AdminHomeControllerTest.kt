@@ -4,6 +4,7 @@ import cz.grimir.wifimanager.admin.application.command.CancelTicketCommand
 import cz.grimir.wifimanager.admin.application.command.handler.CancelTicketUsecase
 import cz.grimir.wifimanager.admin.application.command.handler.CreateTicketUsecase
 import cz.grimir.wifimanager.admin.application.command.handler.KickClientUsecase
+import cz.grimir.wifimanager.admin.application.query.FindAllTicketsWithDeviceCountQuery
 import cz.grimir.wifimanager.admin.application.query.FindTicketByIdQuery
 import cz.grimir.wifimanager.admin.application.query.handler.CountAuthorizedDevicesByTicketIdUsecase
 import cz.grimir.wifimanager.admin.application.query.handler.FindAllTicketsWithDeviceCountUsecase
@@ -75,7 +76,7 @@ class AdminHomeControllerTest {
                     ),
                 deviceCount = 1,
             )
-        given(findAllTicketsWithDeviceCountUsecase.find()).willReturn(listOf(activeTicket))
+        given(findAllTicketsWithDeviceCountUsecase.find(FindAllTicketsWithDeviceCountQuery)).willReturn(listOf(activeTicket))
 
         val model = ModelMap()
         val view = controller.index(admin, "all", htmxRequest(), model)

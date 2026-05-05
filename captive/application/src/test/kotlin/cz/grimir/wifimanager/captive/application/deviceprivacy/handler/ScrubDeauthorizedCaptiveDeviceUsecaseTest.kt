@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.application.deviceprivacy.handler
 
+import cz.grimir.wifimanager.captive.application.command.ScrubDeauthorizedCaptiveDeviceCommand
 import cz.grimir.wifimanager.captive.application.command.handler.ScrubDeauthorizedCaptiveDeviceUsecase
 import cz.grimir.wifimanager.captive.application.port.CaptiveDevicePrivacyPort
 import cz.grimir.wifimanager.captive.application.support.ClientAccessAuthorizationResolver
@@ -24,7 +25,7 @@ class ScrubDeauthorizedCaptiveDeviceUsecaseTest {
         val mac = "aa:bb:cc:dd:ee:01"
         given(clientAccessAuthorizationResolver.isDevicePrivacyCleanupEligible(mac)).willReturn(true)
 
-        usecase.scrubIfEligible("AA-BB-CC-DD-EE-01")
+        usecase.scrubIfEligible(ScrubDeauthorizedCaptiveDeviceCommand("AA-BB-CC-DD-EE-01"))
 
         verify(captiveDevicePrivacyPort).scrubPiiByMac(mac)
     }
@@ -34,7 +35,7 @@ class ScrubDeauthorizedCaptiveDeviceUsecaseTest {
         val mac = "aa:bb:cc:dd:ee:01"
         given(clientAccessAuthorizationResolver.isDevicePrivacyCleanupEligible(mac)).willReturn(false)
 
-        usecase.scrubIfEligible(mac)
+        usecase.scrubIfEligible(ScrubDeauthorizedCaptiveDeviceCommand(mac))
 
         verify(captiveDevicePrivacyPort, never()).scrubPiiByMac(mac)
     }

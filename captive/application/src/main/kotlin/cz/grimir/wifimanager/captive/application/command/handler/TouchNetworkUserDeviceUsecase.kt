@@ -1,9 +1,9 @@
 package cz.grimir.wifimanager.captive.application.command.handler
 
+import cz.grimir.wifimanager.captive.application.command.TouchNetworkUserDeviceCommand
 import cz.grimir.wifimanager.captive.application.port.CaptiveEventPublisher
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceWritePort
 import cz.grimir.wifimanager.shared.core.TimeProvider
-import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceConnectedEvent
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -15,15 +15,12 @@ class TouchNetworkUserDeviceUsecase(
     private val timeProvider: TimeProvider,
 ) {
     @Transactional
-    fun touch(
-        userId: UserId,
-        mac: String,
-    ) {
-        networkUserDeviceWritePort.touchDevice(userId, mac)
+    fun touch(command: TouchNetworkUserDeviceCommand) {
+        networkUserDeviceWritePort.touchDevice(command.userId, command.mac)
         captiveEventPublisher.publish(
             NetworkUserDeviceConnectedEvent(
-                userId = userId,
-                deviceMac = mac,
+                userId = command.userId,
+                deviceMac = command.mac,
                 connectedAt = timeProvider.get(),
             ),
         )

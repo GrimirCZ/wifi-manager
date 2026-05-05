@@ -2,6 +2,7 @@ package cz.grimir.wifimanager.captive.persistence
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import cz.grimir.wifimanager.captive.application.command.ScrubDeauthorizedCaptiveDeviceCommand
 import cz.grimir.wifimanager.captive.application.command.handler.ScrubDeauthorizedCaptiveDeviceUsecase
 import cz.grimir.wifimanager.captive.application.config.CaptiveFingerprintingProperties
 import cz.grimir.wifimanager.captive.application.port.AllowedMacReadPort
@@ -204,7 +205,7 @@ class CaptiveJpaAuthorizationTokenRepositoryAdapterTest {
             repository.deleteByTicketId(TicketId(ticketId))
         }
         transactions.executeWithoutResult {
-            scrubUsecase.scrubIfEligible(mac)
+            scrubUsecase.scrubIfEligible(ScrubDeauthorizedCaptiveDeviceCommand(mac))
         }
 
         assertEquals(1, countRows("captive.captive_device", "mac = ?", mac))

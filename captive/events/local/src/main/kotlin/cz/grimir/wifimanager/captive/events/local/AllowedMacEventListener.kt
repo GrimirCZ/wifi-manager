@@ -1,5 +1,7 @@
 package cz.grimir.wifimanager.captive.events.local
 
+import cz.grimir.wifimanager.captive.application.command.RemoveAllowedMacCommand
+import cz.grimir.wifimanager.captive.application.command.UpsertAllowedMacCommand
 import cz.grimir.wifimanager.captive.application.command.handler.CaptiveRemoveAllowedMacUsecase
 import cz.grimir.wifimanager.captive.application.command.handler.CaptiveUpsertAllowedMacUsecase
 import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
@@ -15,11 +17,16 @@ class AllowedMacEventListener(
 ) {
     @EventListener
     fun on(event: AllowedMacUpsertedEvent) {
-        upsertAllowedMacUsecase.upsert(MacAddressNormalizer.normalize(event.macAddress), event.validUntil)
+        upsertAllowedMacUsecase.upsert(
+            UpsertAllowedMacCommand(
+                macAddress = MacAddressNormalizer.normalize(event.macAddress),
+                validUntil = event.validUntil,
+            ),
+        )
     }
 
     @EventListener
     fun on(event: AllowedMacRemovedEvent) {
-        removeAllowedMacUsecase.remove(MacAddressNormalizer.normalize(event.macAddress))
+        removeAllowedMacUsecase.remove(RemoveAllowedMacCommand(MacAddressNormalizer.normalize(event.macAddress)))
     }
 }

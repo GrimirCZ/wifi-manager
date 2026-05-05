@@ -1,9 +1,16 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
+import cz.grimir.wifimanager.captive.application.command.AuthorizeNetworkUserDeviceCommand
+import cz.grimir.wifimanager.captive.application.command.RemoveNetworkUserDeviceCommand
 import cz.grimir.wifimanager.captive.application.command.handler.AuthorizeNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.captive.application.command.handler.DeviceOwnershipException
 import cz.grimir.wifimanager.captive.application.command.handler.RemoveNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.captive.application.port.RouterAgentPort
+import cz.grimir.wifimanager.captive.application.query.CountNetworkUserDevicesByUserIdQuery
+import cz.grimir.wifimanager.captive.application.query.FindNetworkUserByUserIdQuery
+import cz.grimir.wifimanager.captive.application.query.FindNetworkUserDeviceByMacQuery
+import cz.grimir.wifimanager.captive.application.query.FindNetworkUserDevicesByUserIdQuery
+import cz.grimir.wifimanager.captive.application.query.ResolveNetworkUserLimitQuery
 import cz.grimir.wifimanager.captive.application.query.handler.CountNetworkUserDevicesByUserIdUsecase
 import cz.grimir.wifimanager.captive.application.query.handler.FindNetworkUserByUserIdUsecase
 import cz.grimir.wifimanager.captive.application.query.handler.FindNetworkUserDeviceByMacUsecase
@@ -43,19 +50,19 @@ class CaptiveDeviceController(
         clientInfo: ClientInfo,
         model: Model,
     ): String {
-        val device = findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)
+        val device = findNetworkUserDeviceByMacUsecase.find(FindNetworkUserDeviceByMacQuery(clientInfo.macAddress))
         if (device != null) {
             return if (device.reauthRequiredAt != null) "redirect:/captive/login" else "redirect:/captive"
         }
 
-        val networkUser = findNetworkUserByUserIdUsecase.find(user.userId)
+        val networkUser = findNetworkUserByUserIdUsecase.find(FindNetworkUserByUserIdQuery(user.userId))
         if (networkUser == null) {
             model.addAttribute("noDeviceAccess", true)
             return "captive/device"
         }
 
-        val effectiveLimit = resolveNetworkUserLimitUsecase.resolve(networkUser)
-        val devices = findNetworkUserDevicesByUserIdUsecase.find(user.userId)
+        val effectiveLimit = resolveNetworkUserLimitUsecase.resolve(ResolveNetworkUserLimitQuery(networkUser))
+        val devices = findNetworkUserDevicesByUserIdUsecase.find(FindNetworkUserDevicesByUserIdQuery(user.userId))
         val deviceCount = devices.size
 
         model.addAttribute("deviceLimit", effectiveLimit)
@@ -85,7 +92,7 @@ class CaptiveDeviceController(
         bindingResult: BindingResult,
         model: Model,
     ): String {
-        val existing = findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)
+        val existing = findNetworkUserDeviceByMacUsecase.find(FindNetworkUserDeviceByMacQuery(clientInfo.macAddress))
         if (existing != null) {
             if (existing.reauthRequiredAt != null) {
                 return "redirect:/captive/login"
@@ -94,14 +101,14 @@ class CaptiveDeviceController(
             return wizard(user, clientInfo, model)
         }
 
-        val networkUser = findNetworkUserByUserIdUsecase.find(user.userId)
+        val networkUser = findNetworkUserByUserIdUsecase.find(FindNetworkUserByUserIdQuery(user.userId))
         if (networkUser == null) {
             bindingResult.reject("captive.device.error.no-access")
             return wizard(user, clientInfo, model)
         }
 
-        val effectiveLimit = resolveNetworkUserLimitUsecase.resolve(networkUser)
-        val deviceCount = countNetworkUserDevicesByUserIdUsecase.count(user.userId)
+        val effectiveLimit = resolveNetworkUserLimitUsecase.resolve(ResolveNetworkUserLimitQuery(networkUser))
+        val deviceCount = countNetworkUserDevicesByUserIdUsecase.count(CountNetworkUserDevicesByUserIdQuery(user.userId))
         if (effectiveLimit <= 0) {
             bindingResult.reject("captive.device.error.no-access")
             return wizard(user, clientInfo, model)
@@ -120,12 +127,14 @@ class CaptiveDeviceController(
 
         try {
             authorizeNetworkUserDeviceUsecase.authorize(
-                userId = user.userId,
-                mac = clientInfo.macAddress,
-                name = resolvedName,
-                hostname = clientInfo.hostname,
-                isRandomized = MacAddressUtils.isLocallyAdministered(clientInfo.macAddress),
-                fingerprintProfile = clientInfo.fingerprintProfile,
+                AuthorizeNetworkUserDeviceCommand(
+                    userId = user.userId,
+                    mac = clientInfo.macAddress,
+                    name = resolvedName,
+                    hostname = clientInfo.hostname,
+                    isRandomized = MacAddressUtils.isLocallyAdministered(clientInfo.macAddress),
+                    fingerprintProfile = clientInfo.fingerprintProfile,
+                ),
             )
         } catch (ex: DeviceOwnershipException) {
             bindingResult.reject("captive.device.error.owned")
@@ -145,10 +154,12 @@ class CaptiveDeviceController(
     ): String {
         val normalizedMac = MacAddressNormalizer.normalize(mac)
         val device =
-            findNetworkUserDevicesByUserIdUsecase.find(user.userId).firstOrNull { it.mac == normalizedMac }
+            findNetworkUserDevicesByUserIdUsecase
+                .find(FindNetworkUserDevicesByUserIdQuery(user.userId))
+                .firstOrNull { it.mac == normalizedMac }
                 ?: return "redirect:/captive/device"
 
-        removeNetworkUserDeviceUsecase.remove(user.userId, normalizedMac)
+        removeNetworkUserDeviceUsecase.remove(RemoveNetworkUserDeviceCommand(user.userId, normalizedMac))
 
         return "redirect:/captive/device"
     }

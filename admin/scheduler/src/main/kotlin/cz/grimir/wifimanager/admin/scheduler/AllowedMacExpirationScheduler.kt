@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.admin.scheduler
 
+import cz.grimir.wifimanager.admin.application.command.DeleteExpiredAllowedMacsCommand
 import cz.grimir.wifimanager.admin.application.command.handler.AdminDeleteExpiredAllowedMacsUsecase
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
@@ -18,6 +19,6 @@ class AllowedMacExpirationScheduler(
         lockAtLeastFor = "PT5S",
     )
     fun expireAllowedMacs() {
-        deleteExpiredAllowedMacsUsecase.deleteExpired(timeProvider.get())
+        deleteExpiredAllowedMacsUsecase.deleteExpired(DeleteExpiredAllowedMacsCommand(timeProvider.get()))
     }
 }

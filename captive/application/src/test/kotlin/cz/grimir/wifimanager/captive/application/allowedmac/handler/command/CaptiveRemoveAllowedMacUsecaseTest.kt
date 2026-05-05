@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.application.allowedmac.handler.command
 
+import cz.grimir.wifimanager.captive.application.command.RemoveAllowedMacCommand
 import cz.grimir.wifimanager.captive.application.command.handler.CaptiveRemoveAllowedMacUsecase
 import cz.grimir.wifimanager.captive.application.event.MacAuthorizationStateChangedEvent
 import cz.grimir.wifimanager.captive.application.port.AllowedMacReadPort
@@ -28,7 +29,7 @@ class CaptiveRemoveAllowedMacUsecaseTest {
     fun `removing allowed mac publishes state change event`() {
         given(allowedMacReadPort.findByMac(mac)).willReturn(AllowedMac(mac = mac, validUntil = null))
 
-        usecase.remove(mac)
+        usecase.remove(RemoveAllowedMacCommand(mac))
 
         verify(allowedMacWritePort).deleteByMac(mac)
         verify(captiveEventPublisher).publish(MacAuthorizationStateChangedEvent(listOf(mac)))

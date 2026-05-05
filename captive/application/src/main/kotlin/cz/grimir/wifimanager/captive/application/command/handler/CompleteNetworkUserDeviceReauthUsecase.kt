@@ -1,12 +1,11 @@
 package cz.grimir.wifimanager.captive.application.command.handler
 
+import cz.grimir.wifimanager.captive.application.command.CompleteNetworkUserDeviceReauthCommand
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceReadPort
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceWritePort
 import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.captive.application.support.devicefingerprint.DeviceFingerprintService
-import cz.grimir.wifimanager.captive.core.value.DeviceFingerprintProfile
 import cz.grimir.wifimanager.shared.core.TimeProvider
-import cz.grimir.wifimanager.shared.core.UserId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,25 +20,21 @@ class CompleteNetworkUserDeviceReauthUsecase(
     private val timeProvider: TimeProvider,
 ) {
     @Transactional
-    fun complete(
-        userId: UserId,
-        mac: String,
-        currentFingerprint: DeviceFingerprintProfile?,
-    ): NetworkUserDevice? {
-        val existing = networkUserDeviceReadPort.findByMac(mac) ?: return null
-        require(existing.userId == userId) { "network user device ownership mismatch for mac=$mac" }
-        require(existing.reauthRequiredAt != null) { "network user device is not pending reauth for mac=$mac" }
+    fun complete(command: CompleteNetworkUserDeviceReauthCommand): NetworkUserDevice? {
+        val existing = networkUserDeviceReadPort.findByMac(command.mac) ?: return null
+        require(existing.userId == command.userId) { "network user device ownership mismatch for mac=${command.mac}" }
+        require(existing.reauthRequiredAt != null) { "network user device is not pending reauth for mac=${command.mac}" }
 
         val updated =
             existing.copy(
-                fingerprintProfile = currentFingerprint,
-                fingerprintStatus = deviceFingerprintService.status(currentFingerprint),
+                fingerprintProfile = command.currentFingerprint,
+                fingerprintStatus = deviceFingerprintService.status(command.currentFingerprint),
                 fingerprintVerifiedAt = timeProvider.get(),
                 reauthRequiredAt = null,
             )
         networkUserDeviceWritePort.save(updated)
         logger.info {
-            "Completed network user device reauth userId=${userId.id} mac=$mac fingerprintStatus=${updated.fingerprintStatus} fingerprintVerifiedAt=${updated.fingerprintVerifiedAt}"
+            "Completed network user device reauth userId=${command.userId.id} mac=${command.mac} fingerprintStatus=${updated.fingerprintStatus} fingerprintVerifiedAt=${updated.fingerprintVerifiedAt}"
         }
         return updated
     }

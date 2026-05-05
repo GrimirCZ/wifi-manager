@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.events.local
 
+import cz.grimir.wifimanager.captive.application.command.RemoveNetworkUserDeviceCommand
 import cz.grimir.wifimanager.captive.application.command.handler.RemoveNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.shared.application.network.MacAddressNormalizer
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceDeauthorizeRequestedEvent
@@ -19,6 +20,6 @@ class NetworkUserDeviceDeauthorizeRequestedEventListener(
         logger.info {
             "Network user device deauthorization requested userId=${event.userId} mac=$mac requestedBy=${event.requestedByUserId}"
         }
-        removeNetworkUserDeviceUsecase.remove(event.userId, mac)
+        removeNetworkUserDeviceUsecase.remove(RemoveNetworkUserDeviceCommand(event.userId, mac))
     }
 }

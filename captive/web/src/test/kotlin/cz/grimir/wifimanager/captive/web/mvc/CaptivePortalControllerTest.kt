@@ -1,6 +1,7 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
 import cz.grimir.wifimanager.captive.application.command.AuthorizeDeviceWithCodeCommand
+import cz.grimir.wifimanager.captive.application.command.TouchNetworkUserDeviceCommand
 import cz.grimir.wifimanager.captive.application.command.handler.AuthorizeDeviceWithCodeUsecase
 import cz.grimir.wifimanager.captive.application.command.handler.TouchNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.captive.application.port.CaptiveUserIdentityPort
@@ -109,7 +110,7 @@ class CaptivePortalControllerTest {
         assertEquals(true, model["deviceLoggedIn"])
         assertEquals(false, model["deviceVerificationRequired"])
         assertEquals("Work Laptop", model["authorizedDeviceName"])
-        verify(touchNetworkUserDeviceUsecase).touch(device.userId, device.mac)
+        verify(touchNetworkUserDeviceUsecase).touch(TouchNetworkUserDeviceCommand(device.userId, device.mac))
     }
 
     @Test

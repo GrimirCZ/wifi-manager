@@ -1,6 +1,7 @@
 package cz.grimir.wifimanager.captive.application.networkuserdevice.handler.command
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import cz.grimir.wifimanager.captive.application.command.CompleteNetworkUserDeviceReauthCommand
 import cz.grimir.wifimanager.captive.application.command.handler.CompleteNetworkUserDeviceReauthUsecase
 import cz.grimir.wifimanager.captive.application.config.CaptiveFingerprintingProperties
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceReadPort
@@ -65,7 +66,7 @@ class CompleteNetworkUserDeviceReauthUsecaseTest {
         given(networkUserDeviceReadPort.findByMac(existing.mac)).willReturn(existing)
         given(timeProvider.get()).willReturn(now)
 
-        val updated = usecase.complete(userId = userId, mac = existing.mac, currentFingerprint = current)
+        val updated = usecase.complete(CompleteNetworkUserDeviceReauthCommand(userId, existing.mac, current))
 
         assertEquals(now, updated?.fingerprintVerifiedAt)
         assertEquals(null, updated?.reauthRequiredAt)

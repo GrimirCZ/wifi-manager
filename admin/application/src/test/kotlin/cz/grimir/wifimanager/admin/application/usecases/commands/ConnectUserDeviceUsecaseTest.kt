@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.admin.application.usecases.commands
 
+import cz.grimir.wifimanager.admin.application.command.ConnectUserDeviceCommand
 import cz.grimir.wifimanager.admin.application.command.handler.ConnectUserDeviceUsecase
 import cz.grimir.wifimanager.admin.application.port.FindUserDevicePort
 import cz.grimir.wifimanager.admin.application.port.SaveUserDevicePort
@@ -30,7 +31,7 @@ class ConnectUserDeviceUsecaseTest {
         val connectedAt = Instant.parse("2025-02-03T12:00:00Z")
         given(findUserDevicePort.findByUserIdAndMac(userId, mac)).willReturn(buildDevice(userId, mac))
 
-        usecase.connect(userId, mac, connectedAt)
+        usecase.connect(ConnectUserDeviceCommand(userId, mac, connectedAt))
 
         val captor = argumentCaptor<UserDevice>()
         verify(saveUserDevicePort).save(captor.capture())
@@ -43,7 +44,7 @@ class ConnectUserDeviceUsecaseTest {
         val mac = "AA:BB:CC:DD:EE:FF"
         given(findUserDevicePort.findByUserIdAndMac(userId, mac)).willReturn(null)
 
-        usecase.connect(userId, mac, Instant.parse("2025-02-03T12:00:00Z"))
+        usecase.connect(ConnectUserDeviceCommand(userId, mac, Instant.parse("2025-02-03T12:00:00Z")))
 
         verifyNoInteractions(saveUserDevicePort)
     }

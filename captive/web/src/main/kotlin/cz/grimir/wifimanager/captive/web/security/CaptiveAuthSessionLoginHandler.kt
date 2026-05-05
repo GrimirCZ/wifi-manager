@@ -1,8 +1,10 @@
 package cz.grimir.wifimanager.captive.web.security
 
+import cz.grimir.wifimanager.captive.application.command.UpsertNetworkUserOnLoginCommand
 import cz.grimir.wifimanager.captive.application.command.handler.UpsertNetworkUserOnLoginUsecase
 import cz.grimir.wifimanager.captive.application.command.model.UserCredentials
 import cz.grimir.wifimanager.captive.application.port.UserAuthProviderPort
+import cz.grimir.wifimanager.captive.application.query.ResolveNetworkUserLimitQuery
 import cz.grimir.wifimanager.captive.application.query.handler.ResolveNetworkUserLimitUsecase
 import cz.grimir.wifimanager.shared.core.UserId
 import cz.grimir.wifimanager.shared.security.mvc.SessionUserIdentity
@@ -54,8 +56,11 @@ class CaptiveAuthSessionLoginHandler(
             return LdapLoginResult(success = false, failureReason = LdapLoginFailureReason.DEVICE_OWNERSHIP_MISMATCH)
         }
 
-        val networkUser = upsertNetworkUserOnLoginUsecase.upsert(result.identity, result.allowedDeviceCount)
-        val effectiveLimit = resolveNetworkUserLimitUsecase.resolve(networkUser)
+        val networkUser =
+            upsertNetworkUserOnLoginUsecase.upsert(
+                UpsertNetworkUserOnLoginCommand(result.identity, result.allowedDeviceCount),
+            )
+        val effectiveLimit = resolveNetworkUserLimitUsecase.resolve(ResolveNetworkUserLimitQuery(networkUser))
         if (effectiveLimit <= 0) {
             logger.warn {
                 "User authentication denied email=${result.identity.email} userId=${result.identity.userId.id} reason=no_device_access"

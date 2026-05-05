@@ -1,6 +1,7 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
 import cz.grimir.wifimanager.captive.application.command.AuthorizeDeviceWithCodeCommand
+import cz.grimir.wifimanager.captive.application.command.TouchNetworkUserDeviceCommand
 import cz.grimir.wifimanager.captive.application.command.handler.AuthorizeDeviceWithCodeUsecase
 import cz.grimir.wifimanager.captive.application.command.handler.TouchNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.captive.application.port.CaptiveUserIdentityPort
@@ -217,7 +218,7 @@ class CaptivePortalController(
         request.session.removeAttribute(ACCOUNT_REAUTH_SESSION_KEY)
         val networkDevice = status.networkUserDevice
         if (status.state == CaptiveClientAccessState.ACTIVE_NETWORK_USER_DEVICE && networkDevice != null) {
-            touchNetworkUserDeviceUsecase.touch(networkDevice.userId, networkDevice.mac)
+            touchNetworkUserDeviceUsecase.touch(TouchNetworkUserDeviceCommand(networkDevice.userId, networkDevice.mac))
             val identity = userIdentityPort.findByUserId(networkDevice.userId)
             model.addAttribute("accountAuthorized", true)
             model.addAttribute("deviceLoggedIn", true)

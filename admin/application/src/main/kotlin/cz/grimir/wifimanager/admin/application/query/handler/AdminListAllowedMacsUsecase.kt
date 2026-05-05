@@ -1,6 +1,7 @@
 package cz.grimir.wifimanager.admin.application.query.handler
 
 import cz.grimir.wifimanager.admin.application.port.FindAllowedMacPort
+import cz.grimir.wifimanager.admin.application.query.ListAllowedMacsQuery
 import cz.grimir.wifimanager.admin.core.value.AllowedMac
 import org.springframework.stereotype.Service
 
@@ -8,5 +9,5 @@ import org.springframework.stereotype.Service
 class AdminListAllowedMacsUsecase(
     private val findAllowedMacPort: FindAllowedMacPort,
 ) {
-    fun list(): List<AllowedMac> = findAllowedMacPort.findAll()
+    fun list(query: ListAllowedMacsQuery): List<AllowedMac> = findAllowedMacPort.findAll()
 }

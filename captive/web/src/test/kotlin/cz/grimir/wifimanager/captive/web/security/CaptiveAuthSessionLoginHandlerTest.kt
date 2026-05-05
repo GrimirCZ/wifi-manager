@@ -1,9 +1,11 @@
 package cz.grimir.wifimanager.captive.web.security
 
+import cz.grimir.wifimanager.captive.application.command.UpsertNetworkUserOnLoginCommand
 import cz.grimir.wifimanager.captive.application.command.handler.UpsertNetworkUserOnLoginUsecase
 import cz.grimir.wifimanager.captive.application.command.model.UserAuthenticationResult
 import cz.grimir.wifimanager.captive.application.command.model.UserCredentials
 import cz.grimir.wifimanager.captive.application.port.UserAuthProviderPort
+import cz.grimir.wifimanager.captive.application.query.ResolveNetworkUserLimitQuery
 import cz.grimir.wifimanager.captive.application.query.handler.ResolveNetworkUserLimitUsecase
 import cz.grimir.wifimanager.captive.application.query.model.NetworkUser
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
@@ -43,8 +45,10 @@ class CaptiveAuthSessionLoginHandlerTest {
         val credentials = UserCredentials(username = "user", password = "secret")
         val authResult = UserAuthenticationResult(identity = identity(), allowedDeviceCount = 2)
         given(authProvider.authenticate(credentials)).willReturn(authResult)
-        given(upsertNetworkUserOnLoginUsecase.upsert(authResult.identity, authResult.allowedDeviceCount)).willReturn(networkUser())
-        given(resolveNetworkUserLimitUsecase.resolve(networkUser())).willReturn(2)
+        given(
+            upsertNetworkUserOnLoginUsecase.upsert(UpsertNetworkUserOnLoginCommand(authResult.identity, authResult.allowedDeviceCount)),
+        ).willReturn(networkUser())
+        given(resolveNetworkUserLimitUsecase.resolve(ResolveNetworkUserLimitQuery(networkUser()))).willReturn(2)
         given(request.session).willReturn(session)
 
         val result = handler.login(credentials, request)
@@ -82,8 +86,10 @@ class CaptiveAuthSessionLoginHandlerTest {
         val credentials = UserCredentials(username = "user", password = "secret")
         val authResult = UserAuthenticationResult(identity = identity(), allowedDeviceCount = 2)
         given(authProvider.authenticate(credentials)).willReturn(authResult)
-        given(upsertNetworkUserOnLoginUsecase.upsert(authResult.identity, authResult.allowedDeviceCount)).willReturn(networkUser())
-        given(resolveNetworkUserLimitUsecase.resolve(networkUser())).willReturn(0)
+        given(
+            upsertNetworkUserOnLoginUsecase.upsert(UpsertNetworkUserOnLoginCommand(authResult.identity, authResult.allowedDeviceCount)),
+        ).willReturn(networkUser())
+        given(resolveNetworkUserLimitUsecase.resolve(ResolveNetworkUserLimitQuery(networkUser()))).willReturn(0)
 
         val result = handler.login(credentials, request)
 

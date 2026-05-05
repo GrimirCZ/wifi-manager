@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.admin.application.usecases.commands
 
+import cz.grimir.wifimanager.admin.application.command.RemoveUserDeviceCommand
 import cz.grimir.wifimanager.admin.application.command.handler.RemoveUserDeviceUsecase
 import cz.grimir.wifimanager.admin.application.port.DeleteUserDevicePort
 import cz.grimir.wifimanager.shared.core.UserId
@@ -20,7 +21,7 @@ class RemoveUserDeviceUsecaseTest {
         val userId = UserId(UUID.fromString("00000000-0000-0000-0000-000000000001"))
         val mac = "AA:BB:CC:DD:EE:FF"
 
-        usecase.remove(userId, mac)
+        usecase.remove(RemoveUserDeviceCommand(userId, mac))
 
         verify(deleteUserDevicePort).delete(userId, mac)
     }

@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.admin.application.policy
 
+import cz.grimir.wifimanager.admin.application.command.ConnectUserDeviceCommand
 import cz.grimir.wifimanager.admin.application.command.handler.ConnectUserDeviceUsecase
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceConnectedEvent
 import org.springframework.stereotype.Service
@@ -10,9 +11,11 @@ class OnNetworkUserDeviceConnectedConnectUserDevicePolicy(
 ) {
     fun on(event: NetworkUserDeviceConnectedEvent) {
         connectUserDeviceUsecase.connect(
-            userId = event.userId,
-            mac = event.deviceMac,
-            connectedAt = event.connectedAt,
+            ConnectUserDeviceCommand(
+                userId = event.userId,
+                mac = event.deviceMac,
+                connectedAt = event.connectedAt,
+            ),
         )
     }
 }

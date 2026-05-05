@@ -1,9 +1,9 @@
 package cz.grimir.wifimanager.captive.application.command.handler
 
+import cz.grimir.wifimanager.captive.application.command.UpsertNetworkUserOnLoginCommand
 import cz.grimir.wifimanager.captive.application.port.NetworkUserReadPort
 import cz.grimir.wifimanager.captive.application.port.NetworkUserWritePort
 import cz.grimir.wifimanager.captive.application.query.model.NetworkUser
-import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.TimeProvider
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -15,18 +15,15 @@ class UpsertNetworkUserOnLoginUsecase(
     private val timeProvider: TimeProvider,
 ) {
     @Transactional
-    fun upsert(
-        identity: UserIdentitySnapshot,
-        allowedDeviceCount: Int,
-    ): NetworkUser {
+    fun upsert(command: UpsertNetworkUserOnLoginCommand): NetworkUser {
         val loginAt = timeProvider.get()
-        val existing = networkUserReadPort.findByUserId(identity.userId)
+        val existing = networkUserReadPort.findByUserId(command.identity.userId)
         val user =
             if (existing == null) {
                 NetworkUser(
-                    userId = identity.userId,
-                    identityId = identity.identityId,
-                    allowedDeviceCount = allowedDeviceCount,
+                    userId = command.identity.userId,
+                    identityId = command.identity.identityId,
+                    allowedDeviceCount = command.allowedDeviceCount,
                     adminOverrideLimit = null,
                     createdAt = loginAt,
                     updatedAt = loginAt,
@@ -34,7 +31,7 @@ class UpsertNetworkUserOnLoginUsecase(
                 )
             } else {
                 existing.copy(
-                    allowedDeviceCount = allowedDeviceCount,
+                    allowedDeviceCount = command.allowedDeviceCount,
                     updatedAt = loginAt,
                     lastLoginAt = loginAt,
                 )

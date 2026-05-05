@@ -1,11 +1,11 @@
 package cz.grimir.wifimanager.captive.application.command.handler
 
+import cz.grimir.wifimanager.captive.application.command.UpsertAllowedMacCommand
 import cz.grimir.wifimanager.captive.application.port.AllowedMacWritePort
 import cz.grimir.wifimanager.captive.application.port.RouterAgentPort
 import cz.grimir.wifimanager.captive.application.query.model.AllowedMac
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
 
 @Service
 class CaptiveUpsertAllowedMacUsecase(
@@ -13,17 +13,14 @@ class CaptiveUpsertAllowedMacUsecase(
     private val routerAgentPort: RouterAgentPort,
 ) {
     @Transactional
-    fun upsert(
-        macAddress: String,
-        validUntil: Instant?,
-    ) {
+    fun upsert(command: UpsertAllowedMacCommand) {
         allowedMacWritePort.save(
             AllowedMac(
-                mac = macAddress,
-                validUntil = validUntil,
+                mac = command.macAddress,
+                validUntil = command.validUntil,
             ),
         )
 
-        routerAgentPort.allowClientAccess(listOf(macAddress))
+        routerAgentPort.allowClientAccess(listOf(command.macAddress))
     }
 }

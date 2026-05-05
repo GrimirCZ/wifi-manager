@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.events.local
 
+import cz.grimir.wifimanager.captive.application.command.ScrubDeauthorizedCaptiveDeviceCommand
 import cz.grimir.wifimanager.captive.application.command.handler.ScrubDeauthorizedCaptiveDeviceUsecase
 import cz.grimir.wifimanager.captive.application.event.MacAuthorizationStateChangedEvent
 import cz.grimir.wifimanager.captive.application.port.RouterAgentPort
@@ -36,8 +37,8 @@ class MacAuthorizationStateChangedEventListenerTest {
 
         verify(routerAgentPort).revokeClientAccess(listOf("aa:bb:cc:dd:ee:01"))
         verify(routerAgentPort).revokeClientAccess(listOf("aa:bb:cc:dd:ee:02"))
-        verify(scrubDeauthorizedCaptiveDeviceUsecase).scrubIfEligible("aa:bb:cc:dd:ee:01")
-        verify(scrubDeauthorizedCaptiveDeviceUsecase).scrubIfEligible("aa:bb:cc:dd:ee:02")
+        verify(scrubDeauthorizedCaptiveDeviceUsecase).scrubIfEligible(ScrubDeauthorizedCaptiveDeviceCommand("aa:bb:cc:dd:ee:01"))
+        verify(scrubDeauthorizedCaptiveDeviceUsecase).scrubIfEligible(ScrubDeauthorizedCaptiveDeviceCommand("aa:bb:cc:dd:ee:02"))
     }
 
     @Test
@@ -48,7 +49,7 @@ class MacAuthorizationStateChangedEventListenerTest {
         listener.on(MacAuthorizationStateChangedEvent(listOf(mac)))
 
         verify(routerAgentPort, never()).revokeClientAccess(listOf(mac))
-        verify(scrubDeauthorizedCaptiveDeviceUsecase, never()).scrubIfEligible(mac)
+        verify(scrubDeauthorizedCaptiveDeviceUsecase, never()).scrubIfEligible(ScrubDeauthorizedCaptiveDeviceCommand(mac))
     }
 
     @Test
@@ -61,6 +62,6 @@ class MacAuthorizationStateChangedEventListenerTest {
         listener.on(MacAuthorizationStateChangedEvent(listOf(mac)))
 
         verify(routerAgentPort).revokeClientAccess(listOf(mac))
-        verify(scrubDeauthorizedCaptiveDeviceUsecase).scrubIfEligible(mac)
+        verify(scrubDeauthorizedCaptiveDeviceUsecase).scrubIfEligible(ScrubDeauthorizedCaptiveDeviceCommand(mac))
     }
 }

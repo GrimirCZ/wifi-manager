@@ -1,7 +1,9 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
+import cz.grimir.wifimanager.captive.application.command.CompleteNetworkUserDeviceReauthCommand
 import cz.grimir.wifimanager.captive.application.command.handler.CompleteNetworkUserDeviceReauthUsecase
 import cz.grimir.wifimanager.captive.application.command.model.UserCredentials
+import cz.grimir.wifimanager.captive.application.query.FindNetworkUserDeviceByMacQuery
 import cz.grimir.wifimanager.captive.application.query.handler.FindNetworkUserDeviceByMacUsecase
 import cz.grimir.wifimanager.captive.web.CaptiveLoginProperties
 import cz.grimir.wifimanager.captive.web.mvc.dto.CaptiveLdapLoginForm
@@ -36,7 +38,7 @@ class CaptiveLoginController(
         htmxRequest: HtmxRequest,
     ): String {
         if (clientInfo != null) {
-            val existingDevice = findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)
+            val existingDevice = findNetworkUserDeviceByMacUsecase.find(FindNetworkUserDeviceByMacQuery(clientInfo.macAddress))
             if (existingDevice != null && existingDevice.reauthRequiredAt == null) {
                 session.removeAttribute(CaptivePortalController.ACCOUNT_REAUTH_SESSION_KEY)
                 return if (htmxRequest.isHtmxRequest) "redirect:htmx:/captive" else "redirect:/captive"
@@ -80,7 +82,7 @@ class CaptiveLoginController(
             return "captive/login"
         }
 
-        val existingDevice = findNetworkUserDeviceByMacUsecase.find(clientInfo.macAddress)
+        val existingDevice = findNetworkUserDeviceByMacUsecase.find(FindNetworkUserDeviceByMacQuery(clientInfo.macAddress))
         val expectedUserId = existingDevice?.takeIf { it.reauthRequiredAt != null }?.userId
         val result =
             captiveAuthSessionLoginHandler.login(
@@ -105,9 +107,11 @@ class CaptiveLoginController(
         request.session.removeAttribute(CaptivePortalController.ACCOUNT_REAUTH_SESSION_KEY)
         if (existingDevice?.reauthRequiredAt != null && result.userId != null) {
             completeNetworkUserDeviceReauthUsecase.complete(
-                userId = result.userId,
-                mac = clientInfo.macAddress,
-                currentFingerprint = clientInfo.fingerprintProfile,
+                CompleteNetworkUserDeviceReauthCommand(
+                    userId = result.userId,
+                    mac = clientInfo.macAddress,
+                    currentFingerprint = clientInfo.fingerprintProfile,
+                ),
             )
             return if (htmxRequest.isHtmxRequest) {
                 "redirect:htmx:/captive"
