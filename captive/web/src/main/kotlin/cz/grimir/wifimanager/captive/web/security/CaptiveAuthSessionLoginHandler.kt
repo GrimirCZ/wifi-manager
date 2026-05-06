@@ -89,7 +89,9 @@ class CaptiveAuthSessionLoginHandler(
         SecurityContextHolder.getContext().authentication = authentication
 
         logger.info {
-            "User authentication succeeded email=${result.identity.email} userId=${result.identity.userId.id} roles=${result.identity.roles}"
+            "User authentication succeeded email=${result.identity.email} userId=${result.identity.userId.id}" +
+                    " allowedDeviceCount=${result.allowedDeviceCount} roles=${result.identity.roles}" +
+                    " groups=${result.groups.sorted()}"
         }
 
         return LdapLoginResult(success = true, userId = result.identity.userId)
