@@ -7,8 +7,8 @@ import cz.grimir.wifimanager.shared.events.ClientAccessRevokedEvent
 import cz.grimir.wifimanager.shared.events.DeviceAuthorizedEvent
 import cz.grimir.wifimanager.shared.events.DeviceFingerprintMismatchDetectedEvent
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceAuthorizedEvent
-import cz.grimir.wifimanager.shared.events.NetworkUserDeviceConnectedEvent
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceRemovedEvent
+import cz.grimir.wifimanager.shared.events.NetworkUserDevicesLastSeenObservedEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 
@@ -40,7 +40,7 @@ class SpringCaptiveEventPublisher(
         applicationEventPublisher.publishEvent(event)
     }
 
-    override fun publish(event: NetworkUserDeviceConnectedEvent) {
+    override fun publish(event: NetworkUserDevicesLastSeenObservedEvent) {
         applicationEventPublisher.publishEvent(event)
     }
 

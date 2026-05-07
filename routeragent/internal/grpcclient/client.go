@@ -25,6 +25,10 @@ type streamLifecycleHandler interface {
 	OnStreamDisconnected(sender *routeragentgrpc.Stream)
 }
 
+type allowedClientsPresenceReporter interface {
+	ReportAllowedClientsPresence(stream *routeragentgrpc.Stream) error
+}
+
 func Run(ctx context.Context, cfg config.Config, handler CommandHandler) error {
 	dialOpts, err := buildDialOptions(cfg)
 	if err != nil {
@@ -82,6 +86,39 @@ func runOnce(ctx context.Context, cfg config.Config, handler CommandHandler, dia
 	if err := stream.SendSynchronize("startup"); err != nil {
 		return err
 	}
+
+	if reporter, ok := handler.(allowedClientsPresenceReporter); ok {
+		if err := reporter.ReportAllowedClientsPresence(stream); err != nil {
+			if streamCtx.Err() == nil {
+				log.Printf("failed to send initial allowed clients presence: %v", err)
+				cancel()
+			}
+			return err
+		}
+	}
+
+	go func() {
+		ticker := time.NewTicker(cfg.PresenceInterval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-streamCtx.Done():
+				return
+			case <-ticker.C:
+				reporter, ok := handler.(allowedClientsPresenceReporter)
+				if !ok {
+					continue
+				}
+				if err := reporter.ReportAllowedClientsPresence(stream); err != nil {
+					if streamCtx.Err() == nil {
+						log.Printf("failed to send allowed clients presence: %v", err)
+						cancel()
+					}
+					return
+				}
+			}
+		}
+	}()
 
 	go func() {
 		ticker := time.NewTicker(cfg.SyncInterval)

@@ -1,5 +1,7 @@
 package cz.grimir.wifimanager.captive.routeragent.grpc
 
+import cz.grimir.wifimanager.captive.application.command.ApplyAllowedClientsPresenceCommand
+import cz.grimir.wifimanager.captive.application.command.handler.ApplyAllowedClientsPresenceUsecase
 import cz.grimir.wifimanager.captive.application.port.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceReadPort
@@ -15,6 +17,7 @@ import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.core.task.SyncTaskExecutor
+import java.time.Instant
 
 class RouterAgentGrpcServiceTest {
     private val hub: RouterAgentHub = mock()
@@ -22,6 +25,7 @@ class RouterAgentGrpcServiceTest {
     private val networkUserDeviceReadPort: NetworkUserDeviceReadPort = mock()
     private val allowedMacReadPort: AllowedMacReadPort = mock()
     private val applicationEventPublisher: ApplicationEventPublisher = mock()
+    private val applyAllowedClientsPresenceUsecase: ApplyAllowedClientsPresenceUsecase = mock()
     private val commandExecutor = SyncTaskExecutor()
 
     private val service =
@@ -31,6 +35,7 @@ class RouterAgentGrpcServiceTest {
             networkUserDeviceReadPort = networkUserDeviceReadPort,
             allowedMacReadPort = allowedMacReadPort,
             applicationEventPublisher = applicationEventPublisher,
+            applyAllowedClientsPresenceUsecase = applyAllowedClientsPresenceUsecase,
             commandExecutor = commandExecutor,
         )
 
@@ -110,5 +115,36 @@ class RouterAgentGrpcServiceTest {
         assertNull(event.dhcpHostname)
         assertNull(event.dhcpVendorClass)
         assertNull(event.dhcpPrlHash)
+    }
+
+    @Test
+    fun `allowed clients presence invokes apply usecase`() {
+        val responseObserver = mock<StreamObserver<RouterAgentCommand>>()
+        val requestObserver = service.connect(responseObserver)
+
+        requestObserver.onNext(
+            RouterAgentMessage
+                .newBuilder()
+                .setAllowedClientsPresence(
+                    AllowedClientsPresence
+                        .newBuilder()
+                        .setReportAt("2025-03-01T12:00:00Z")
+                        .addEntries(
+                            cz.grimir.wifimanager.captive.routeragent.grpc.AllowedClientsPresenceEntry
+                                .newBuilder()
+                                .setMacAddress("aa:bb:cc:dd:ee:ff")
+                                .setLastSeenAt("2025-03-01T11:30:00Z")
+                                .setNeighborStatus(NeighborStatus.NEIGHBOR_STATUS_STALE)
+                                .build(),
+                        ).build(),
+                ).build(),
+        )
+
+        val cmdCaptor = argumentCaptor<ApplyAllowedClientsPresenceCommand>()
+        verify(applyAllowedClientsPresenceUsecase).apply(cmdCaptor.capture())
+        val cmd = cmdCaptor.firstValue
+        assertEquals(1, cmd.entries.size)
+        assertEquals("aa:bb:cc:dd:ee:ff", cmd.entries[0].macAddress)
+        assertEquals(Instant.parse("2025-03-01T11:30:00Z"), cmd.entries[0].lastSeenAt)
     }
 }

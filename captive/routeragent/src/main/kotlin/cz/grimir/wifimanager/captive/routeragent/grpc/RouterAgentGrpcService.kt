@@ -1,5 +1,8 @@
 package cz.grimir.wifimanager.captive.routeragent.grpc
 
+import cz.grimir.wifimanager.captive.application.command.AllowedClientsPresenceEntry
+import cz.grimir.wifimanager.captive.application.command.ApplyAllowedClientsPresenceCommand
+import cz.grimir.wifimanager.captive.application.command.handler.ApplyAllowedClientsPresenceUsecase
 import cz.grimir.wifimanager.captive.application.port.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceReadPort
@@ -11,6 +14,8 @@ import io.grpc.stub.StreamObserver
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.core.task.TaskExecutor
 import org.springframework.core.task.TaskRejectedException
+import java.time.Instant
+import java.time.format.DateTimeParseException
 import java.util.concurrent.RejectedExecutionException
 
 private val logger = KotlinLogging.logger {}
@@ -21,6 +26,7 @@ class RouterAgentGrpcService(
     private val networkUserDeviceReadPort: NetworkUserDeviceReadPort,
     private val allowedMacReadPort: AllowedMacReadPort,
     private val applicationEventPublisher: ApplicationEventPublisher,
+    private val applyAllowedClientsPresenceUsecase: ApplyAllowedClientsPresenceUsecase,
     private val commandExecutor: TaskExecutor,
 ) : RouterAgentServiceGrpc.RouterAgentServiceImplBase() {
     override fun connect(responseObserver: StreamObserver<RouterAgentCommand>): StreamObserver<RouterAgentMessage> {
@@ -64,6 +70,32 @@ class RouterAgentGrpcService(
                         }
                     }
 
+                    RouterAgentMessage.MessageCase.ALLOWED_CLIENTS_PRESENCE -> {
+                        val presence = message.allowedClientsPresence
+                        try {
+                            commandExecutor.execute {
+                                try {
+                                    val entries = parseAllowedClientsPresenceEntries(presence)
+                                    if (entries.isNotEmpty()) {
+                                        applyAllowedClientsPresenceUsecase.apply(
+                                            ApplyAllowedClientsPresenceCommand(entries),
+                                        )
+                                    }
+                                } catch (ex: Exception) {
+                                    logger.error(ex) { "Failed to apply allowed clients presence" }
+                                }
+                            }
+                        } catch (ex: RuntimeException) {
+                            when (ex) {
+                                is TaskRejectedException,
+                                is RejectedExecutionException,
+                                -> logger.error(ex) { "Failed to schedule allowed clients presence" }
+
+                                else -> throw ex
+                            }
+                        }
+                    }
+
                     RouterAgentMessage.MessageCase.AUTHORIZED_CLIENT_OBSERVED -> {
                         val observed = message.authorizedClientObserved
                         applicationEventPublisher.publishEvent(
@@ -101,4 +133,27 @@ class RouterAgentGrpcService(
             }
         }
     }
+}
+
+private fun parseAllowedClientsPresenceEntries(presence: AllowedClientsPresence): List<AllowedClientsPresenceEntry> {
+    val out = mutableListOf<AllowedClientsPresenceEntry>()
+    for (e in presence.entriesList) {
+        val mac = e.macAddress.trim()
+        if (mac.isEmpty()) {
+            continue
+        }
+        val ts = e.lastSeenAt.trim()
+        if (ts.isEmpty()) {
+            continue
+        }
+        val instant =
+            try {
+                Instant.parse(ts)
+            } catch (_: DateTimeParseException) {
+                logger.warn { "Skipping allowed clients presence entry invalid last_seen_at mac=$mac value=$ts" }
+                continue
+            }
+        out.add(AllowedClientsPresenceEntry(macAddress = mac, lastSeenAt = instant))
+    }
+    return out
 }

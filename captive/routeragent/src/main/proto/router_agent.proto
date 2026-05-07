@@ -16,6 +16,7 @@ message RouterAgentMessage {
     Synchronize synchronize = 1;
     CommandAck ack = 2;
     AuthorizedClientObserved authorized_client_observed = 3;
+    AllowedClientsPresence allowed_clients_presence = 4;
   }
 }
 
@@ -85,6 +86,17 @@ message AuthorizedClientObserved {
   optional string dhcp_vendor_class = 7;
   optional string dhcp_prl_hash = 8;
   optional string dhcp_hostname = 9;
+}
+
+message AllowedClientsPresenceEntry {
+  string mac_address = 1;
+  string last_seen_at = 2;
+  NeighborStatus neighbor_status = 3;
+}
+
+message AllowedClientsPresence {
+  string report_at = 1;
+  repeated AllowedClientsPresenceEntry entries = 2;
 }
 
 message CommandAck {

@@ -1,9 +1,7 @@
 package cz.grimir.wifimanager.captive.web.mvc
 
 import cz.grimir.wifimanager.captive.application.command.AuthorizeDeviceWithCodeCommand
-import cz.grimir.wifimanager.captive.application.command.TouchNetworkUserDeviceCommand
 import cz.grimir.wifimanager.captive.application.command.handler.AuthorizeDeviceWithCodeUsecase
-import cz.grimir.wifimanager.captive.application.command.handler.TouchNetworkUserDeviceUsecase
 import cz.grimir.wifimanager.captive.application.port.CaptiveUserIdentityPort
 import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
@@ -38,7 +36,6 @@ import java.util.UUID
 class CaptivePortalControllerTest {
     private val authorizeDeviceWithCodeUsecase: AuthorizeDeviceWithCodeUsecase = mock()
     private val findAuthorizationTokenPort: FindAuthorizationTokenPort = mock()
-    private val touchNetworkUserDeviceUsecase: TouchNetworkUserDeviceUsecase = mock()
     private val userIdentityPort: CaptiveUserIdentityPort = mock()
     private val clientAccessStatusService: CaptiveClientAccessStatusService = mock()
     private val htmxRequest: HtmxRequest = mock()
@@ -48,7 +45,6 @@ class CaptivePortalControllerTest {
             authorizeDeviceWithCodeUsecase = authorizeDeviceWithCodeUsecase,
             accessCodeFormatter = AccessCodeFormatter(),
             findAuthorizationTokenPort = findAuthorizationTokenPort,
-            touchNetworkUserDeviceUsecase = touchNetworkUserDeviceUsecase,
             userIdentityPort = userIdentityPort,
             clientAccessStatusService = clientAccessStatusService,
         )
@@ -74,7 +70,7 @@ class CaptivePortalControllerTest {
         assertEquals("captive/index", view)
         assertEquals(false, model["requireUserNameStep"])
         assertTrue(model["form"] is CaptiveAccessCodeForm)
-        verifyNoInteractions(clientAccessStatusService, touchNetworkUserDeviceUsecase, userIdentityPort)
+        verifyNoInteractions(clientAccessStatusService, userIdentityPort)
     }
 
     @Test
@@ -110,7 +106,7 @@ class CaptivePortalControllerTest {
         assertEquals(true, model["deviceLoggedIn"])
         assertEquals(false, model["deviceVerificationRequired"])
         assertEquals("Work Laptop", model["authorizedDeviceName"])
-        verify(touchNetworkUserDeviceUsecase).touch(TouchNetworkUserDeviceCommand(device.userId, device.mac))
+        verify(userIdentityPort).findByUserId(device.userId)
     }
 
     @Test

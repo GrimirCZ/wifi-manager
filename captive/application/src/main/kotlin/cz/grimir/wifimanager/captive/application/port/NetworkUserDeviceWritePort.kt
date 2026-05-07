@@ -2,6 +2,7 @@ package cz.grimir.wifimanager.captive.application.port
 
 import cz.grimir.wifimanager.captive.application.query.model.NetworkUserDevice
 import cz.grimir.wifimanager.shared.core.UserId
+import java.time.Instant
 
 interface NetworkUserDeviceWritePort {
     fun save(device: NetworkUserDevice)
@@ -11,8 +12,9 @@ interface NetworkUserDeviceWritePort {
         mac: String,
     )
 
-    fun touchDevice(
+    fun updateLastSeenAtIfNewer(
         userId: UserId,
         mac: String,
-    )
+        lastSeenAt: Instant,
+    ): Boolean
 }

@@ -89,6 +89,17 @@ func (s *Stream) SendAuthorizedClientObserved(observed *routeragentpb.Authorized
 	})
 }
 
+// SendAllowedClientsPresence publishes periodic presence of allowed MACs and their last observed timestamps.
+func (s *Stream) SendAllowedClientsPresence(presence *routeragentpb.AllowedClientsPresence) error {
+	s.sendMu.Lock()
+	defer s.sendMu.Unlock()
+	return s.stream.Send(&routeragentpb.RouterAgentMessage{
+		Message: &routeragentpb.RouterAgentMessage_AllowedClientsPresence{
+			AllowedClientsPresence: presence,
+		},
+	})
+}
+
 // CloseSend closes the send direction of the stream.
 func (s *Stream) CloseSend() error {
 	return s.stream.CloseSend()

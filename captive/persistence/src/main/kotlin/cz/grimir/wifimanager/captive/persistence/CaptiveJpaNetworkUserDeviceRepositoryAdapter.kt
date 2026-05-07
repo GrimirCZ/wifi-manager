@@ -9,6 +9,7 @@ import cz.grimir.wifimanager.shared.core.UserId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 
 @Repository
 class CaptiveJpaNetworkUserDeviceRepositoryAdapter(
@@ -40,12 +41,11 @@ class CaptiveJpaNetworkUserDeviceRepositoryAdapter(
     }
 
     @Transactional
-    override fun touchDevice(
+    override fun updateLastSeenAtIfNewer(
         userId: UserId,
         mac: String,
-    ) {
-        repository.touchDevice(userId.id, mac)
-    }
+        lastSeenAt: Instant,
+    ): Boolean = repository.updateLastSeenAtIfNewer(userId.id, mac, lastSeenAt) > 0
 
     private fun upsertCaptiveDevice(
         mac: String,

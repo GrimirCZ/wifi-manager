@@ -5,6 +5,7 @@ import cz.grimir.wifimanager.captive.persistence.entity.NetworkUserDeviceId
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import java.time.Instant
 import java.util.UUID
 
 interface CaptiveNetworkUserDeviceJpaRepository : JpaRepository<NetworkUserDeviceEntity, NetworkUserDeviceId> {
@@ -22,16 +23,17 @@ interface CaptiveNetworkUserDeviceJpaRepository : JpaRepository<NetworkUserDevic
         deviceMac: String,
     )
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(
         """
-        update NetworkUserDeviceEntity device
-        set device.lastSeenAt = CURRENT_TIMESTAMP
-        where device.userId = :userId and device.deviceMac = :deviceMac
+        update NetworkUserDeviceEntity d
+        set d.lastSeenAt = :lastSeenAt
+        where d.userId = :userId and d.deviceMac = :deviceMac and d.lastSeenAt < :lastSeenAt
         """,
     )
-    fun touchDevice(
+    fun updateLastSeenAtIfNewer(
         userId: UUID,
         deviceMac: String,
+        lastSeenAt: Instant,
     ): Int
 }

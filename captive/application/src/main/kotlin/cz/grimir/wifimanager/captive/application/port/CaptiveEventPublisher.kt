@@ -6,8 +6,8 @@ import cz.grimir.wifimanager.shared.events.ClientAccessRevokedEvent
 import cz.grimir.wifimanager.shared.events.DeviceAuthorizedEvent
 import cz.grimir.wifimanager.shared.events.DeviceFingerprintMismatchDetectedEvent
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceAuthorizedEvent
-import cz.grimir.wifimanager.shared.events.NetworkUserDeviceConnectedEvent
 import cz.grimir.wifimanager.shared.events.NetworkUserDeviceRemovedEvent
+import cz.grimir.wifimanager.shared.events.NetworkUserDevicesLastSeenObservedEvent
 
 interface CaptiveEventPublisher {
     fun publish(event: DeviceAuthorizedEvent)
@@ -22,7 +22,7 @@ interface CaptiveEventPublisher {
 
     fun publish(event: NetworkUserDeviceRemovedEvent)
 
-    fun publish(event: NetworkUserDeviceConnectedEvent)
+    fun publish(event: NetworkUserDevicesLastSeenObservedEvent)
 
     fun publish(event: MacAuthorizationStateChangedEvent)
 }

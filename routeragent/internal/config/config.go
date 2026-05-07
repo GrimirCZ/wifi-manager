@@ -36,6 +36,7 @@ type Config struct {
 	ReconnectDelay          time.Duration
 	ActionTimeout           time.Duration
 	SyncInterval            time.Duration
+	PresenceInterval        time.Duration
 	ReconcileInterval       time.Duration
 	ClientInactiveAfter     time.Duration
 	ClientLifecycleLogScope ClientLifecycleLogScope
@@ -67,6 +68,7 @@ func Load() (Config, error) {
 		ReconnectDelay:    envDuration("ROUTERAGENT_GRPC_RECONNECT_DELAY", 3*time.Second),
 		ActionTimeout:     envDuration("ROUTERAGENT_ACTION_TIMEOUT", 5*time.Second),
 		SyncInterval:      envDuration("ROUTERAGENT_SYNC_INTERVAL", 5*time.Minute),
+		PresenceInterval:  envDuration("ROUTERAGENT_PRESENCE_INTERVAL", time.Minute),
 		ReconcileInterval: envDuration("ROUTERAGENT_RECONCILE_INTERVAL", time.Minute),
 		ClientInactiveAfter: envDuration(
 			"ROUTERAGENT_CLIENT_INACTIVE_AFTER",

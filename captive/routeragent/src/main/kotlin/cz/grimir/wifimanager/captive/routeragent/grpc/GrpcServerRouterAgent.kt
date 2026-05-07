@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.routeragent.grpc
 
+import cz.grimir.wifimanager.captive.application.command.handler.ApplyAllowedClientsPresenceUsecase
 import cz.grimir.wifimanager.captive.application.port.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.port.ClientInfo
 import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
@@ -38,6 +39,7 @@ class GrpcServerRouterAgent(
     networkUserDeviceReadPort: NetworkUserDeviceReadPort,
     allowedMacReadPort: AllowedMacReadPort,
     applicationEventPublisher: ApplicationEventPublisher,
+    applyAllowedClientsPresenceUsecase: ApplyAllowedClientsPresenceUsecase,
     commandExecutor: TaskExecutor,
 ) : RouterAgentPort,
     AutoCloseable,
@@ -50,6 +52,7 @@ class GrpcServerRouterAgent(
             networkUserDeviceReadPort,
             allowedMacReadPort,
             applicationEventPublisher,
+            applyAllowedClientsPresenceUsecase,
             commandExecutor,
         )
     private val server = buildServer(properties, service)

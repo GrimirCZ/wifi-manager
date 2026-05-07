@@ -86,6 +86,58 @@ func TestBuildListNetworkClientsAckUsesCurrentSnapshot(t *testing.T) {
 	}
 }
 
+func TestBuildAllowedClientsPresenceIncludesAllowedWithNonZeroLastSeen(t *testing.T) {
+	agent := New(
+		firewall.NewDummyBackend(),
+		&stubIPMappingProvider{
+			clients: []ipmapping.ClientView{
+				{
+					MAC:        "aa:aa:aa:aa:aa:aa",
+					IPs:        []string{"192.0.2.10"},
+					Status:     ipmapping.NeighborStatusLive,
+					LastSeenAt: time.Date(2026, time.April, 19, 12, 0, 0, 0, time.UTC),
+				},
+				{
+					MAC:        "bb:bb:bb:bb:bb:bb",
+					IPs:        []string{"192.0.2.20"},
+					Status:     ipmapping.NeighborStatusStale,
+					LastSeenAt: time.Date(2026, time.April, 19, 11, 45, 0, 0, time.UTC),
+				},
+				{
+					MAC:        "cc:cc:cc:cc:cc:cc",
+					IPs:        []string{"192.0.2.30"},
+					Status:     ipmapping.NeighborStatusLive,
+					LastSeenAt: time.Time{},
+				},
+			},
+		},
+		&stubHostnameProvider{},
+		allowedip.NewMemoryRepository(),
+		&stubDHCPFingerprintProvider{},
+		time.Second,
+	)
+	agent.allowedMACs["aa:aa:aa:aa:aa:aa"] = struct{}{}
+	agent.allowedMACs["cc:cc:cc:cc:cc:cc"] = struct{}{}
+
+	got := agent.buildAllowedClientsPresence()
+	if got == nil {
+		t.Fatal("expected non-nil presence")
+	}
+	if len(got.Entries) != 1 {
+		t.Fatalf("expected 1 entry, got %d", len(got.Entries))
+	}
+	entry := got.Entries[0]
+	if entry.MacAddress != "aa:aa:aa:aa:aa:aa" {
+		t.Fatalf("unexpected mac: %q", entry.MacAddress)
+	}
+	if entry.LastSeenAt != "2026-04-19T12:00:00Z" {
+		t.Fatalf("unexpected last_seen_at: %q", entry.LastSeenAt)
+	}
+	if entry.NeighborStatus != routeragentpb.NeighborStatus_NEIGHBOR_STATUS_LIVE {
+		t.Fatalf("unexpected neighbor status: %v", entry.NeighborStatus)
+	}
+}
+
 func TestHandleListNetworkClientsSendsAck(t *testing.T) {
 	agent := New(
 		firewall.NewDummyBackend(),

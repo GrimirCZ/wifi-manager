@@ -1,5 +1,6 @@
 package cz.grimir.wifimanager.captive.routeragent
 
+import cz.grimir.wifimanager.captive.application.command.handler.ApplyAllowedClientsPresenceUsecase
 import cz.grimir.wifimanager.captive.application.port.AllowedMacReadPort
 import cz.grimir.wifimanager.captive.application.port.FindAuthorizationTokenPort
 import cz.grimir.wifimanager.captive.application.port.NetworkUserDeviceReadPort
@@ -36,6 +37,7 @@ class CaptiveRouterAgentConfig {
         networkUserDeviceReadPort: NetworkUserDeviceReadPort,
         allowedMacReadPort: AllowedMacReadPort,
         applicationEventPublisher: ApplicationEventPublisher,
+        applyAllowedClientsPresenceUsecase: ApplyAllowedClientsPresenceUsecase,
         applicationTaskExecutor: TaskExecutor,
     ) = GrpcServerRouterAgent(
         properties.grpc,
@@ -43,6 +45,7 @@ class CaptiveRouterAgentConfig {
         networkUserDeviceReadPort,
         allowedMacReadPort,
         applicationEventPublisher,
+        applyAllowedClientsPresenceUsecase,
         applicationTaskExecutor,
     )
 }
