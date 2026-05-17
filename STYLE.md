@@ -2,11 +2,11 @@
 
 ## Kotlin (General)
 
-- Indentation: 4 spaces; no tabs.
-- Prefer immutable `val` and pure functions; keep mutation localized.
+- Indentation: 4 spaces and no tabs.
+- Prefer immutable `val` and pure functions. Keep mutation localized.
 - Favor explicit, descriptive names (`findActiveTickets`, not `getTickets`).
-- Use Kotlin nullability intentionally; avoid `!!`. Use `requireNotNull`/`error` with clear messages.
-- Keep constructors small; prefer dependency injection via constructor parameters.
+- Use Kotlin nullability intentionally. Avoid `!!`. Use `requireNotNull`/`error` with clear messages.
+- Keep constructors small. Prefer dependency injection via constructor parameters.
 
 ## Architecture & Layering
 
@@ -15,7 +15,7 @@
   - Application (`*/application`): usecases, commands/queries, ports.
   - Core (`*/core`): domain aggregates/value objects, domain exceptions.
   - Persistence (`*/persistence`): JPA entities + adapters implementing ports.
-- Controllers should orchestrate HTTP concerns only (params, redirects, HTMX partials); business rules live in usecases.
+- Controllers should orchestrate HTTP concerns only (params, redirects, HTMX partials). Business rules live in usecases.
 
 ## Spring MVC + Thymeleaf
 
@@ -31,13 +31,13 @@
 
 - Prefer server-driven updates: return a fragment and swap it into a stable container element.
 - Detect HTMX requests via `io.github.wimdeblauwe.htmx.spring.boot.mvc.HtmxRequest` (avoid manual header parsing).
-- Use `hx-*` attributes (not `data-hx-*`) in Thymeleaf templates; prefer `th:hx-get`/`th:hx-post` (or `th:attr` for dynamic attrs).
+- Use `hx-*` attributes (not `data-hx-*`) in Thymeleaf templates. Prefer `th:hx-get`/`th:hx-post` (or `th:attr` for dynamic attrs).
 
 ## Tailwind/CSS
 
 - Source CSS lives in `*/web/src/main/frontend/*.css` and shared utilities in `shared/ui/tailwind/shared.css`.
 - Implement reusable patterns with Tailwind utilities and `@apply` (in Tailwind source files).
-- Generated outputs (e.g. `*/web/src/main/resources/static/assets/*/*.css`) are build artifacts; update them by running `./gradlew buildCss` (or `./gradlew watchCss` during development).
+- Generated outputs (e.g. `*/web/src/main/resources/static/assets/*/*.css`) are build artifacts. Update them by running `./gradlew buildCss` (or `./gradlew watchCss` during development).
 
 ## Formatting & Linting
 
