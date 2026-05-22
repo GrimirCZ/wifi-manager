@@ -14,7 +14,6 @@ import cz.grimir.wifimanager.admin.application.query.handler.FindTicketsByAuthor
 import cz.grimir.wifimanager.admin.application.query.model.TicketWithDeviceCount
 import cz.grimir.wifimanager.admin.core.aggregates.Ticket
 import cz.grimir.wifimanager.admin.web.AdminWifiProperties
-import cz.grimir.wifimanager.shared.application.captive.CaptivePortalApiProperties
 import cz.grimir.wifimanager.shared.application.identity.model.UserIdentitySnapshot
 import cz.grimir.wifimanager.shared.core.TicketId
 import cz.grimir.wifimanager.shared.core.UserId
@@ -48,7 +47,6 @@ class AdminHomeControllerTest {
             countAuthorizedDevicesByTicketIdUsecase = mock(CountAuthorizedDevicesByTicketIdUsecase::class.java),
             kickClientUsecase = mock(KickClientUsecase::class.java),
             wifiProperties = AdminWifiProperties("Test WiFi"),
-            captivePortalApiProperties = CaptivePortalApiProperties("https://portal.example"),
         )
 
     @Test

@@ -65,12 +65,24 @@ class CaptivePortalControllerTest {
         val request = request()
         val model = ExtendedModelMap()
 
-        val view = controller.index(null, request, model)
+        val view = controller.index(null, null, request, model)
 
         assertEquals("captive/index", view)
         assertEquals(false, model["requireUserNameStep"])
         assertTrue(model["form"] is CaptiveAccessCodeForm)
         verifyNoInteractions(clientAccessStatusService, userIdentityPort)
+    }
+
+    @Test
+    fun `index pre-fills access code from code query parameter`() {
+        val request = request()
+        val model = ExtendedModelMap()
+
+        val view = controller.index(null, "abc-def", request, model)
+
+        assertEquals("captive/index", view)
+        val form = model["form"] as CaptiveAccessCodeForm
+        assertEquals("ABC-DEF", form.accessCode)
     }
 
     @Test
@@ -99,7 +111,7 @@ class CaptivePortalControllerTest {
                 ),
             )
 
-        val view = controller.index(clientInfo, request, model)
+        val view = controller.index(clientInfo, null, request, model)
 
         assertEquals("captive/index", view)
         assertEquals(true, model["accountAuthorized"])
@@ -157,6 +169,8 @@ class CaptivePortalControllerTest {
         assertTrue(template.contains("""pattern="[A-Za-z0-9]{3}-?[A-Za-z0-9]{3}""""))
         assertTrue(template.contains("""maxlength="7""""))
         assertTrue(template.contains("""class="captive-scanner-section require-js""""))
+        assertTrue(template.contains("BrowserQRCodeReader"))
+        assertTrue(template.contains("wmDecodeQrPayload"))
     }
 
     @Test
@@ -281,7 +295,7 @@ class CaptivePortalControllerTest {
                 ),
             )
 
-        val view = controller.index(clientInfo, request, model)
+        val view = controller.index(clientInfo, null, request, model)
 
         assertEquals("redirect:/captive/login", view)
         verify(session).setAttribute(CaptivePortalController.ACCOUNT_REAUTH_SESSION_KEY, true)

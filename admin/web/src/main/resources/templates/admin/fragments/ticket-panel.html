@@ -96,16 +96,14 @@
                             <div class="flex items-start gap-4">
                                 <span class="step-badge">2</span>
                                 <p class="pt-1 text-base leading-8 text-text" th:text="#{admin.ticket.active.step2}">
-                                    Enter the access code below or scan the QR and barcode to fill it faster.
+                                    Scan the QR code below to open the login page with the code filled in.
                                 </p>
                             </div>
-
-                            <div class="print:hidden">
-                                <button type="button"
-                                        class="text-sm text-text-muted underline-offset-2 underline hover:text-text transition-colors"
-                                        data-script="on click call document.querySelector('wm-captive-help-dialog').open()">
-                                    <span th:text="#{admin.ticket.active.help.link}">Did the login screen not appear? Click here</span>
-                                </button>
+                            <div class="flex items-start gap-4">
+                                <span class="step-badge">3</span>
+                                <p class="pt-1 text-base leading-8 text-text" th:text="#{admin.ticket.active.step3}">
+                                    If the page does not load, turn off mobile data and open the QR link again, or enter the access code manually.
+                                </p>
                             </div>
                         </div>
 
@@ -164,8 +162,8 @@
                         <div class="p-6 surface-panel">
                             <div class="w-full rounded-[1.5rem] bg-white px-4 py-5">
                                 <img
-                                        th:src="${@DataMatrixBuilder.createAccessCodeDataMatrix(ticket.accessCode)}"
-                                        th:alt="${'Data Matrix for access code ' + @AccessCodeFormatter.format(ticket.accessCode)}"
+                                        th:src="${@TicketQrCodeBuilder.createAccessCodeQrCode(ticket.accessCode)}"
+                                        th:alt="${'QR code for captive login with access code ' + @AccessCodeFormatter.format(ticket.accessCode)}"
                                         class="mx-auto block w-[13rem] max-w-full"
                                 />
                             </div>
@@ -213,10 +211,6 @@
             <div th:replace="~{admin/fragments/ticket-form :: ticketForm(' print:hidden')}"></div>
         </div>
     </div>
-
-    <wm-captive-help-dialog
-            th:attr="portal-url=${captivePortalUrl},title-text=#{admin.ticket.active.help.dialog.title},instruction-text=#{admin.ticket.active.help.dialog.instruction(${wifiSsid})},mobile-data-text=#{admin.ticket.active.help.dialog.mobileData},close-text=#{admin.ticket.active.help.dialog.close}">
-    </wm-captive-help-dialog>
 
     <div class="pointer-events-none fixed inset-x-0 bottom-5 z-40 flex justify-center px-4 print:hidden">
         <div id="ticket-copy-toast"

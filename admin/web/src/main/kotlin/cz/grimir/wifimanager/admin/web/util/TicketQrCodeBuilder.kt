@@ -4,31 +4,44 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
-import com.google.zxing.datamatrix.encoder.SymbolShapeHint
 import cz.grimir.wifimanager.shared.ui.AccessCodeFormatter
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import org.springframework.web.util.UriComponentsBuilder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-@Component("DataMatrixBuilder")
-class DataMatrixBuilder(
+@Component("TicketQrCodeBuilder")
+class TicketQrCodeBuilder(
     private val accessCodeFormatter: AccessCodeFormatter,
+    @param:Value("\${wifimanager.captive.portal.public-base-url}")
+    private val captivePortalPublicBaseUrl: String,
 ) {
-    fun createAccessCodeDataMatrix(code: String): String {
-        val payload = accessCodeFormatter.createBarcodePayload(code)
+    fun createAccessCodeQrCode(code: String): String {
+        val payload = createCaptivePortalUrl(code)
         val matrix =
             MultiFormatWriter().encode(
                 payload,
-                BarcodeFormat.DATA_MATRIX,
+                BarcodeFormat.QR_CODE,
                 1,
                 1,
                 mapOf(
-                    EncodeHintType.DATA_MATRIX_SHAPE to SymbolShapeHint.FORCE_SQUARE,
                     EncodeHintType.MARGIN to 2,
                 ),
             )
 
         return svgDataUri(renderSvg(matrix))
+    }
+
+    fun createCaptivePortalUrl(code: String): String {
+        val normalizedCode = accessCodeFormatter.normalize(code)
+        require(accessCodeFormatter.isValidNormalized(normalizedCode)) { "Access code must be 6 alphanumeric characters." }
+        return UriComponentsBuilder
+            .fromUriString(captivePortalPublicBaseUrl.trimEnd('/'))
+            .path("/captive")
+            .queryParam("code", normalizedCode)
+            .build()
+            .toUriString()
     }
 
     private fun renderSvg(matrix: BitMatrix): String {

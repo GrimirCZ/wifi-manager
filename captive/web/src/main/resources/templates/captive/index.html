@@ -146,7 +146,7 @@
           </h1>
           <p class="captive-subtitle"
              th:text="${requireUserNameStep == true} ? #{captive.page.name.subtitle} : #{captive.page.subtitle}">
-            Enter the access code or scan the barcode on your ticket.
+            Enter the access code or scan the QR code on your ticket.
           </p>
         </div>
 
@@ -243,7 +243,7 @@
         >
           <div id="scanner-header" class="captive-scanner-header">
             <div>
-              <div class="text-sm font-medium" th:text="#{captive.scan.title}">Scan barcode</div>
+              <div class="text-sm font-medium" th:text="#{captive.scan.title}">Scan QR code</div>
               <div class="text-xs text-text-muted" th:text="#{captive.scan.subtitle}">
                 Use your camera to scan the code.
               </div>
@@ -275,10 +275,10 @@
               autoplay
               playsinline
               muted
-              aria-label="Data Matrix scanner"
+              aria-label="QR code scanner"
             ></video>
             <div class="captive-scanner-hint" th:text="#{captive.scan.hint}">
-              Point the camera at the barcode. The scanner will fill the code automatically.
+              Point the camera at the QR code. The scanner will fill the code automatically.
             </div>
           </div>
         </div>
@@ -319,7 +319,7 @@
 
       window.wmScannerSupported = () =>
         typeof window.ZXingBrowser !== "undefined" &&
-        typeof window.ZXingBrowser.BrowserDatamatrixCodeReader === "function" &&
+        typeof window.ZXingBrowser.BrowserQRCodeReader === "function" &&
         typeof navigator !== "undefined" &&
         !!navigator.mediaDevices &&
         typeof navigator.mediaDevices.getUserMedia === "function";
@@ -428,6 +428,20 @@
         return window.wmFormatAccessCode(accessCode);
       };
 
+      window.wmDecodeQrPayload = (value) => {
+        const rawValue = (value || "").toString().trim();
+        if (!rawValue) return "";
+
+        try {
+          const url = new URL(rawValue, window.location.origin);
+          const code = url.searchParams.get("code");
+          const formattedCode = window.wmFormatAccessCode(code);
+          if (formattedCode) return formattedCode;
+        } catch (_) {}
+
+        return window.wmDecodeBarcodePayload(rawValue) || window.wmFormatAccessCode(rawValue);
+      };
+
       window.wmBindAccessCodeInput = () => {
         const input = document.getElementById("access-code");
         if (!input || input.dataset.codeFormatBound === "true" || input.type === "hidden") return;
@@ -493,7 +507,7 @@
         try {
           window.wmScannerStopSafe();
           if (!window.wmScannerState.reader) {
-            window.wmScannerState.reader = new window.ZXingBrowser.BrowserDatamatrixCodeReader();
+            window.wmScannerState.reader = new window.ZXingBrowser.BrowserQRCodeReader();
           }
 
           const stream = await navigator.mediaDevices.getUserMedia({
@@ -511,7 +525,7 @@
             (result, _error, activeControls) => {
               if (!result) return;
               const rawText = typeof result.getText === "function" ? result.getText() : (result.text || "");
-              const formattedCode = window.wmDecodeBarcodePayload(rawText);
+              const formattedCode = window.wmDecodeQrPayload(rawText);
               if (!formattedCode) return;
               if (activeControls && typeof activeControls.stop === "function") {
                 activeControls.stop();
