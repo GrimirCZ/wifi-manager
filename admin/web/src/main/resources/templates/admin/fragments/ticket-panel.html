@@ -14,7 +14,8 @@
     </div>
 
     <div th:if="${isAdmin}" class="surface-panel print:hidden">
-        <details class="space-y-4">
+        <details class="space-y-4"
+                 th:open="${activeTickets == null || activeTickets.isEmpty()} ? 'open' : null">
             <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
                 <span class="btn btn-primary inline-flex gap-2">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -57,7 +58,7 @@
     </div>
 
     <div th:if="${activeTickets != null and !activeTickets.isEmpty()}" class="space-y-8">
-        <section th:each="ticketWithCount : ${activeTickets}" class="ticket-card space-y-8"
+        <section th:each="ticketWithCount, iter : ${activeTickets}" class="ticket-card space-y-8"
                  th:with="ticket=${ticketWithCount.ticket},deviceCount=${ticketWithCount.deviceCount}"
                  th:attr="data-ends-at=${@DateFormatter.toTimestamp(ticket.validUntil)}"
                  th:hx-get="@{/admin/ticket/{ticketId}/_ended-banner(ticketId=${ticket.id},accessCode=${ticket.accessCode},createdAt=${@DateFormatter.toTimestamp(ticket.createdAt)},validUntil=${@DateFormatter.toTimestamp(ticket.validUntil)})}"
@@ -77,7 +78,10 @@
                 <div class="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center">
                     <div class="space-y-6">
                         <div class="space-y-2">
-                            <div class="hero-kicker" th:text="#{admin.ticket.active.title}">Active ticket</div>
+                            <div class="hero-kicker" th:text="#{admin.ticket.active.title}"
+                                 th:data-script="${iter.first} ? 'on load scroll to the top of me -150px smoothly' : null">
+                                Active ticket
+                            </div>
                             <h1 class="hero-title" th:text="#{admin.ticket.active.heading}">How to connect</h1>
                         </div>
 
@@ -118,7 +122,8 @@
                             </div>
                         </div>
 
-                        <div th:if="${showTicketOwnerLookup}" class="flex flex-wrap items-center gap-2 text-sm text-text-muted">
+                        <div th:if="${showTicketOwnerLookup}"
+                             class="flex flex-wrap items-center gap-2 text-sm text-text-muted">
                             <span th:text="#{admin.ticket.owner.label}">Owner:</span>
                             <span class="owner-lookup group relative inline-flex font-mono text-[11px]"
                                   th:hx-get="@{/admin/users/{userId}/_display-name(userId=${ticket.authorId})}"
@@ -149,7 +154,7 @@
                             </button>
                             <button class="btn btn-secondary print:!hidden"
                                     type="button"
-                                    data-script="on click call window.print()"
+                                    data-script="on click add .print:hidden to .ticket-card then remove .print:hidden from closest .ticket-card then call window.print() then remove .print:hidden from .ticket-card"
                                     th:text="#{admin.ticket.active.print}">Print
                             </button>
                         </div>
