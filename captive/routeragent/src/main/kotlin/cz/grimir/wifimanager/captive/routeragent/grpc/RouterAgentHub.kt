@@ -7,7 +7,10 @@ import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 private val logger = KotlinLogging.logger {}
 
@@ -134,7 +137,37 @@ class RouterAgentHub(
             return emptyList()
         }
 
-        return connections.values.map { it.send(command) }
+        val futures =
+            connections.entries.mapNotNull { (connectionId, connection) ->
+                if (connection.closed) {
+                    removeClosedConnection(connectionId, connection, "closed_before_send")
+                    null
+                } else {
+                    connection.send(command).also {
+                        if (connection.closed) {
+                            removeClosedConnection(
+                                connectionId,
+                                connection,
+                                "closed_after_send commandCase=${command.commandCase} commandId=${commandId(command)}",
+                            )
+                        }
+                    }
+                }
+            }
+        if (futures.isEmpty()) {
+            logger.warn { "No router agents available for command=$command" }
+        }
+        return futures
+    }
+
+    private fun removeClosedConnection(
+        connectionId: String,
+        connection: RouterAgentConnection,
+        reason: String,
+    ) {
+        if (connections.remove(connectionId, connection)) {
+            logger.warn { "Router agent connection removed id=$connectionId reason=$reason" }
+        }
     }
 
     private fun waitForAllAcks(
@@ -219,19 +252,37 @@ private class RouterAgentConnection(
     private val commandTimeout: Duration,
 ) {
     private val pending = ConcurrentHashMap<String, CompletableFuture<CommandAck>>()
+    private val closedState = AtomicBoolean(false)
+    private val writeLock = ReentrantLock()
+
+    val closed: Boolean
+        get() = closedState.get()
 
     fun send(command: RouterAgentCommand): CompletableFuture<CommandAck> {
         val commandId = commandId(command)
         val future =
             CompletableFuture<CommandAck>()
                 .orTimeout(commandTimeout.toMillis(), TimeUnit.MILLISECONDS)
+
+        if (closed) {
+            future.completeExceptionally(connectionClosedException())
+            return future
+        }
+
         pending[commandId] = future
 
-        try {
-            responseObserver.onNext(command)
-        } catch (ex: Exception) {
-            pending.remove(commandId)
-            future.completeExceptionally(ex)
+        writeLock.withLock {
+            if (closed) {
+                pending.remove(commandId)
+                future.completeExceptionally(connectionClosedException())
+                return future
+            }
+
+            try {
+                responseObserver.onNext(command)
+            } catch (ex: Exception) {
+                close(ex)
+            }
         }
         return future
     }
@@ -241,9 +292,16 @@ private class RouterAgentConnection(
     }
 
     fun close(cause: Throwable?) {
-        val exception = cause ?: IllegalStateException("Router agent connection closed id=$id")
+        if (!closedState.compareAndSet(false, true)) {
+            return
+        }
+
+        val exception = cause ?: connectionClosedException()
         pending.values.forEach { it.completeExceptionally(exception) }
+        pending.clear()
     }
+
+    private fun connectionClosedException() = IllegalStateException("Router agent connection closed id=$id")
 
     private fun commandId(command: RouterAgentCommand): String =
         when (command.commandCase) {
