@@ -119,33 +119,6 @@ class DocumentationScreenshotsE2ETest : BaseWorkflowE2ETest() {
     }
 
     @Test
-    fun `captures admin ticket help dialog`() {
-        useRenderMode(RenderMode.DESKTOP)
-
-        loginAsStaffForScreenshots()
-        openTicketsPage()
-        createTicketAndReturnCsrfTokenForScreenshots()
-        waitForPageToSettle()
-
-        val dialog = page.locator("wm-captive-help-dialog [role='dialog']").first()
-        val path = java.net.URI(page.url()).path
-        for (language in listOf("en", "cs")) {
-            page.navigate("$baseUrl$path?lang=$language")
-            waitForPageToSettle()
-            page.evaluate("document.querySelector('wm-captive-help-dialog')?.open()")
-            assertThat(dialog).isVisible()
-
-            captureScreenshot(
-                ScreenshotSpec(
-                    fileName = "admin-ticket-help-dialog-desktop-$language.png",
-                    mode = RenderMode.DESKTOP,
-                    fullPage = true,
-                ),
-            )
-        }
-    }
-
-    @Test
     fun `captures captive access code entry screen on phone`() {
         useRenderMode(RenderMode.PHONE)
 
@@ -155,6 +128,24 @@ class DocumentationScreenshotsE2ETest : BaseWorkflowE2ETest() {
         captureLocalizedScreenshots(
             ScreenshotSpec(
                 fileName = "captive-code-entry-phone.png",
+                mode = RenderMode.PHONE,
+                fullPage = true,
+            ),
+        )
+    }
+
+    @Test
+    fun `captures successful captive code login screen on phone`() {
+        useRenderMode(RenderMode.PHONE)
+
+        val ticketCode = createTicketAsStaffAndGetCode()
+        submitCaptiveAccessCodeForScreenshots(ticketCode, acceptTerms = true)
+        assertThat(page.locator(".captive-card-hero").getByText("You're connected")).isVisible()
+        assertThat(page.locator(".captive-details")).isVisible()
+
+        captureLocalizedScreenshots(
+            ScreenshotSpec(
+                fileName = "captive-code-login-success-phone.png",
                 mode = RenderMode.PHONE,
                 fullPage = true,
             ),
