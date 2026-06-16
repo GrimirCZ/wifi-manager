@@ -51,10 +51,11 @@ class UnexpectedExceptionControllerAdviceTest {
     fun `returns empty model and view when output stream was already used`() {
         val request = request("GET", "/admin")
 
-        val response = advice.handle(
-            IllegalStateException("getOutputStream() has already been called for this response"),
-            request,
-        )
+        val response =
+            advice.handle(
+                IllegalStateException("getOutputStream() has already been called for this response"),
+                request,
+            )
 
         val modelAndView = response as ModelAndView
         assertThat(modelAndView.isEmpty).isTrue()
