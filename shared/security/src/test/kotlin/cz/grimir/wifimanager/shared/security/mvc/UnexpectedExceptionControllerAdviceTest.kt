@@ -1,6 +1,7 @@
 package cz.grimir.wifimanager.shared.security.mvc
 
 import jakarta.servlet.http.HttpServletRequest
+import org.apache.catalina.connector.ClientAbortException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.ModelAndView
+import java.io.IOException
 
 class UnexpectedExceptionControllerAdviceTest {
     private val advice = UnexpectedExceptionControllerAdvice("School Wi-Fi")
@@ -23,6 +25,39 @@ class UnexpectedExceptionControllerAdviceTest {
         assertThat(modelAndView.viewName).isEqualTo("admin/error")
         assertThat(modelAndView.status).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
         assertThat(modelAndView.model["returnHref"]).isEqualTo("/admin")
+    }
+
+    @Test
+    fun `returns empty model and view for broken pipe client disconnect`() {
+        val request = request("GET", "/captive")
+
+        val response = advice.handle(IOException("Broken pipe"), request)
+
+        val modelAndView = response as ModelAndView
+        assertThat(modelAndView.isEmpty).isTrue()
+    }
+
+    @Test
+    fun `returns empty model and view for nested client abort connection reset`() {
+        val request = request("GET", "/captive")
+
+        val response = advice.handle(ClientAbortException(IOException("Connection reset by peer")), request)
+
+        val modelAndView = response as ModelAndView
+        assertThat(modelAndView.isEmpty).isTrue()
+    }
+
+    @Test
+    fun `returns empty model and view when output stream was already used`() {
+        val request = request("GET", "/admin")
+
+        val response = advice.handle(
+            IllegalStateException("getOutputStream() has already been called for this response"),
+            request,
+        )
+
+        val modelAndView = response as ModelAndView
+        assertThat(modelAndView.isEmpty).isTrue()
     }
 
     @Test

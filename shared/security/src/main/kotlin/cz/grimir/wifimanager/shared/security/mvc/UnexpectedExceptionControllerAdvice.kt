@@ -13,8 +13,11 @@ import org.springframework.web.ErrorResponse
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.servlet.ModelAndView
+import java.io.IOException
 
 private val logger = KotlinLogging.logger {}
+
+private const val OUTPUT_STREAM_ALREADY_USED_MESSAGE = "getOutputStream() has already been called for this response"
 
 @ControllerAdvice
 @Order(Ordered.LOWEST_PRECEDENCE)
@@ -33,6 +36,14 @@ class UnexpectedExceptionControllerAdvice(
 
         val requestPath = request.requestURI.orEmpty()
         val isHtmx = request.getHeader("HX-Request").equals("true", ignoreCase = true)
+
+        val clientDisconnectReason = exception.getClientDisconnectReason()
+        if (clientDisconnectReason != null) {
+            logger.warn {
+                "Client disconnected during web response method=${request.method} path=$requestPath htmx=$isHtmx reason=$clientDisconnectReason"
+            }
+            return ModelAndView()
+        }
 
         logger.error(exception) {
             "Unhandled web exception method=${request.method} path=$requestPath htmx=$isHtmx"
@@ -76,4 +87,35 @@ class UnexpectedExceptionControllerAdvice(
             status,
         )
     }
+}
+
+private fun Throwable.getClientDisconnectReason(): String? {
+    val seen = mutableSetOf<Throwable>()
+    var current: Throwable? = this
+
+    while (current != null && seen.add(current)) {
+        val message = current.message.orEmpty()
+
+        when {
+            current.javaClass.name == "org.apache.catalina.connector.ClientAbortException" -> {
+                return "client-abort"
+            }
+
+            current is IOException && message.contains("Broken pipe", ignoreCase = true) -> {
+                return "broken-pipe"
+            }
+
+            current is IOException && message.contains("Connection reset", ignoreCase = true) -> {
+                return "connection-reset"
+            }
+
+            current is IllegalStateException && message.contains(OUTPUT_STREAM_ALREADY_USED_MESSAGE, ignoreCase = true) -> {
+                return "output-stream-already-used"
+            }
+        }
+
+        current = current.cause
+    }
+
+    return null
 }
